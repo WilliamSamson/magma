@@ -1,0 +1,19 @@
+/target
+
+# Runtime output
+obsidian-export.jsonl
+logr-export.jsonl
+*.log
+
+# Local planning / private notes
+AGENTS.md
+idea.md
+notes/
+plans/
+
+# Editor / OS noise
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo

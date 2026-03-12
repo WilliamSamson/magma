@@ -1,0 +1,10 @@
+{"timestamp":"2026-03-11T14:05:01Z","level":"INFO","message":"obsidian started","service":"obsidian","env":"dev","pid":18421}
+{"timestamp":"2026-03-11T14:05:03Z","level":"DEBUG","message":"loading input source","source":"sample-logs.jsonl","mode":"file"}
+{"@timestamp":"2026-03-11T14:05:05Z","severity":"WARN","message":"high parse latency detected","duration_ms":187,"threshold_ms":120}
+{"time":"2026-03-11T14:05:08Z","level":"ERROR","message":"failed to decode upstream payload","request_id":"req_1024","status":502}
+{"ts":"2026-03-11T14:05:11Z","log_level":"TRACE","message":"render tick completed","frame_time_ms":12,"visible_rows":18}
+{"timestamp":"2026-03-11T14:05:14Z","level":"INFO","message":"user authenticated","user_id":"user_77","ip":"10.0.0.24"}
+{"timestamp":"2026-03-11T14:05:16Z","level":"DEBUG","event":"cache refresh","cache":"session_store","keys_reloaded":42}
+{"timestamp":"2026-03-11T14:05:19Z","severity":"ERROR","body":"database connection dropped","database":"primary","retry_in_seconds":5}
+{"@timestamp":"2026-03-11T14:05:22Z","level":"INFO","message":"background sync complete","jobs_processed":9,"failures":0}
+{"time":"2026-03-11T14:05:25Z","level":"WARN","message":"disk usage approaching threshold","mount":"/var/log","usage_percent":84}
