@@ -1,11 +1,12 @@
 mod ops;
+mod switcher;
 mod tab_strip;
 
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
     gdk, prelude::*, Align, Box as GtkBox, Button, EventControllerKey, Notebook, Orientation,
-    PackType, PolicyType, ScrolledWindow,
+    Overlay, PackType, PolicyType, ScrolledWindow,
 };
 
 use super::{
@@ -21,6 +22,8 @@ pub(super) struct WorkspaceView {
     tab_container: GtkBox,
     tab_scroller: ScrolledWindow,
     tabs: Rc<RefCell<Vec<TabView>>>,
+    quick_switcher: switcher::QuickSwitcher,
+    rename_state: tab_strip::RenameState,
     settings: Rc<RefCell<Settings>>,
 }
 
@@ -41,19 +44,27 @@ impl WorkspaceView {
 
         let (tab_bar_row, tab_scroller) = tab_bar_row(&tab_container, &add_button);
         let notebook = notebook();
+        let overlay = Overlay::new();
+        overlay.set_hexpand(true);
+        overlay.set_vexpand(true);
         let (split_tab, close_tab, profile_tab, actions_box) = actions_box();
         notebook.set_action_widget(&actions_box, PackType::End);
+        overlay.set_child(Some(&notebook));
 
         root.append(&tab_bar_row);
-        root.append(&notebook);
 
         let tabs = Rc::new(RefCell::new(Vec::new()));
+        let quick_switcher = switcher::QuickSwitcher::new(&notebook, &tabs);
+        overlay.add_overlay(quick_switcher.widget());
+        root.append(&overlay);
         let workspace = Self {
             root,
             notebook,
             tab_container,
             tab_scroller,
             tabs,
+            quick_switcher,
+            rename_state: Rc::new(RefCell::new(None)),
             settings,
         };
 
@@ -90,7 +101,17 @@ impl WorkspaceView {
         for tab in snapshot.tabs {
             self.append_tab(tab);
         }
-        self.notebook.set_current_page(Some(snapshot.active_tab as u32));
+        let active_tab = snapshot
+            .active_tab
+            .min(self.tabs.borrow().len().saturating_sub(1));
+        self.notebook.set_current_page(Some(active_tab as u32));
+
+        let tabs = self.tabs.clone();
+        gtk::glib::idle_add_local_once(move || {
+            if let Some(tab) = tabs.borrow().get(active_tab) {
+                tab.restore_focus();
+            }
+        });
     }
 
     fn bind_actions(&self, new_tab: Button, split_tab: Button, close_tab: Button, profile_tab: Button) {
@@ -98,9 +119,19 @@ impl WorkspaceView {
         let tabs = self.tabs.clone();
         let tab_container = self.tab_container.clone();
         let tab_scroller = self.tab_scroller.clone();
+        let rename_state = self.rename_state.clone();
+        let quick_switcher = self.quick_switcher.clone();
         let settings = self.settings.clone();
         new_tab.connect_clicked(move |_| {
-            create_new_tab(&tabs, &notebook, &tab_container, &tab_scroller, &settings);
+            create_new_tab(
+                &tabs,
+                &notebook,
+                &tab_container,
+                &tab_scroller,
+                &quick_switcher,
+                &rename_state,
+                &settings,
+            );
         });
 
         let notebook = self.notebook.clone();
@@ -114,40 +145,52 @@ impl WorkspaceView {
         let notebook = self.notebook.clone();
         let tabs = self.tabs.clone();
         let tab_container = self.tab_container.clone();
+        let rename_state = self.rename_state.clone();
+        let quick_switcher = self.quick_switcher.clone();
         close_tab.connect_clicked(move |_| {
             let _ = ops::close_tab_at(&tabs, &notebook, current_index(&notebook));
-            tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs);
+            tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs, &rename_state);
+            quick_switcher.refresh();
         });
 
         let notebook = self.notebook.clone();
         let tabs = self.tabs.clone();
         let tab_container = self.tab_container.clone();
+        let rename_state = self.rename_state.clone();
+        let quick_switcher = self.quick_switcher.clone();
         profile_tab.connect_clicked(move |_| {
             if let Some(tab) = tabs.borrow_mut().get_mut(current_index(&notebook)) {
                 let next = next_profile(tab.profile_id());
                 tab.cycle_profile(next);
             }
-            tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs);
+            tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs, &rename_state);
+            quick_switcher.refresh();
         });
 
         // Rebuild on tab switch so the active indicator and control state always match the page.
         let tabs = self.tabs.clone();
         let tab_container = self.tab_container.clone();
         let tab_scroller = self.tab_scroller.clone();
+        let rename_state = self.rename_state.clone();
+        let quick_switcher = self.quick_switcher.clone();
         self.notebook.connect_switch_page(move |notebook, _, page_num| {
             let active = page_num as usize;
-            tab_strip::rebuild_tab_strip_at(&tab_container, notebook, &tabs, active);
+            tab_strip::rebuild_tab_strip_at(&tab_container, notebook, &tabs, &rename_state, active);
             tab_strip::reveal_active_tab_at(&tab_container, &tab_scroller, active);
+            quick_switcher.refresh();
         });
 
         // On tab removal: full rebuild needed since widget count changed
         let tabs = self.tabs.clone();
         let tab_container = self.tab_container.clone();
         let tab_scroller = self.tab_scroller.clone();
+        let rename_state = self.rename_state.clone();
+        let quick_switcher = self.quick_switcher.clone();
         self.notebook.connect_page_removed(move |notebook, _, _| {
-            tab_strip::rebuild_tab_strip(&tab_container, notebook, &tabs);
+            tab_strip::rebuild_tab_strip(&tab_container, notebook, &tabs, &rename_state);
             tab_strip::update_active_tab(&tab_container, notebook);
             tab_strip::reveal_active_tab(&tab_container, &tab_scroller, notebook);
+            quick_switcher.refresh();
         });
     }
 
@@ -159,11 +202,22 @@ impl WorkspaceView {
         let tabs = self.tabs.clone();
         let tab_container = self.tab_container.clone();
         let tab_scroller = self.tab_scroller.clone();
+        let rename_state = self.rename_state.clone();
+        let quick_switcher = self.quick_switcher.clone();
         let settings = self.settings.clone();
 
         controller.connect_key_pressed(move |_, key, _, modifiers| {
             let ctrl = modifiers.contains(gdk::ModifierType::CONTROL_MASK);
             let shift = modifiers.contains(gdk::ModifierType::SHIFT_MASK);
+            let alt = modifiers.contains(gdk::ModifierType::ALT_MASK);
+
+            if quick_switcher.is_open() {
+                if ctrl && key == gdk::Key::k {
+                    quick_switcher.close();
+                    return gtk::glib::Propagation::Stop;
+                }
+                return gtk::glib::Propagation::Proceed;
+            }
 
             if !ctrl {
                 return gtk::glib::Propagation::Proceed;
@@ -172,13 +226,22 @@ impl WorkspaceView {
             match key {
                 // Ctrl+T: New tab
                 gdk::Key::t if !shift => {
-                    create_new_tab(&tabs, &notebook, &tab_container, &tab_scroller, &settings);
+                    create_new_tab(
+                        &tabs,
+                        &notebook,
+                        &tab_container,
+                        &tab_scroller,
+                        &quick_switcher,
+                        &rename_state,
+                        &settings,
+                    );
                     gtk::glib::Propagation::Stop
                 }
                 // Ctrl+W: Close current tab
                 gdk::Key::w if !shift => {
                     let _ = ops::close_tab_at(&tabs, &notebook, current_index(&notebook));
-                    tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs);
+                    tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs, &rename_state);
+                    quick_switcher.refresh();
                     gtk::glib::Propagation::Stop
                 }
                 // Ctrl+Tab: Next tab
@@ -206,7 +269,7 @@ impl WorkspaceView {
                     let current = current_index(&notebook);
                     if count > 1 && current > 0 {
                         ops::reorder_tab(&tabs, &notebook, current, current - 1);
-                        tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs);
+                        tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs, &rename_state);
                         notebook.set_current_page(Some((current - 1) as u32));
                     }
                     gtk::glib::Propagation::Stop
@@ -217,10 +280,50 @@ impl WorkspaceView {
                     let current = current_index(&notebook);
                     if count > 1 && current + 1 < count {
                         ops::reorder_tab(&tabs, &notebook, current, current + 1);
-                        tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs);
+                        tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs, &rename_state);
                         notebook.set_current_page(Some((current + 1) as u32));
                     }
                     gtk::glib::Propagation::Stop
+                }
+                // Ctrl+Shift+R: Rename current tab
+                gdk::Key::r if shift => {
+                    tab_strip::start_tab_rename(
+                        &tab_container,
+                        &notebook,
+                        &tabs,
+                        &rename_state,
+                        current_index(&notebook),
+                    );
+                    gtk::glib::Propagation::Stop
+                }
+                // Ctrl+K: Open quick switcher
+                gdk::Key::k if !shift => {
+                    quick_switcher.toggle();
+                    gtk::glib::Propagation::Stop
+                }
+                // Ctrl+Alt+Left: Focus left split pane
+                gdk::Key::Left if alt => {
+                    let handled = tabs
+                        .borrow()
+                        .get(current_index(&notebook))
+                        .is_some_and(TabView::focus_left_pane);
+                    if handled {
+                        gtk::glib::Propagation::Stop
+                    } else {
+                        gtk::glib::Propagation::Proceed
+                    }
+                }
+                // Ctrl+Alt+Right: Focus right split pane
+                gdk::Key::Right if alt => {
+                    let handled = tabs
+                        .borrow()
+                        .get(current_index(&notebook))
+                        .is_some_and(TabView::focus_right_pane);
+                    if handled {
+                        gtk::glib::Propagation::Stop
+                    } else {
+                        gtk::glib::Propagation::Proceed
+                    }
                 }
                 // Ctrl+1-9: Jump to tab by number
                 _ if key.to_unicode().is_some_and(|c| ('1'..='9').contains(&c)) => {
@@ -243,7 +346,13 @@ impl WorkspaceView {
     }
 
     fn rebuild_tab_strip(&self) {
-        tab_strip::rebuild_tab_strip(&self.tab_container, &self.notebook, &self.tabs);
+        tab_strip::rebuild_tab_strip(
+            &self.tab_container,
+            &self.notebook,
+            &self.tabs,
+            &self.rename_state,
+        );
+        self.quick_switcher.refresh();
     }
 }
 
@@ -252,6 +361,8 @@ fn create_new_tab(
     notebook: &Notebook,
     tab_container: &GtkBox,
     tab_scroller: &ScrolledWindow,
+    quick_switcher: &switcher::QuickSwitcher,
+    rename_state: &tab_strip::RenameState,
     settings: &Rc<RefCell<Settings>>,
 ) {
     let next_index = tabs.borrow().len() + 1;
@@ -260,12 +371,15 @@ fn create_new_tab(
         profile: ProfileId::Default,
         left_cwd: None,
         right_cwd: None,
+        split_position: None,
+        active_pane: persist::PaneFocus::Left,
     };
     append_tab(tabs, notebook, snapshot, settings);
     notebook.set_current_page(Some((tabs.borrow().len().saturating_sub(1)) as u32));
-    tab_strip::rebuild_tab_strip(tab_container, notebook, tabs);
+    tab_strip::rebuild_tab_strip(tab_container, notebook, tabs, rename_state);
     tab_strip::update_active_tab(tab_container, notebook);
     tab_strip::reveal_active_tab(tab_container, tab_scroller, notebook);
+    quick_switcher.refresh();
 }
 
 fn tab_bar_row(tab_container: &GtkBox, add_button: &Button) -> (GtkBox, ScrolledWindow) {
@@ -339,6 +453,8 @@ fn default_snapshot() -> WorkspaceSnapshot {
             profile: ProfileId::Default,
             left_cwd: None,
             right_cwd: None,
+            split_position: None,
+            active_pane: persist::PaneFocus::Left,
         }],
     }
 }

@@ -1,4 +1,5 @@
 mod about;
+mod browser;
 mod page;
 mod sections;
 mod widgets;
@@ -14,9 +15,12 @@ use serde::{Deserialize, Serialize};
 pub(super) use page::build_settings_page;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub(super) struct Settings {
     pub(super) font_family: String,
     pub(super) font_size: u32,
+    pub(super) app_font_size: u32,
+    pub(super) default_browser: String,
     pub(super) scrollback_lines: u32,
     pub(super) cursor_style: String,
     pub(super) cursor_blink: bool,
@@ -30,6 +34,8 @@ impl Default for Settings {
         Self {
             font_family: "DejaVu Sans Mono".to_string(),
             font_size: 10,
+            app_font_size: 11,
+            default_browser: "google".to_string(),
             scrollback_lines: 20_000,
             cursor_style: "ibeam".to_string(),
             cursor_blink: false,

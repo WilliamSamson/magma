@@ -1,5 +1,5 @@
 use gtk::{
-    gio, pango::FontDescription, prelude::*, Box as GtkBox, Orientation,
+    gio, pango::FontDescription, prelude::*, Box as GtkBox, EventControllerFocus, Orientation,
 };
 use vte4::{prelude::*, CursorBlinkMode, CursorShape, Terminal};
 
@@ -36,6 +36,16 @@ impl SessionView {
 
     pub(super) fn root(&self) -> &GtkBox {
         &self.root
+    }
+
+    pub(super) fn focus_terminal(&self) {
+        self.terminal.grab_focus();
+    }
+
+    pub(super) fn connect_focus_enter(&self, on_focus: impl Fn() + 'static) {
+        let controller = EventControllerFocus::new();
+        controller.connect_enter(move |_| on_focus());
+        self.terminal.add_controller(controller);
     }
 
     pub(super) fn current_cwd(&self) -> Option<String> {

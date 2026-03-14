@@ -115,10 +115,33 @@ if [ -s /etc/profile.d/vte-2.91.sh ]; then
 fi
 __obsidian_status_update() {
     local exit_code=$?
-    if [ -n "${OBSIDIAN_STATUS_FILE:-}" ]; then
-        printf "%s\n" "$exit_code" > "$OBSIDIAN_STATUS_FILE"
+    local command_text="${OBSIDIAN_PENDING_COMMAND:-}"
+    if [ "${OBSIDIAN_STATUS_READY:-0}" != "1" ]; then
+        OBSIDIAN_STATUS_READY=1
+        OBSIDIAN_AT_PROMPT=1
+        return
     fi
+    if [ -n "${OBSIDIAN_STATUS_FILE:-}" ]; then
+        if [ -n "$command_text" ]; then
+            OBSIDIAN_STATUS_SEQ=$(( ${OBSIDIAN_STATUS_SEQ:-0} + 1 ))
+        fi
+        printf "%s\t%s\t%s\n" "${OBSIDIAN_STATUS_SEQ:-0}" "$exit_code" "$command_text" > "$OBSIDIAN_STATUS_FILE"
+    fi
+    OBSIDIAN_PENDING_COMMAND=""
+    OBSIDIAN_AT_PROMPT=1
 }
+OBSIDIAN_STATUS_SEQ=0
+OBSIDIAN_STATUS_READY=0
+OBSIDIAN_AT_PROMPT=0
+OBSIDIAN_PENDING_COMMAND=""
+__obsidian_capture_command() {
+    if [ "${OBSIDIAN_AT_PROMPT:-0}" != "1" ]; then
+        return
+    fi
+    OBSIDIAN_PENDING_COMMAND="$BASH_COMMAND"
+    OBSIDIAN_AT_PROMPT=0
+}
+trap '__obsidian_capture_command' DEBUG
 if [[ "$(declare -p PROMPT_COMMAND 2>&1)" =~ "declare -a" ]]; then
     PROMPT_COMMAND+=(__obsidian_status_update)
 elif [ -n "${PROMPT_COMMAND:-}" ]; then
@@ -144,7 +167,7 @@ fn status_path() -> PathBuf {
         std::process::id(),
         timestamp_nanos()
     ));
-    let _ = std::fs::write(&path, "0\n");
+    let _ = std::fs::write(&path, "0\t0\t\n");
     path
 }
 

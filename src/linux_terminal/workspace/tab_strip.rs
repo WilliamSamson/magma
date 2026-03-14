@@ -3,12 +3,14 @@ use std::{cell::RefCell, rc::Rc};
 use gtk::{
     gdk, glib,
     prelude::*,
-    Box as GtkBox, Button, GestureDrag, Label, Notebook, Orientation, ScrolledWindow,
+    Box as GtkBox, Button, Entry, EventControllerFocus, EventControllerKey, GestureClick,
+    GestureDrag, Label, Notebook, Orientation, ScrolledWindow,
 };
 
 use super::{ops, super::tab::TabView};
 
 const DRAG_THRESHOLD: f64 = 8.0;
+pub(super) type RenameState = Rc<RefCell<Option<usize>>>;
 
 /// Lightweight active-tab update: just toggles CSS classes without rebuilding widgets.
 pub(super) fn update_active_tab(container: &GtkBox, notebook: &Notebook) {
@@ -101,14 +103,16 @@ pub(super) fn rebuild_tab_strip(
     container: &GtkBox,
     notebook: &Notebook,
     tabs: &Rc<RefCell<Vec<TabView>>>,
+    rename_state: &RenameState,
 ) {
-    rebuild_tab_strip_at(container, notebook, tabs, current_index(notebook));
+    rebuild_tab_strip_at(container, notebook, tabs, rename_state, current_index(notebook));
 }
 
 pub(super) fn rebuild_tab_strip_at(
     container: &GtkBox,
     notebook: &Notebook,
     tabs: &Rc<RefCell<Vec<TabView>>>,
+    rename_state: &RenameState,
     current: usize,
 ) {
     clear_children(container);
@@ -116,6 +120,7 @@ pub(super) fn rebuild_tab_strip_at(
 
     for (index, tab) in tabs.borrow().iter().enumerate() {
         let is_active = index == current;
+        let is_renaming = rename_state.borrow().is_some_and(|rename_index| rename_index == index);
 
         let tab_root = GtkBox::new(Orientation::Horizontal, 8);
         tab_root.add_css_class("obsidian-tab-item");
@@ -123,16 +128,21 @@ pub(super) fn rebuild_tab_strip_at(
             tab_root.add_css_class("active");
         }
 
-        let title = tab.title_label().text();
-        let label = Label::new(Some(&title));
-        label.add_css_class("obsidian-tab-label");
-        label.add_css_class("obsidian-tab-button-label");
-        if is_active {
-            label.add_css_class("active");
-        }
+        if is_renaming {
+            let entry = rename_entry(tab.base_title(), index, tabs, notebook, container, rename_state);
+            tab_root.append(&entry);
+        } else {
+            let title = tab.title_label().text();
+            let label = Label::new(Some(&title));
+            label.add_css_class("obsidian-tab-label");
+            label.add_css_class("obsidian-tab-button-label");
+            if is_active {
+                label.add_css_class("active");
+            }
 
-        label.set_hexpand(true);
-        tab_root.append(&label);
+            label.set_hexpand(true);
+            tab_root.append(&label);
+        }
 
         if tab_count > 1 {
             let close_button = Button::builder()
@@ -147,21 +157,46 @@ pub(super) fn rebuild_tab_strip_at(
             let notebook_close = notebook.clone();
             let tabs_close = tabs.clone();
             let container_close = container.clone();
+            let rename_state_close = rename_state.clone();
             let tab_root_widget = tab.root().clone();
             close_button.connect_clicked(move |_| {
                 if let Some(page) = notebook_close.page_num(&tab_root_widget) {
                     let index = page as usize;
                     let _ = ops::close_tab_at(&tabs_close, &notebook_close, index);
-                    rebuild_tab_strip(&container_close, &notebook_close, &tabs_close);
+                    rebuild_tab_strip(&container_close, &notebook_close, &tabs_close, &rename_state_close);
                 }
             });
             tab_root.append(&close_button);
         }
 
-        attach_drag(&tab_root, index, tabs, notebook, container);
+        attach_rename(
+            &tab_root,
+            index,
+            notebook,
+            tabs,
+            container,
+            rename_state,
+            is_renaming,
+        );
+        attach_drag(&tab_root, index, tabs, notebook, container, rename_state);
 
         container.append(&tab_root);
     }
+}
+
+pub(super) fn start_tab_rename(
+    container: &GtkBox,
+    notebook: &Notebook,
+    tabs: &Rc<RefCell<Vec<TabView>>>,
+    rename_state: &RenameState,
+    index: usize,
+) {
+    if index >= tabs.borrow().len() {
+        return;
+    }
+
+    *rename_state.borrow_mut() = Some(index);
+    rebuild_tab_strip(container, notebook, tabs, rename_state);
 }
 
 fn activate_tab(notebook: &Notebook, index: usize) {
@@ -181,6 +216,7 @@ fn attach_drag(
     tabs: &Rc<RefCell<Vec<TabView>>>,
     notebook: &Notebook,
     container: &GtkBox,
+    rename_state: &RenameState,
 ) {
     let gesture = GestureDrag::new();
     gesture.set_button(gdk::BUTTON_PRIMARY);
@@ -203,6 +239,7 @@ fn attach_drag(
         let container_ref = container.clone();
         let tabs_ref = tabs.clone();
         let notebook_ref = notebook.clone();
+        let rename_state_ref = rename_state.clone();
         gesture.connect_drag_end(move |_gesture, offset_x, offset_y| {
             let was_dragging = tab_widget.has_css_class("dragging");
             tab_widget.remove_css_class("dragging");
@@ -214,7 +251,12 @@ fn attach_drag(
                 if let Some(target) = find_target_index(&container_ref, &tab_widget, offset_x) {
                     if target != index {
                         ops::reorder_tab(&tabs_ref, &notebook_ref, index, target);
-                        rebuild_tab_strip(&container_ref, &notebook_ref, &tabs_ref);
+                        rebuild_tab_strip(
+                            &container_ref,
+                            &notebook_ref,
+                            &tabs_ref,
+                            &rename_state_ref,
+                        );
                         notebook_ref.set_current_page(Some(target as u32));
                     }
                 }
@@ -226,6 +268,168 @@ fn attach_drag(
     }
 
     tab_root.add_controller(gesture);
+}
+
+fn attach_rename(
+    tab_root: &GtkBox,
+    index: usize,
+    notebook: &Notebook,
+    tabs: &Rc<RefCell<Vec<TabView>>>,
+    container: &GtkBox,
+    rename_state: &RenameState,
+    is_renaming: bool,
+) {
+    if is_renaming {
+        return;
+    }
+
+    let click = GestureClick::new();
+    click.set_button(gdk::BUTTON_PRIMARY);
+    let notebook_ref = notebook.clone();
+    let tabs_ref = tabs.clone();
+    let container_ref = container.clone();
+    let rename_state_ref = rename_state.clone();
+    click.connect_pressed(move |_gesture, n_press, _x, _y| {
+        if n_press != 2 {
+            return;
+        }
+
+        if notebook_ref.current_page() != Some(index as u32) {
+            activate_tab(&notebook_ref, index);
+        }
+        start_tab_rename(
+            &container_ref,
+            &notebook_ref,
+            &tabs_ref,
+            &rename_state_ref,
+            index,
+        );
+    });
+    tab_root.add_controller(click);
+}
+
+fn rename_entry(
+    title: &str,
+    index: usize,
+    tabs: &Rc<RefCell<Vec<TabView>>>,
+    notebook: &Notebook,
+    container: &GtkBox,
+    rename_state: &RenameState,
+) -> Entry {
+    let entry = Entry::new();
+    entry.set_text(title);
+    entry.set_width_chars(title.len().clamp(8, 24) as i32);
+    entry.add_css_class("obsidian-tab-rename-entry");
+    entry.set_hexpand(true);
+
+    let tabs_activate = tabs.clone();
+    let notebook_activate = notebook.clone();
+    let container_activate = container.clone();
+    let rename_state_activate = rename_state.clone();
+    entry.connect_activate(move |entry| {
+        finish_tab_rename(
+            index,
+            entry.text().as_str(),
+            true,
+            &tabs_activate,
+            &notebook_activate,
+            &container_activate,
+            &rename_state_activate,
+        );
+    });
+
+    let tabs_focus = tabs.clone();
+    let notebook_focus = notebook.clone();
+    let container_focus = container.clone();
+    let rename_state_focus = rename_state.clone();
+    let focus_controller = EventControllerFocus::new();
+    focus_controller.connect_leave(move |controller| {
+        let Some(widget) = controller.widget() else {
+            return;
+        };
+        let Ok(entry) = widget.downcast::<Entry>() else {
+            return;
+        };
+        finish_tab_rename(
+            index,
+            entry.text().as_str(),
+            true,
+            &tabs_focus,
+            &notebook_focus,
+            &container_focus,
+            &rename_state_focus,
+        );
+    });
+    entry.add_controller(focus_controller);
+
+    let tabs_key = tabs.clone();
+    let notebook_key = notebook.clone();
+    let container_key = container.clone();
+    let rename_state_key = rename_state.clone();
+    let key_controller = EventControllerKey::new();
+    key_controller.connect_key_pressed(move |controller, key, _, _| {
+        if key != gdk::Key::Escape {
+            return glib::Propagation::Proceed;
+        }
+
+        let Some(widget) = controller.widget() else {
+            return glib::Propagation::Proceed;
+        };
+        let Ok(entry) = widget.downcast::<Entry>() else {
+            return glib::Propagation::Proceed;
+        };
+        finish_tab_rename(
+            index,
+            entry.text().as_str(),
+            false,
+            &tabs_key,
+            &notebook_key,
+            &container_key,
+            &rename_state_key,
+        );
+        glib::Propagation::Stop
+    });
+    entry.add_controller(key_controller);
+
+    let entry_ref = entry.clone();
+    glib::idle_add_local_once(move || {
+        entry_ref.grab_focus();
+        entry_ref.select_region(0, -1);
+    });
+
+    entry
+}
+
+fn finish_tab_rename(
+    index: usize,
+    title: &str,
+    commit: bool,
+    tabs: &Rc<RefCell<Vec<TabView>>>,
+    notebook: &Notebook,
+    container: &GtkBox,
+    rename_state: &RenameState,
+) {
+    if rename_state.borrow().as_ref() != Some(&index) {
+        return;
+    }
+
+    let normalized_title = title.trim().to_string();
+
+    if commit && !normalized_title.is_empty() {
+        if let Some(tab) = tabs.borrow_mut().get_mut(index) {
+            tab.rename(&normalized_title);
+        }
+    }
+
+    *rename_state.borrow_mut() = None;
+
+    let container = container.clone();
+    let notebook = notebook.clone();
+    let tabs = tabs.clone();
+    let rename_state = rename_state.clone();
+    glib::idle_add_local_once(move || {
+        rebuild_tab_strip(&container, &notebook, &tabs, &rename_state);
+    });
 }
 
 /// Highlight the tab under the drag cursor with `drop-target` CSS class.

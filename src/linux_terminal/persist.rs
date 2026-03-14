@@ -8,18 +8,43 @@ use serde::{Deserialize, Serialize};
 
 use super::profile::ProfileId;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[serde(default)]
 pub(super) struct WorkspaceSnapshot {
     pub(super) active_tab: usize,
     pub(super) tabs: Vec<TabSnapshot>,
 }
 
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub(super) enum PaneFocus {
+    #[default]
+    Left,
+    Right,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub(super) struct TabSnapshot {
     pub(super) title: String,
     pub(super) profile: ProfileId,
     pub(super) left_cwd: Option<String>,
     pub(super) right_cwd: Option<String>,
+    pub(super) split_position: Option<i32>,
+    pub(super) active_pane: PaneFocus,
+}
+
+impl Default for TabSnapshot {
+    fn default() -> Self {
+        Self {
+            title: "tab 1".to_string(),
+            profile: ProfileId::Default,
+            left_cwd: None,
+            right_cwd: None,
+            split_position: None,
+            active_pane: PaneFocus::Left,
+        }
+    }
 }
 
 pub(super) fn load_workspace() -> io::Result<Option<WorkspaceSnapshot>> {

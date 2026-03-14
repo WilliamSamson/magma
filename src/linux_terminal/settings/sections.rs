@@ -1,8 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
-use gtk::{glib, prelude::*, Align, Box as GtkBox, Button, Orientation, ScrolledWindow, Stack};
+use gtk::{glib, prelude::*, Box as GtkBox, Orientation, ScrolledWindow, Stack};
+
+use crate::linux_terminal::meta::APP_VERSION;
 
 use super::{
+    browser::build_browser_section,
     save_settings, settings_path, Settings,
     widgets::{
         action_row, dropdown_row, info_row, section_label, spin_row, switch_row, text_row,
@@ -21,10 +24,10 @@ pub(super) fn build_main_page(
 
     build_terminal_section(&content, settings, &on_apply);
     build_appearance_section(&content, settings, &on_apply);
+    build_browser_section(&content, settings, &on_apply);
     build_shell_section(&content, settings, &on_apply);
     build_logr_section(&content, settings, &on_apply);
     build_about_section(&content, page_stack);
-    build_footer(&content, settings, on_apply);
 
     let scroller = ScrolledWindow::new();
     scroller.set_vexpand(true);
@@ -96,12 +99,32 @@ fn build_appearance_section(
         preview_settings(&font_settings, &font_apply);
     });
 
-    let size_spin = spin_row(content, "font size", settings.borrow().font_size as f64, 6.0, 32.0);
+    let size_spin = spin_row(
+        content,
+        "terminal font size",
+        settings.borrow().font_size as f64,
+        6.0,
+        32.0,
+    );
     let size_settings = settings.clone();
     let size_apply = on_apply.clone();
     size_spin.connect_value_changed(move |spin| {
         size_settings.borrow_mut().font_size = spin.value() as u32;
         preview_settings(&size_settings, &size_apply);
+    });
+
+    let app_size_spin = spin_row(
+        content,
+        "app font size",
+        settings.borrow().app_font_size as f64,
+        8.0,
+        20.0,
+    );
+    let app_size_settings = settings.clone();
+    let app_size_apply = on_apply.clone();
+    app_size_spin.connect_value_changed(move |spin| {
+        app_size_settings.borrow_mut().app_font_size = spin.value() as u32;
+        preview_settings(&app_size_settings, &app_size_apply);
     });
 
     bind_cursor_style(content, settings, on_apply);
@@ -130,7 +153,6 @@ fn build_shell_section(
         preview_settings(&shell_settings, &shell_apply);
     });
 }
-
 fn build_logr_section(
     content: &GtkBox,
     settings: &Rc<RefCell<Settings>>,
@@ -149,7 +171,7 @@ fn build_logr_section(
 
 fn build_about_section(content: &GtkBox, page_stack: &Stack) {
     content.append(&section_label("about"));
-    info_row(content, "version", env!("CARGO_PKG_VERSION"));
+    info_row(content, "version", APP_VERSION);
     info_row(content, "config", &settings_path().display().to_string());
 
     let about_button = action_row(content, "obsidian", "open");
@@ -159,39 +181,9 @@ fn build_about_section(content: &GtkBox, page_stack: &Stack) {
     });
 }
 
-fn build_footer(
-    content: &GtkBox,
-    settings: &Rc<RefCell<Settings>>,
-    on_apply: Rc<dyn Fn(&Settings)>,
-) {
-    let footer = GtkBox::new(Orientation::Horizontal, 0);
-    footer.add_css_class("obsidian-settings-footer");
-    footer.set_halign(Align::End);
-
-    let save_button = Button::builder()
-        .label("save")
-        .css_classes(["obsidian-settings-save"])
-        .build();
-
-    let settings_ref = settings.clone();
-    save_button.connect_clicked(move |button| {
-        // Clone once so save/apply use the same immutable snapshot without holding RefCell borrows.
-        let snapshot = settings_ref.borrow().clone();
-        save_settings(&snapshot);
-        on_apply(&snapshot);
-        button.set_label("saved");
-        let button_ref = button.clone();
-        glib::timeout_add_local_once(std::time::Duration::from_secs(2), move || {
-            button_ref.set_label("save");
-        });
-    });
-
-    footer.append(&save_button);
-    content.append(&footer);
-}
-
-fn preview_settings(settings: &Rc<RefCell<Settings>>, on_apply: &Rc<dyn Fn(&Settings)>) {
+pub(super) fn preview_settings(settings: &Rc<RefCell<Settings>>, on_apply: &Rc<dyn Fn(&Settings)>) {
     // Clone once so callbacks can apply a consistent snapshot without holding a RefCell borrow.
     let snapshot = settings.borrow().clone();
+    save_settings(&snapshot);
     on_apply(&snapshot);
 }

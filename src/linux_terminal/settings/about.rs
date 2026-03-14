@@ -1,5 +1,7 @@
 use gtk::{prelude::*, Align, Box as GtkBox, Label, Orientation};
 
+use crate::linux_terminal::meta::APP_VERSION;
+
 use super::widgets::body_copy;
 
 pub(super) fn build_about_page() -> GtkBox {
@@ -14,10 +16,11 @@ pub(super) fn build_about_page() -> GtkBox {
     panel.add_css_class("obsidian-settings-about-panel");
     panel.set_halign(Align::Center);
     panel.set_valign(Align::Center);
+    panel.set_size_request(640, -1);
 
     let title = about_label("obsidian", "obsidian-settings-about-title");
     let name = about_label("X.R.1.9 - Kayode", "obsidian-settings-about-name");
-    let meta = about_label(env!("CARGO_PKG_VERSION"), "obsidian-settings-about-meta");
+    let meta = about_label(APP_VERSION, "obsidian-settings-about-meta");
 
     let summary = centered_copy(
         "Obsidian is a stripped terminal workspace shaped around focus, compact control, and a quiet visual system.",
@@ -47,5 +50,6 @@ fn centered_copy(text: &str) -> Label {
     let copy = body_copy(text);
     copy.set_xalign(0.5);
     copy.set_justify(gtk::Justification::Center);
+    copy.set_max_width_chars(72);
     copy
 }

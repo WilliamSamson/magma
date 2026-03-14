@@ -1,22 +1,25 @@
 mod header;
 mod input;
 mod logr;
+mod meta;
 mod persist;
 mod profile;
+mod right_pane;
 mod session;
 mod settings;
 mod shell;
 mod style;
 mod tab;
 mod terminal;
+mod web;
 mod workspace;
 
 use std::io;
 
 use gtk::{
     gdk, gio, glib, prelude::*, Align, Application, ApplicationWindow, Box as GtkBox,
-    GestureClick, IconTheme, Label, Orientation, Revealer, RevealerTransitionType, Stack,
-    StackTransitionType,
+    GestureClick, IconTheme, Label, Orientation, PolicyType, Revealer,
+    RevealerTransitionType, ScrolledWindow, Stack, StackTransitionType,
 };
 use std::{cell::RefCell, rc::Rc};
 use winit::dpi::PhysicalSize;
@@ -33,6 +36,9 @@ const MARGIN_BOTTOM: i32 = 16;
 
 pub(crate) fn run() -> io::Result<()> {
     let initial_size = window_state::load_window_size()?.unwrap_or_default();
+    if let Err(error) = glib::setenv("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", "1", true) {
+        eprintln!("webkit sandbox override failed: {error}");
+    }
     glib::set_application_name(APP_TITLE);
     glib::set_prgname(Some(APP_ID));
     let app = Application::builder()
@@ -45,6 +51,9 @@ pub(crate) fn run() -> io::Result<()> {
 }
 
 fn build_window(app: &Application, width: u32, height: u32) {
+    // Rc<RefCell<Settings>> shares the mutable runtime settings across settings UI and workspace callbacks on the GTK thread.
+    let app_settings = Rc::new(RefCell::new(settings::load_settings()));
+
     if let Some(gtk_settings) = gtk::Settings::default() {
         gtk_settings.set_gtk_application_prefer_dark_theme(true);
     }
@@ -55,14 +64,15 @@ fn build_window(app: &Application, width: u32, height: u32) {
         icon_theme.add_search_path(ICON_THEME_PATH);
     }
 
-    style::install_css();
-
-    // Rc<RefCell<Settings>> shares the mutable runtime settings across settings UI and workspace callbacks on the GTK thread.
-    let app_settings = Rc::new(RefCell::new(settings::load_settings()));
+    style::install_css(app_settings.borrow().app_font_size);
 
     let (header, settings_button) = header::build_header();
     let workspace = std::rc::Rc::new(workspace::WorkspaceView::new(app_settings.clone()));
-    let container = shell_container(workspace.root(), app_settings.borrow().logr_panel_open);
+    let container = shell_container(
+        workspace.root(),
+        app_settings.borrow().logr_panel_open,
+        app_settings.clone(),
+    );
 
     // Stack: workspace (main) <-> settings
     let stack = Stack::new();
@@ -78,6 +88,7 @@ fn build_window(app: &Application, width: u32, height: u32) {
         },
         move |new_settings| {
             *app_settings.borrow_mut() = new_settings.clone();
+            style::install_css(new_settings.app_font_size);
             workspace_ref.apply_settings(new_settings);
         },
     );
@@ -117,7 +128,11 @@ fn build_window(app: &Application, width: u32, height: u32) {
     window.present();
 }
 
-fn shell_container(child: &impl IsA<gtk::Widget>, logr_panel_open: bool) -> GtkBox {
+fn shell_container(
+    child: &impl IsA<gtk::Widget>,
+    logr_panel_open: bool,
+    settings: Rc<RefCell<settings::Settings>>,
+) -> GtkBox {
     let container = GtkBox::new(Orientation::Vertical, 0);
     container.add_css_class("obsidian-shell");
     container.set_margin_start(MARGIN_HORIZONTAL);
@@ -137,15 +152,19 @@ fn shell_container(child: &impl IsA<gtk::Widget>, logr_panel_open: bool) -> GtkB
     revealer.set_hexpand(false);
     revealer.set_vexpand(true);
     revealer.set_halign(Align::End);
+    revealer.set_width_request(420);
 
-    let right_pane = GtkBox::new(Orientation::Vertical, 0);
-    right_pane.add_css_class("obsidian-right-pane");
-    right_pane.set_size_request(240, -1);
-    right_pane.set_hexpand(false);
-    right_pane.set_vexpand(true);
-    right_pane.append(&logr::build_logr_pane());
+    let right_pane = right_pane::build_right_pane(settings);
+    let pane_frame = ScrolledWindow::new();
+    pane_frame.set_hexpand(false);
+    pane_frame.set_vexpand(true);
+    pane_frame.set_min_content_width(420);
+    pane_frame.set_max_content_width(420);
+    pane_frame.set_propagate_natural_width(false);
+    pane_frame.set_policy(PolicyType::Never, PolicyType::Never);
+    pane_frame.set_child(Some(&right_pane));
 
-    revealer.set_child(Some(&right_pane));
+    revealer.set_child(Some(&pane_frame));
     revealer.set_reveal_child(logr_panel_open);
 
     let handle = GtkBox::new(Orientation::Vertical, 0);

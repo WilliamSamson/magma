@@ -13,7 +13,7 @@ use vte4::{prelude::*, Regex, Terminal};
 use self::{
     history::{record_history, InputHistory},
     prompt::build_prompt_box,
-    status::build_status_label,
+    status::build_status_widgets,
 };
 
 /// Widgets that toggle visibility between command and search mode.
@@ -21,6 +21,7 @@ use self::{
 struct SearchWidgets {
     prompt: GtkBox,
     status: gtk::Label,
+    notice: gtk::Label,
     prev_btn: Button,
     next_btn: Button,
 }
@@ -40,8 +41,9 @@ pub(super) fn append_input_row(
     let prompt_container = build_prompt_box(terminal);
     input_container.append(&prompt_container);
 
-    let status_label = build_status_label(status_path);
-    input_container.append(&status_label);
+    let status_widgets = build_status_widgets(status_path);
+    input_container.append(&status_widgets.status);
+    input_container.append(&status_widgets.notice);
 
     let entry = Entry::new();
     entry.add_css_class("obsidian-entry");
@@ -68,7 +70,8 @@ pub(super) fn append_input_row(
     let history = Rc::new(InputHistory::default());
     let sw = SearchWidgets {
         prompt: prompt_container,
-        status: status_label,
+        status: status_widgets.status,
+        notice: status_widgets.notice,
         prev_btn: prev_button,
         next_btn: next_button,
     };
@@ -234,6 +237,7 @@ fn set_search_mode(
         entry.add_css_class("search-active");
         sw.prompt.set_visible(false);
         sw.status.set_visible(false);
+        sw.notice.set_visible(false);
         sw.prev_btn.set_visible(true);
         sw.next_btn.set_visible(true);
         apply_search(terminal, entry.text().as_str());
