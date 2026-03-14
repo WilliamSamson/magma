@@ -1,4 +1,5 @@
 /target
+/dist
 
 # Runtime output
 obsidian-export.jsonl

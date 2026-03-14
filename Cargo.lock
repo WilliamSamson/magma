@@ -2257,7 +2257,7 @@ dependencies = [
 
 [[package]]
 name = "obsidian"
-version = "0.1.0"
+version = "0.1.0-beta.1"
 dependencies = [
  "clap",
  "crossterm",
