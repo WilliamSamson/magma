@@ -60,7 +60,7 @@ fn bundled_shell_candidates() -> Vec<PathBuf> {
     candidates
 }
 
-fn resolve_executable(input: &str) -> Option<PathBuf> {
+pub(super) fn resolve_executable(input: &str) -> Option<PathBuf> {
     if input.trim().is_empty() {
         return None;
     }

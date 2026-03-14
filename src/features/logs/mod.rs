@@ -12,6 +12,7 @@ pub(crate) mod viewer;
 pub(crate) mod watcher;
 
 pub(crate) use cli::parse_args;
+pub(crate) use export::write_filtered;
 pub(crate) use file_ops::remove_line_at;
 pub(crate) use log_entry::LogEntry;
 pub(crate) use parser::load_source;

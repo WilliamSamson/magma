@@ -1,4 +1,5 @@
 mod history;
+mod inspector;
 mod prompt;
 mod status;
 
@@ -15,6 +16,7 @@ use self::{
     prompt::build_prompt_box,
     status::build_status_widgets,
 };
+use crate::linux_terminal::settings::Settings;
 
 /// Widgets that toggle visibility between command and search mode.
 #[derive(Clone)]
@@ -30,6 +32,7 @@ pub(super) fn append_input_row(
     container: &GtkBox,
     terminal: &Terminal,
     status_path: &Path,
+    settings: &Rc<std::cell::RefCell<Settings>>,
 ) -> Entry {
     let separator = Separator::new(Orientation::Horizontal);
     separator.add_css_class("obsidian-separator");
@@ -41,7 +44,8 @@ pub(super) fn append_input_row(
     let prompt_container = build_prompt_box(terminal);
     input_container.append(&prompt_container);
 
-    let status_widgets = build_status_widgets(status_path);
+    let notifications = Rc::new(Cell::new(settings.borrow().notifications));
+    let status_widgets = build_status_widgets(status_path, notifications.clone());
     input_container.append(&status_widgets.status);
     input_container.append(&status_widgets.notice);
 
@@ -57,6 +61,9 @@ pub(super) fn append_input_row(
     next_button.set_visible(false);
     input_container.append(&prev_button);
     input_container.append(&next_button);
+
+    let inspector_button = inspector::build_inspector_button(terminal, settings.clone());
+    input_container.append(&inspector_button);
 
     let search_button = Button::builder()
         .icon_name("system-search-symbolic")

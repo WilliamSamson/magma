@@ -8,7 +8,7 @@ use std::{
 use gtk::{gio, glib};
 use vte4::{prelude::*, PtyFlags, Terminal};
 
-use super::runtime;
+use super::{persist::SessionSnapshot, runtime};
 
 pub(super) struct ShellRuntime {
     status_path: PathBuf,
@@ -20,17 +20,26 @@ impl ShellRuntime {
     }
 }
 
-pub(super) fn spawn_shell(terminal: &Terminal, working_directory: Option<&str>, shell_override: &str) -> ShellRuntime {
+pub(super) fn spawn_shell(
+    terminal: &Terminal,
+    session: &SessionSnapshot,
+    shell_override: &str,
+) -> ShellRuntime {
     let shell = runtime::resolve_shell(shell_override);
-    let status_path = status_path();
-    let args = shell_args(&shell);
-    let env = shell_env(&status_path);
+    let status_path = session
+        .status_path
+        .as_deref()
+        .map(PathBuf::from)
+        .unwrap_or_else(status_path);
+    ensure_status_parent(&status_path);
 
     let home = std::env::var("HOME").ok();
-    let cwd = working_directory.or(home.as_deref());
+    let cwd = session.cwd.as_deref().or(home.as_deref());
 
-    let args_refs: Vec<&str> = args.iter().map(String::as_str).collect();
-    let env_refs: Vec<&str> = env.iter().map(String::as_str).collect();
+    let launch = build_launch(&shell, session, &status_path, cwd);
+
+    let args_refs: Vec<&str> = launch.args.iter().map(String::as_str).collect();
+    let env_refs: Vec<&str> = launch.env.iter().map(String::as_str).collect();
 
     terminal.spawn_async(
         PtyFlags::DEFAULT,
@@ -51,6 +60,36 @@ pub(super) fn spawn_shell(terminal: &Terminal, working_directory: Option<&str>, 
     ShellRuntime { status_path }
 }
 
+struct ShellLaunch {
+    args: Vec<String>,
+    env: Vec<String>,
+}
+
+fn build_launch(
+    shell: &str,
+    session: &SessionSnapshot,
+    status_path: &Path,
+    cwd: Option<&str>,
+) -> ShellLaunch {
+    let env = shell_env(status_path);
+
+    if let Some(tmux) = runtime::resolve_executable("tmux") {
+        if let (Some(session_id), Some(socket_path)) =
+            (session.session_id.as_deref(), session.socket_path.as_deref())
+        {
+            return ShellLaunch {
+                args: tmux_args(&tmux, shell, status_path, session_id, socket_path, cwd),
+                env,
+            };
+        }
+    }
+
+    ShellLaunch {
+        args: shell_args(shell),
+        env,
+    }
+}
+
 fn shell_env(status_path: &Path) -> Vec<String> {
     let mut env = std::env::vars_os()
         .map(|(key, value)| format!("{}={}", key.to_string_lossy(), value.to_string_lossy()))
@@ -65,6 +104,45 @@ fn shell_env(status_path: &Path) -> Vec<String> {
         &status_path.to_string_lossy(),
     );
     env
+}
+
+fn tmux_args(
+    tmux: &Path,
+    shell: &str,
+    status_path: &Path,
+    session_id: &str,
+    socket_path: &str,
+    cwd: Option<&str>,
+) -> Vec<String> {
+    let mut args = vec![
+        tmux.display().to_string(),
+        "-S".to_string(),
+        socket_path.to_string(),
+        "new-session".to_string(),
+        "-A".to_string(),
+        "-D".to_string(),
+        "-s".to_string(),
+        session_id.to_string(),
+    ];
+
+    if let Some(cwd) = cwd {
+        args.push("-c".to_string());
+        args.push(cwd.to_string());
+    }
+
+    args.push(tmux_shell_command(shell, status_path));
+    args
+}
+
+fn tmux_shell_command(shell: &str, status_path: &Path) -> String {
+    let mut command = vec!["env".to_string()];
+    for item in shell_env_items(status_path) {
+        command.push(shell_quote(&format!("{}={}", item.0, item.1)));
+    }
+    for arg in shell_args(shell) {
+        command.push(shell_quote(&arg));
+    }
+    command.join(" ")
 }
 
 fn ensure_utf8_locale(env: &mut Vec<String>) {
@@ -109,6 +187,38 @@ fn set_env(env: &mut Vec<String>, key: &str, value: &str) {
     }
 
     env.push(format!("{key}={value}"));
+}
+
+fn shell_env_items(status_path: &Path) -> Vec<(String, String)> {
+    let mut env = vec![
+        ("TERM".to_string(), "xterm-256color".to_string()),
+        ("COLORTERM".to_string(), "truecolor".to_string()),
+        ("TERM_PROGRAM".to_string(), "obsidian".to_string()),
+        (
+            "OBSIDIAN_STATUS_FILE".to_string(),
+            status_path.to_string_lossy().to_string(),
+        ),
+    ];
+    ensure_utf8_locale_items(&mut env);
+    env
+}
+
+fn ensure_utf8_locale_items(env: &mut Vec<(String, String)>) {
+    let preferred = current_utf8_locale().unwrap_or_else(|| "C.UTF-8".to_string());
+    for key in ["LANG", "LC_CTYPE", "LC_ALL"] {
+        let index = env.iter().position(|(existing, _)| existing == key);
+        if let Some(index) = index {
+            if !is_utf8_locale(&env[index].1) {
+                env[index].1 = preferred.clone();
+            }
+            continue;
+        }
+
+        match std::env::var(key) {
+            Ok(value) if is_utf8_locale(&value) => env.push((key.to_string(), value)),
+            _ => env.push((key.to_string(), preferred.clone())),
+        }
+    }
 }
 
 fn shell_args(shell: &str) -> Vec<String> {
@@ -191,7 +301,7 @@ clear
 }
 
 fn rc_path() -> PathBuf {
-    std::env::temp_dir().join("obsidian_bashrc")
+    std::env::temp_dir().join(format!("obsidian_bashrc_{}", std::process::id()))
 }
 
 fn status_path() -> PathBuf {
@@ -202,6 +312,24 @@ fn status_path() -> PathBuf {
     ));
     let _ = std::fs::write(&path, "0\t0\t\n");
     path
+}
+
+fn ensure_status_parent(status_path: &Path) {
+    if let Some(parent) = status_path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if !status_path.exists() {
+        let _ = std::fs::write(status_path, "0\t0\t\n");
+    }
+}
+
+fn shell_quote(value: &str) -> String {
+    if value.is_empty() {
+        return "''".to_string();
+    }
+
+    let escaped = value.replace('\'', "'\"'\"'");
+    format!("'{escaped}'")
 }
 
 fn timestamp_nanos() -> u128 {

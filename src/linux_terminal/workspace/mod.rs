@@ -10,7 +10,7 @@ use gtk::{
 };
 
 use super::{
-    persist::{self, TabSnapshot, WorkspaceSnapshot},
+    persist::{self, PaneSnapshot, TabSnapshot, WorkspaceSnapshot},
     profile::{next_profile, ProfileId},
     settings::Settings,
     tab::TabView,
@@ -84,6 +84,13 @@ impl WorkspaceView {
         for tab in self.tabs.borrow().iter() {
             tab.apply_settings(settings);
         }
+    }
+
+    pub(super) fn current_cwd(&self) -> Option<String> {
+        self.tabs
+            .borrow()
+            .get(current_index(&self.notebook))
+            .and_then(TabView::current_cwd)
     }
 
     pub(super) fn save(&self) {
@@ -238,10 +245,29 @@ impl WorkspaceView {
                     gtk::glib::Propagation::Stop
                 }
                 // Ctrl+W: Close current tab
-                gdk::Key::w if !shift => {
+                gdk::Key::w if alt && !shift => {
+                    let handled = tabs
+                        .borrow()
+                        .get(current_index(&notebook))
+                        .is_some_and(TabView::close_active_session);
+                    if handled {
+                        gtk::glib::Propagation::Stop
+                    } else {
+                        gtk::glib::Propagation::Proceed
+                    }
+                }
+                // Ctrl+W: Close current tab
+                gdk::Key::w if !shift && !alt => {
                     let _ = ops::close_tab_at(&tabs, &notebook, current_index(&notebook));
                     tab_strip::rebuild_tab_strip(&tab_container, &notebook, &tabs, &rename_state);
                     quick_switcher.refresh();
+                    gtk::glib::Propagation::Stop
+                }
+                // Ctrl+Alt+N: New multiplexer session in active pane
+                gdk::Key::n if alt && !shift => {
+                    if let Some(tab) = tabs.borrow().get(current_index(&notebook)) {
+                        tab.new_mux_session();
+                    }
                     gtk::glib::Propagation::Stop
                 }
                 // Ctrl+Tab: Next tab
@@ -325,9 +351,46 @@ impl WorkspaceView {
                         gtk::glib::Propagation::Proceed
                     }
                 }
+                // Ctrl+Alt+PageDown: Next multiplexer session
+                gdk::Key::Page_Down if alt => {
+                    let handled = tabs
+                        .borrow()
+                        .get(current_index(&notebook))
+                        .is_some_and(TabView::focus_next_session);
+                    if handled {
+                        gtk::glib::Propagation::Stop
+                    } else {
+                        gtk::glib::Propagation::Proceed
+                    }
+                }
+                // Ctrl+Alt+PageUp: Previous multiplexer session
+                gdk::Key::Page_Up if alt => {
+                    let handled = tabs
+                        .borrow()
+                        .get(current_index(&notebook))
+                        .is_some_and(TabView::focus_previous_session);
+                    if handled {
+                        gtk::glib::Propagation::Stop
+                    } else {
+                        gtk::glib::Propagation::Proceed
+                    }
+                }
+                // Ctrl+Alt+1-9: Jump to multiplexer session by number in the active pane
+                _ if alt && key.to_unicode().is_some_and(|c| ('1'..='9').contains(&c)) => {
+                    let target = (key.to_unicode().unwrap_or('1') as usize) - ('1' as usize);
+                    let handled = tabs
+                        .borrow()
+                        .get(current_index(&notebook))
+                        .is_some_and(|tab| tab.focus_session(target));
+                    if handled {
+                        gtk::glib::Propagation::Stop
+                    } else {
+                        gtk::glib::Propagation::Proceed
+                    }
+                }
                 // Ctrl+1-9: Jump to tab by number
-                _ if key.to_unicode().is_some_and(|c| ('1'..='9').contains(&c)) => {
-                    let target = (key.to_unicode().unwrap() as usize) - ('1' as usize);
+                _ if !alt && key.to_unicode().is_some_and(|c| ('1'..='9').contains(&c)) => {
+                    let target = (key.to_unicode().unwrap_or('1') as usize) - ('1' as usize);
                     let count = notebook.n_pages() as usize;
                     if target < count {
                         notebook.set_current_page(Some(target as u32));
@@ -369,8 +432,8 @@ fn create_new_tab(
     let snapshot = TabSnapshot {
         title: format!("tab {next_index}"),
         profile: ProfileId::Default,
-        left_cwd: None,
-        right_cwd: None,
+        left_pane: Some(PaneSnapshot::default()),
+        right_pane: None,
         split_position: None,
         active_pane: persist::PaneFocus::Left,
     };
@@ -451,8 +514,8 @@ fn default_snapshot() -> WorkspaceSnapshot {
         tabs: vec![TabSnapshot {
             title: "tab 1".to_string(),
             profile: ProfileId::Default,
-            left_cwd: None,
-            right_cwd: None,
+            left_pane: Some(PaneSnapshot::default()),
+            right_pane: None,
             split_position: None,
             active_pane: persist::PaneFocus::Left,
         }],

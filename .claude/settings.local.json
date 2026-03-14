@@ -20,7 +20,20 @@
       "Bash(git commit:*)",
       "Bash(fc-list :spacing=100 family | sort -u | head -40)",
       "Bash(cargo doc:*)",
-      "Bash(cargo clippy:*)"
+      "Bash(cargo clippy:*)",
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(wc:*)",
+      "Bash(chmod:*)",
+      "Bash(bash -n scripts/install.sh && echo \"install.sh: OK\" && bash -n scripts/uninstall.sh && echo \"uninstall.sh: OK\" && bash -n scripts/build-release.sh && echo \"build-release.sh: OK\")",
+      "Bash(dpkg -l libgtk-4-1 libvte-2.91-gtk4-1 libwebkitgtk-6.0-4)",
+      "Bash(apt-cache search:*)",
+      "Bash(dpkg -l libvte-2.91-gtk4-0)",
+      "Bash(dpkg -l obsidian)",
+      "Read(//home/kayode-olalere/.local/share/applications/**)",
+      "Read(//usr/share/applications/**)",
+      "Read(//home/kayode-olalere/.local/bin/**)",
+      "Bash(curl:*)"
     ]
   }
 }

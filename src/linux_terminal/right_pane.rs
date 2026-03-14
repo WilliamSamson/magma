@@ -6,7 +6,7 @@ use gtk::{
 };
 use webkit6::WebContext;
 
-use super::{logr, settings::Settings, web};
+use super::{logr, settings::Settings, view, web};
 
 const PANE_WIDTH: i32 = 420;
 
@@ -15,20 +15,39 @@ pub(super) enum SidePaneKind {
     None,
     Logr,
     Web,
+    View,
 }
 
+#[derive(Clone)]
 pub(super) struct SidePanes {
-    pub(super) handle: GtkBox,
-    pub(super) logr_revealer: Revealer,
-    pub(super) web_revealer: Revealer,
+    buttons: PaneButtons,
+    revealers: PaneRevealers,
+    active_pane: Rc<Cell<SidePaneKind>>,
+    web_host: web::WebPaneHost,
+    view_host: view::ViewPaneHost,
+}
+
+#[derive(Clone)]
+struct PaneButtons {
+    handle: GtkBox,
+    logr: Button,
+    web: Button,
+    view: Button,
+}
+
+#[derive(Clone)]
+struct PaneRevealers {
+    logr: Revealer,
+    web: Revealer,
+    view: Revealer,
 }
 
 pub(super) fn build_side_panes(
     settings: Rc<RefCell<Settings>>,
-    open_on_start: bool,
+    cwd_provider: view::CwdProvider,
 ) -> SidePanes {
     // Rc<Cell<SidePaneKind>> shares the currently open side pane across the segmented-handle callbacks on the GTK thread.
-    let active_pane = Rc::new(Cell::new(if open_on_start {
+    let active_pane = Rc::new(Cell::new(if settings.borrow().logr_panel_open {
         SidePaneKind::Logr
     } else {
         SidePaneKind::None
@@ -41,82 +60,107 @@ pub(super) fn build_side_panes(
 
     let logr_button = handle_button("view-list-symbolic", "Open logr");
     let web_button = handle_button("applications-internet-symbolic", "Open web");
+    let view_button = handle_button("image-x-generic-symbolic", "Open viewer");
     handle.append(&logr_button);
     handle.append(&web_button);
+    handle.append(&view_button);
 
     let logr_revealer = build_revealer(&wrap_pane(&logr::build_logr_pane()));
-    let web_context = WebContext::new();
-    let web_host = web::WebPaneHost::new(settings, web_context);
+    let web_host = web::WebPaneHost::new(settings);
     let web_revealer = build_revealer(&wrap_pane(web_host.widget()));
+    let view_host = view::ViewPaneHost::new(cwd_provider, WebContext::new());
+    let view_revealer = build_revealer(&wrap_pane(view_host.widget()));
 
-    sync_side_panes(
-        active_pane.get(),
-        &logr_revealer,
-        &web_revealer,
-        &handle,
-        &logr_button,
-        &web_button,
-        &web_host,
-    );
+    let buttons = PaneButtons {
+        handle: handle.clone(),
+        logr: logr_button.clone(),
+        web: web_button.clone(),
+        view: view_button.clone(),
+    };
+    let revealers = PaneRevealers {
+        logr: logr_revealer.clone(),
+        web: web_revealer.clone(),
+        view: view_revealer.clone(),
+    };
+
+    let side_panes = SidePanes {
+        buttons,
+        revealers,
+        active_pane,
+        web_host,
+        view_host,
+    };
 
     {
-        let active_pane = active_pane.clone();
-        let logr_revealer = logr_revealer.clone();
-        let web_revealer = web_revealer.clone();
-        let handle = handle.clone();
-        let logr_button_ref = logr_button.clone();
-        let web_button_ref = web_button.clone();
-        let web_host_ref = web_host.clone();
-        logr_button.connect_clicked(move |_| {
-            let next = if active_pane.get() == SidePaneKind::Logr {
-                SidePaneKind::None
-            } else {
-                SidePaneKind::Logr
-            };
-            active_pane.set(next);
-            sync_side_panes(
-                next,
-                &logr_revealer,
-                &web_revealer,
-                &handle,
-                &logr_button_ref,
-                &web_button_ref,
-                &web_host_ref,
-            );
-        });
+        let side_panes = side_panes.clone();
+        logr_button.connect_clicked(move |_| side_panes.toggle(SidePaneKind::Logr));
     }
 
     {
-        let active_pane = active_pane.clone();
-        let logr_revealer = logr_revealer.clone();
-        let web_revealer = web_revealer.clone();
-        let handle = handle.clone();
-        let logr_button_ref = logr_button.clone();
-        let web_button_ref = web_button.clone();
-        let web_host_ref = web_host.clone();
-        web_button.connect_clicked(move |_| {
-            let next = if active_pane.get() == SidePaneKind::Web {
-                SidePaneKind::None
-            } else {
-                SidePaneKind::Web
-            };
-            active_pane.set(next);
-            sync_side_panes(
-                next,
-                &logr_revealer,
-                &web_revealer,
-                &handle,
-                &logr_button_ref,
-                &web_button_ref,
-                &web_host_ref,
-            );
-        });
+        let side_panes = side_panes.clone();
+        web_button.connect_clicked(move |_| side_panes.toggle(SidePaneKind::Web));
     }
 
-    SidePanes {
-        handle,
-        logr_revealer,
-        web_revealer,
+    {
+        let side_panes = side_panes.clone();
+        view_button.connect_clicked(move |_| side_panes.toggle(SidePaneKind::View));
+    }
+
+    side_panes.sync();
+    side_panes
+}
+
+impl SidePanes {
+    pub(super) fn handle(&self) -> &GtkBox {
+        &self.buttons.handle
+    }
+
+    pub(super) fn logr_revealer(&self) -> &Revealer {
+        &self.revealers.logr
+    }
+
+    pub(super) fn web_revealer(&self) -> &Revealer {
+        &self.revealers.web
+    }
+
+    pub(super) fn view_revealer(&self) -> &Revealer {
+        &self.revealers.view
+    }
+
+    pub(super) fn apply_settings(&self, settings: &Settings) {
+        let next = match (settings.logr_panel_open, self.active_pane.get()) {
+            (true, SidePaneKind::None) => SidePaneKind::Logr,
+            (false, SidePaneKind::Logr) => SidePaneKind::None,
+            _ => self.active_pane.get(),
+        };
+        if next != self.active_pane.get() {
+            self.active_pane.set(next);
+            self.sync();
+        }
+    }
+
+    pub(super) fn clear_web_data(&self) {
+        self.web_host.clear_persistent_data();
+    }
+
+    fn toggle(&self, pane: SidePaneKind) {
+        let next = if self.active_pane.get() == pane {
+            SidePaneKind::None
+        } else {
+            pane
+        };
+        self.active_pane.set(next);
+        self.sync();
+    }
+
+    fn sync(&self) {
+        sync_side_panes(
+            self.active_pane.get(),
+            &self.revealers,
+            &self.buttons,
+            &self.web_host,
+            &self.view_host,
+        );
     }
 }
 
@@ -170,32 +214,37 @@ fn build_revealer(child: &impl IsA<gtk::Widget>) -> Revealer {
 
 fn sync_side_panes(
     active: SidePaneKind,
-    logr_revealer: &Revealer,
-    web_revealer: &Revealer,
-    handle: &GtkBox,
-    logr_button: &Button,
-    web_button: &Button,
+    revealers: &PaneRevealers,
+    buttons: &PaneButtons,
     web_host: &web::WebPaneHost,
+    view_host: &view::ViewPaneHost,
 ) {
     let show_logr = active == SidePaneKind::Logr;
     let show_web = active == SidePaneKind::Web;
+    let show_view = active == SidePaneKind::View;
 
     if show_web {
         web_host.ensure_loaded();
     }
+    if show_view {
+        view_host.ensure_loaded();
+    }
 
-    logr_revealer.set_visible(show_logr);
-    web_revealer.set_visible(show_web);
-    logr_revealer.set_reveal_child(show_logr);
-    web_revealer.set_reveal_child(show_web);
+    revealers.logr.set_visible(show_logr);
+    revealers.web.set_visible(show_web);
+    revealers.view.set_visible(show_view);
+    revealers.logr.set_reveal_child(show_logr);
+    revealers.web.set_reveal_child(show_web);
+    revealers.view.set_reveal_child(show_view);
 
-    set_active_button(logr_button, show_logr);
-    set_active_button(web_button, show_web);
+    set_active_button(&buttons.logr, show_logr);
+    set_active_button(&buttons.web, show_web);
+    set_active_button(&buttons.view, show_view);
 
     if active == SidePaneKind::None {
-        handle.add_css_class("collapsed");
+        buttons.handle.add_css_class("collapsed");
     } else {
-        handle.remove_css_class("collapsed");
+        buttons.handle.remove_css_class("collapsed");
     }
 }
 

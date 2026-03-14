@@ -6,9 +6,9 @@ use std::{
 };
 
 use super::{
-    persist::{PaneFocus, TabSnapshot},
+    mux::MuxPaneView,
+    persist::{PaneFocus, PaneSnapshot, TabSnapshot},
     profile::{profile, ProfileId},
-    session::SessionView,
     settings::Settings,
 };
 
@@ -16,8 +16,8 @@ pub(super) struct TabView {
     root: GtkBox,
     title_label: Label,
     base_title: String,
-    left: SessionView,
-    right: Option<SessionView>,
+    left: MuxPaneView,
+    right: Option<MuxPaneView>,
     split_view: Option<Paned>,
     active_pane: Rc<Cell<PaneFocus>>,
     profile_id: ProfileId,
@@ -30,25 +30,34 @@ impl TabView {
         root.set_hexpand(true);
         root.set_vexpand(true);
 
-        let settings_ref = settings.borrow();
-        let left = SessionView::new(snapshot.profile, snapshot.left_cwd.as_deref(), &settings_ref);
-        root.append(left.root());
-        // Rc<Cell<PaneFocus>> tracks the last active pane across GTK focus callbacks without borrow overhead.
+        // Rc<Cell<PaneFocus>> tracks the active split side across session-focus changes without borrow overhead.
         let active_pane = Rc::new(Cell::new(snapshot.active_pane));
-        bind_focus_tracking(&left, &active_pane, PaneFocus::Left);
+        let left_snapshot = snapshot.left_pane.unwrap_or_default().normalized();
+        let left = MuxPaneView::new(
+            left_snapshot,
+            snapshot.profile,
+            settings.clone(),
+            active_pane.clone(),
+            PaneFocus::Left,
+        );
+        root.append(left.root());
 
         let mut right = None;
         let mut split_view = None;
-        if let Some(cwd) = snapshot.right_cwd.as_deref() {
-            let right_session = SessionView::new(snapshot.profile, Some(cwd), &settings_ref);
-            bind_focus_tracking(&right_session, &active_pane, PaneFocus::Right);
-            let paned = build_split_view(&left, &right_session, snapshot.split_position);
+        if let Some(right_snapshot) = snapshot.right_pane.map(PaneSnapshot::normalized) {
+            let right_pane = MuxPaneView::new(
+                right_snapshot,
+                snapshot.profile,
+                settings.clone(),
+                active_pane.clone(),
+                PaneFocus::Right,
+            );
+            let paned = build_split_view(left.root(), right_pane.root(), snapshot.split_position);
             root.remove(left.root());
             root.append(&paned);
             split_view = Some(paned);
-            right = Some(right_session);
+            right = Some(right_pane);
         }
-        drop(settings_ref);
 
         let base_title = stored_base_title(&snapshot.title, snapshot.profile);
         let title_label = Label::new(Some(&display_title(&base_title, snapshot.profile)));
@@ -87,8 +96,8 @@ impl TabView {
         TabSnapshot {
             title: self.base_title.clone(),
             profile: self.profile_id,
-            left_cwd: self.left.current_cwd(),
-            right_cwd: self.right.as_ref().and_then(SessionView::current_cwd),
+            left_pane: Some(self.left.to_snapshot()),
+            right_pane: self.right.as_ref().map(MuxPaneView::to_snapshot),
             split_position: self.split_view.as_ref().map(Paned::position),
             active_pane: self.active_pane.get(),
         }
@@ -125,11 +134,14 @@ impl TabView {
             return;
         }
 
-        let cwd = self.left.current_cwd();
-        let settings_ref = self.settings.borrow();
-        let right = SessionView::new(self.profile_id, cwd.as_deref(), &settings_ref);
-        bind_focus_tracking(&right, &self.active_pane, PaneFocus::Right);
-        let split_view = build_split_view(&self.left, &right, None);
+        let right = MuxPaneView::new(
+            PaneSnapshot::from_cwd(self.left.current_cwd()),
+            self.profile_id,
+            self.settings.clone(),
+            self.active_pane.clone(),
+            PaneFocus::Right,
+        );
+        let split_view = build_split_view(self.left.root(), right.root(), None);
         self.root.remove(self.left.root());
         self.root.append(&split_view);
         self.split_view = Some(split_view);
@@ -158,19 +170,54 @@ impl TabView {
         true
     }
 
+    pub(super) fn focus_next_session(&self) -> bool {
+        self.active_mux_pane().focus_next_session()
+    }
+
+    pub(super) fn focus_previous_session(&self) -> bool {
+        self.active_mux_pane().focus_previous_session()
+    }
+
+    pub(super) fn new_mux_session(&self) {
+        self.active_mux_pane().new_session();
+    }
+
+    pub(super) fn close_active_session(&self) -> bool {
+        self.active_mux_pane().close_active_session()
+    }
+
+    pub(super) fn focus_session(&self, index: usize) -> bool {
+        self.active_mux_pane().focus_session(index)
+    }
+
     pub(super) fn restore_focus(&self) {
         if self.right.is_some() && self.active_pane.get() == PaneFocus::Right {
-            let _ = self.focus_right_pane();
+            if let Some(right) = &self.right {
+                right.focus_terminal();
+            }
             return;
         }
         self.left.focus_terminal();
     }
 
     pub(super) fn apply_settings(&self, settings: &Settings) {
-        self.left.apply_settings(settings, self.profile_id);
+        self.left.apply_settings(settings);
         if let Some(right) = &self.right {
-            right.apply_settings(settings, self.profile_id);
+            right.apply_settings(settings);
         }
+    }
+
+    pub(super) fn current_cwd(&self) -> Option<String> {
+        self.active_mux_pane().current_cwd()
+    }
+
+    fn active_mux_pane(&self) -> &MuxPaneView {
+        if self.active_pane.get() == PaneFocus::Right {
+            if let Some(right) = &self.right {
+                return right;
+            }
+        }
+        &self.left
     }
 
     fn sync_title_label(&self) {
@@ -199,7 +246,7 @@ fn stored_base_title(title: &str, profile_id: ProfileId) -> String {
         .to_string()
 }
 
-fn build_split_view(left: &SessionView, right: &SessionView, split_position: Option<i32>) -> Paned {
+fn build_split_view(left: &GtkBox, right: &GtkBox, split_position: Option<i32>) -> Paned {
     let split_view = Paned::new(Orientation::Horizontal);
     split_view.add_css_class("obsidian-split-pane");
     split_view.set_hexpand(true);
@@ -209,8 +256,8 @@ fn build_split_view(left: &SessionView, right: &SessionView, split_position: Opt
     split_view.set_shrink_end_child(false);
     split_view.set_resize_start_child(true);
     split_view.set_resize_end_child(true);
-    split_view.set_start_child(Some(left.root()));
-    split_view.set_end_child(Some(right.root()));
+    split_view.set_start_child(Some(left));
+    split_view.set_end_child(Some(right));
 
     let split_view_ref = split_view.clone();
     glib::idle_add_local_once(move || {
@@ -226,11 +273,4 @@ fn build_split_view(left: &SessionView, right: &SessionView, split_position: Opt
     });
 
     split_view
-}
-
-fn bind_focus_tracking(session: &SessionView, active_pane: &Rc<Cell<PaneFocus>>, pane: PaneFocus) {
-    let active_pane_ref = active_pane.clone();
-    session.connect_focus_enter(move || {
-        active_pane_ref.set(pane);
-    });
 }

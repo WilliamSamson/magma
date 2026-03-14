@@ -19,7 +19,7 @@ struct StatusEvent {
     command: String,
 }
 
-pub(super) fn build_status_widgets(status_path: &Path) -> StatusWidgets {
+pub(super) fn build_status_widgets(status_path: &Path, notifications: Rc<Cell<bool>>) -> StatusWidgets {
     let status = Label::new(None);
     status.add_css_class("obsidian-status-label");
     status.add_css_class("obsidian-status-ok");
@@ -30,7 +30,7 @@ pub(super) fn build_status_widgets(status_path: &Path) -> StatusWidgets {
 
     let initial = read_status_event(status_path);
     update_status_label(&status, initial.status_code);
-    watch_status_file(&status, &notice, status_path, initial);
+    watch_status_file(&status, &notice, status_path, initial, notifications);
 
     StatusWidgets { status, notice }
 }
@@ -40,6 +40,7 @@ fn watch_status_file(
     notice: &Label,
     status_path: &Path,
     initial: StatusEvent,
+    notifications: Rc<Cell<bool>>,
 ) {
     let status = status.clone();
     let notice = notice.clone();
@@ -57,7 +58,9 @@ fn watch_status_file(
         update_status_label(&status, next_event.status_code);
         if next_event.sequence != last_event_ref.sequence && !next_event.command.trim().is_empty() {
             show_notice(&notice, &notice_version, &next_event);
-            show_desktop_notice(&next_event);
+            if notifications.get() {
+                show_desktop_notice(&next_event);
+            }
         }
 
         *last_event_ref = next_event;

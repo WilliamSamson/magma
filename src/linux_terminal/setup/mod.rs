@@ -207,6 +207,7 @@ fn sync_step_ui(
 ) {
     let current = step_index.get();
     page_stack.set_visible_child_name(step_name(current));
+    back_button.set_visible(current > 0);
     back_button.set_sensitive(current > 0);
     next_button_label.set_text(if current + 1 >= STEP_COUNT {
         "enter workspace"

@@ -1,4 +1,7 @@
-use gtk::{gdk, pango::FontDescription};
+use gtk::{
+    gdk,
+    pango::FontDescription,
+};
 use vte4::{prelude::*, CursorBlinkMode, CursorShape, Terminal};
 
 use super::{
@@ -16,6 +19,8 @@ pub(super) fn build_terminal(profile_id: ProfileId, settings: &Settings) -> Term
         .input_enabled(true)
         .scrollback_lines(settings.scrollback_lines)
         .allow_hyperlink(true)
+        .enable_shaping(settings.ligatures)
+        .enable_sixel(settings.image_rendering)
         .build();
     terminal.add_css_class("obsidian-terminal");
 
@@ -33,8 +38,7 @@ pub(super) fn build_terminal(profile_id: ProfileId, settings: &Settings) -> Term
     };
     terminal.set_cursor_shape(shape);
 
-    let font_desc = format!("{} {}", settings.font_family, settings.font_size);
-    terminal.set_font(Some(&FontDescription::from_string(&font_desc)));
+    terminal.set_font(Some(&terminal_font_description(settings)));
     terminal.set_font_scale(profile(profile_id).font_scale);
 
     let palette = [
@@ -58,4 +62,11 @@ pub(super) fn build_terminal(profile_id: ProfileId, settings: &Settings) -> Term
 
 fn rgba(red: f32, green: f32, blue: f32) -> gdk::RGBA {
     gdk::RGBA::new(red, green, blue, 1.0)
+}
+
+pub(super) fn terminal_font_description(settings: &Settings) -> FontDescription {
+    FontDescription::from_string(&format!(
+        "{} {}",
+        settings.font_family, settings.font_size
+    ))
 }

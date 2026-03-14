@@ -6,6 +6,7 @@ use serde_json::{Map, Value};
 
 use super::log_level::LogLevel;
 
+#[derive(Clone)]
 pub(crate) struct LogEntry {
     line_number: usize,
     timestamp: Option<String>,
@@ -50,6 +51,18 @@ impl LogEntry {
 
     pub(crate) fn level_label(&self) -> &'static str {
         self.level.label()
+    }
+
+    pub(crate) fn timestamp(&self) -> Option<&str> {
+        self.timestamp.as_deref()
+    }
+
+    pub(crate) fn message(&self) -> &str {
+        &self.message
+    }
+
+    pub(crate) fn fields_summary(&self) -> &str {
+        &self.fields
     }
 
     pub(crate) fn raw_line(&self) -> &str {

@@ -11,6 +11,17 @@ pub(crate) enum LogLevel {
 }
 
 impl LogLevel {
+    pub(crate) fn index(&self) -> usize {
+        match self {
+            Self::Trace => 0,
+            Self::Debug => 1,
+            Self::Info => 2,
+            Self::Warn => 3,
+            Self::Error => 4,
+            Self::Unknown => 5,
+        }
+    }
+
     pub(crate) fn from_text(raw_level: &str) -> Self {
         match raw_level.to_ascii_lowercase().as_str() {
             "trace" => Self::Trace,

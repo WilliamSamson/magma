@@ -24,15 +24,23 @@ pub(super) fn load(initial_settings: &Settings) -> (Settings, u32) {
 pub(super) fn save(settings: &Settings, step: u32) {
     let path = checkpoint_path();
     if let Some(parent) = path.parent() {
-        let _ = fs::create_dir_all(parent);
+        if let Err(error) = fs::create_dir_all(parent) {
+            eprintln!("failed to create checkpoint directory: {error}");
+            return;
+        }
     }
 
     let checkpoint = SetupCheckpoint {
         settings: settings.clone(),
         step,
     };
-    if let Ok(json) = serde_json::to_string_pretty(&checkpoint) {
-        let _ = fs::write(path, json);
+    match serde_json::to_string_pretty(&checkpoint) {
+        Ok(json) => {
+            if let Err(error) = fs::write(&path, json) {
+                eprintln!("failed to save setup checkpoint: {error}");
+            }
+        }
+        Err(error) => eprintln!("failed to serialize setup checkpoint: {error}"),
     }
 }
 

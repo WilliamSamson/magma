@@ -2,6 +2,7 @@ mod about;
 mod browser;
 mod page;
 mod sections;
+mod terminal;
 mod widgets;
 
 use std::{
@@ -24,8 +25,11 @@ pub(super) struct Settings {
     pub(super) scrollback_lines: u32,
     pub(super) cursor_style: String,
     pub(super) cursor_blink: bool,
+    pub(super) image_rendering: bool,
+    pub(super) ligatures: bool,
     pub(super) shell: String,
     pub(super) logr_panel_open: bool,
+    pub(super) notifications: bool,
 }
 
 impl Default for Settings {
@@ -39,8 +43,11 @@ impl Default for Settings {
             scrollback_lines: 20_000,
             cursor_style: "ibeam".to_string(),
             cursor_blink: false,
+            image_rendering: true,
+            ligatures: true,
             shell,
             logr_panel_open: true,
+            notifications: true,
         }
     }
 }
@@ -56,10 +63,18 @@ pub(super) fn load_settings() -> Settings {
 pub(super) fn save_settings(settings: &Settings) {
     let path = settings_path();
     if let Some(parent) = path.parent() {
-        let _ = fs::create_dir_all(parent);
+        if let Err(error) = fs::create_dir_all(parent) {
+            eprintln!("failed to create settings directory: {error}");
+            return;
+        }
     }
-    if let Ok(json) = serde_json::to_string_pretty(settings) {
-        let _ = fs::write(path, json);
+    match serde_json::to_string_pretty(settings) {
+        Ok(json) => {
+            if let Err(error) = fs::write(&path, json) {
+                eprintln!("failed to save settings to {}: {error}", path.display());
+            }
+        }
+        Err(error) => eprintln!("failed to serialize settings: {error}"),
     }
 }
 

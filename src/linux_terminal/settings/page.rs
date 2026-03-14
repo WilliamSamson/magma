@@ -5,11 +5,13 @@ use gtk::{
     Box as GtkBox, Button, Label, Orientation, Stack, StackTransitionType,
 };
 
-use super::{about::build_about_page, load_settings, sections::build_main_page, Settings};
+use super::{about::build_about_page, sections::build_main_page, Settings};
 
 pub(in crate::linux_terminal) fn build_settings_page(
+    settings: Rc<RefCell<Settings>>,
     on_back: impl Fn() + 'static,
     on_apply: impl Fn(&Settings) + 'static,
+    on_clear_browser_data: impl Fn() + 'static,
 ) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
     root.set_vexpand(true);
@@ -26,10 +28,9 @@ pub(in crate::linux_terminal) fn build_settings_page(
     let header = build_header(&page_stack, &title, Rc::new(on_back));
     bind_title_sync(&page_stack, &title);
 
-    // Rc<RefCell<Settings>> keeps one mutable settings draft shared by GTK callbacks on the UI thread.
-    let settings = Rc::new(RefCell::new(load_settings()));
     let on_apply: Rc<dyn Fn(&Settings)> = Rc::new(on_apply);
-    let main_page = build_main_page(&page_stack, &settings, on_apply);
+    let on_clear_browser_data: Rc<dyn Fn()> = Rc::new(on_clear_browser_data);
+    let main_page = build_main_page(&page_stack, &settings, on_apply, on_clear_browser_data);
     let about_page = build_about_page();
 
     page_stack.add_named(&main_page, Some("main"));

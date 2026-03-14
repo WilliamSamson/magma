@@ -2,6 +2,7 @@ mod header;
 mod input;
 mod logr;
 mod meta;
+mod mux;
 mod persist;
 mod profile;
 mod right_pane;
@@ -13,6 +14,7 @@ mod setup;
 mod style;
 mod tab;
 mod terminal;
+mod view;
 mod web;
 mod workspace;
 
@@ -37,8 +39,10 @@ const MARGIN_BOTTOM: i32 = 16;
 
 pub(crate) fn run() -> io::Result<()> {
     let initial_size = window_state::load_window_size()?.unwrap_or_default();
-    if let Err(error) = glib::setenv("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", "1", true) {
-        eprintln!("webkit sandbox override failed: {error}");
+    if std::env::var_os("APPDIR").is_some() {
+        if let Err(error) = glib::setenv("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", "1", true) {
+            eprintln!("webkit sandbox override failed: {error}");
+        }
     }
     glib::set_application_name(APP_TITLE);
     glib::set_prgname(Some(APP_ID));
@@ -78,22 +82,24 @@ fn build_window(app: &Application, width: u32, height: u32) {
 
     let (header, settings_button) = header::build_header();
     let workspace = std::rc::Rc::new(workspace::WorkspaceView::new(app_settings.clone()));
-    let container = shell_container(
-        workspace.root(),
-        app_settings.borrow().logr_panel_open,
-        app_settings.clone(),
-    );
+    // Rc<dyn Fn()> is the lightest way to let side panes query the active terminal cwd on the GTK thread without owning workspace internals.
+    let cwd_provider: Rc<dyn Fn() -> Option<String>> = {
+        let workspace_ref = workspace.clone();
+        Rc::new(move || workspace_ref.current_cwd())
+    };
+    let shell = shell_container(workspace.root(), app_settings.clone(), cwd_provider);
 
     // Stack: workspace (main) <-> settings
     let stack = Stack::new();
     stack.set_transition_type(StackTransitionType::Crossfade);
     stack.set_transition_duration(200);
-    stack.add_named(&container, Some("workspace"));
+    stack.add_named(shell.root(), Some("workspace"));
 
     {
         let stack_ref = stack.clone();
         let settings_ref = app_settings.clone();
         let workspace_ref = workspace.clone();
+        let shell_ref = shell.clone();
         let setup_page = setup::build_setup_page(
             &app_settings.borrow(),
             initial_setup_step,
@@ -101,6 +107,7 @@ fn build_window(app: &Application, width: u32, height: u32) {
                 *settings_ref.borrow_mut() = configured_settings.clone();
                 style::install_css(configured_settings.app_font_size);
                 workspace_ref.apply_settings(&configured_settings);
+                shell_ref.apply_settings(&configured_settings);
                 let snapshot = settings_ref.borrow().clone();
                 settings::save_settings(&snapshot);
                 setup::clear_checkpoint();
@@ -110,19 +117,10 @@ fn build_window(app: &Application, width: u32, height: u32) {
         stack.add_named(&setup_page, Some("setup"));
     }
 
-    let stack_ref = stack.clone();
-    let workspace_ref = workspace.clone();
-    let settings_page = settings::build_settings_page(
-        move || {
-            stack_ref.set_visible_child_name("workspace");
-        },
-        move |new_settings| {
-            *app_settings.borrow_mut() = new_settings.clone();
-            style::install_css(new_settings.app_font_size);
-            workspace_ref.apply_settings(new_settings);
-        },
-    );
-    stack.add_named(&settings_page, Some("settings"));
+    let settings_host = GtkBox::new(Orientation::Vertical, 0);
+    settings_host.set_hexpand(true);
+    settings_host.set_vexpand(true);
+    stack.add_named(&settings_host, Some("settings"));
     stack.set_visible_child_name(if needs_setup { "setup" } else { "workspace" });
 
     settings_button.set_visible(!needs_setup);
@@ -136,11 +134,42 @@ fn build_window(app: &Application, width: u32, height: u32) {
     // Settings button toggles to settings view
     {
         let stack_ref = stack.clone();
+        let settings_host = settings_host.clone();
+        let settings_ref = app_settings.clone();
+        let workspace_ref = workspace.clone();
+        let shell_ref = shell.clone();
         settings_button.connect_clicked(move |_| {
             let current = stack_ref.visible_child_name();
             if current.as_deref() == Some("settings") {
                 stack_ref.set_visible_child_name("workspace");
             } else {
+                mount_settings_page(
+                    &settings_host,
+                    settings_ref.clone(),
+                    {
+                        let stack_ref = stack_ref.clone();
+                        move || {
+                            stack_ref.set_visible_child_name("workspace");
+                        }
+                    },
+                    {
+                        let settings_ref = settings_ref.clone();
+                        let workspace_ref = workspace_ref.clone();
+                        let shell_ref = shell_ref.clone();
+                        move |new_settings| {
+                            *settings_ref.borrow_mut() = new_settings.clone();
+                            style::install_css(new_settings.app_font_size);
+                            workspace_ref.apply_settings(new_settings);
+                            shell_ref.apply_settings(new_settings);
+                        }
+                    },
+                    {
+                        let shell_ref = shell_ref.clone();
+                        move || {
+                            shell_ref.clear_web_data();
+                        }
+                    },
+                );
                 stack_ref.set_visible_child_name("settings");
             }
         });
@@ -167,11 +196,31 @@ fn build_window(app: &Application, width: u32, height: u32) {
     window.present();
 }
 
+#[derive(Clone)]
+struct ShellContainer {
+    root: GtkBox,
+    side_panes: right_pane::SidePanes,
+}
+
+impl ShellContainer {
+    fn root(&self) -> &GtkBox {
+        &self.root
+    }
+
+    fn apply_settings(&self, settings: &settings::Settings) {
+        self.side_panes.apply_settings(settings);
+    }
+
+    fn clear_web_data(&self) {
+        self.side_panes.clear_web_data();
+    }
+}
+
 fn shell_container(
     child: &impl IsA<gtk::Widget>,
-    logr_panel_open: bool,
     settings: Rc<RefCell<settings::Settings>>,
-) -> GtkBox {
+    cwd_provider: Rc<dyn Fn() -> Option<String>>,
+) -> ShellContainer {
     let container = GtkBox::new(Orientation::Vertical, 0);
     container.add_css_class("obsidian-shell");
     container.set_margin_start(MARGIN_HORIZONTAL);
@@ -184,13 +233,17 @@ fn shell_container(
     view_row.set_vexpand(true);
     view_row.append(child);
 
-    let side_panes = right_pane::build_side_panes(settings, logr_panel_open);
-    view_row.append(&side_panes.handle);
-    view_row.append(&side_panes.logr_revealer);
-    view_row.append(&side_panes.web_revealer);
+    let side_panes = right_pane::build_side_panes(settings, cwd_provider);
+    view_row.append(side_panes.handle());
+    view_row.append(side_panes.logr_revealer());
+    view_row.append(side_panes.web_revealer());
+    view_row.append(side_panes.view_revealer());
     container.append(&view_row);
 
-    container
+    ShellContainer {
+        root: container,
+        side_panes,
+    }
 }
 
 fn persist_window_size(window: &ApplicationWindow) {
@@ -203,4 +256,19 @@ fn persist_window_size(window: &ApplicationWindow) {
     if let Err(error) = window_state::save_window_size(PhysicalSize::new(width, height)) {
         eprintln!("window size save failed: {error}");
     }
+}
+
+fn mount_settings_page(
+    host: &GtkBox,
+    settings: Rc<RefCell<settings::Settings>>,
+    on_back: impl Fn() + 'static,
+    on_apply: impl Fn(&settings::Settings) + 'static,
+    on_clear_browser_data: impl Fn() + 'static,
+) {
+    while let Some(child) = host.first_child() {
+        host.remove(&child);
+    }
+
+    let page = settings::build_settings_page(settings, on_back, on_apply, on_clear_browser_data);
+    host.append(&page);
 }

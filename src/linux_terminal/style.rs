@@ -1,5 +1,5 @@
 use gtk::{
-    gdk, style_context_add_provider_for_display, CssProvider, STYLE_PROVIDER_PRIORITY_APPLICATION,
+    gdk, style_context_add_provider_for_display, CssProvider, STYLE_PROVIDER_PRIORITY_USER,
 };
 
 use crate::ui::theme;
@@ -26,16 +26,78 @@ pub(super) fn install_css(app_font_size: u32) {
             background: transparent;
         }}
 
-        headerbar.obsidian-header button.titlebutton {{
+        headerbar.obsidian-header windowcontrols button {{
             background: {surface};
             border-radius: 50%;
             box-shadow: none;
+            border: none;
             color: transparent;
             min-height: 14px;
             min-width: 14px;
             padding: 0;
             margin: 0 4px;
             transition: background 140ms ease;
+            -gtk-icon-size: 0px;
+        }}
+
+        headerbar.obsidian-header windowcontrols button image {{
+            opacity: 0;
+            -gtk-icon-size: 8px;
+            transition: opacity 120ms ease;
+        }}
+
+        headerbar.obsidian-header windowcontrols button:hover image {{
+            opacity: 1;
+            color: rgba(0, 0, 0, 0.6);
+        }}
+
+        headerbar.obsidian-header windowcontrols button.close {{
+            background: #FF5F56;
+        }}
+
+        headerbar.obsidian-header windowcontrols button.minimize {{
+            background: #FFBD2E;
+        }}
+
+        headerbar.obsidian-header windowcontrols button.maximize {{
+            background: #27C93F;
+        }}
+
+        headerbar.obsidian-header windowcontrols button.close:hover {{
+            background: #FF3B30;
+        }}
+
+        headerbar.obsidian-header windowcontrols button.minimize:hover {{
+            background: #E5A323;
+        }}
+
+        headerbar.obsidian-header windowcontrols button.maximize:hover {{
+            background: #1CAD30;
+        }}
+
+        headerbar.obsidian-header button.titlebutton {{
+            background: {surface};
+            border-radius: 50%;
+            box-shadow: none;
+            border: none;
+            color: transparent;
+            min-height: 14px;
+            min-width: 14px;
+            padding: 0;
+            margin: 0 4px;
+            transition: background 140ms ease;
+            -gtk-icon-size: 0px;
+        }}
+
+        headerbar.obsidian-header button.titlebutton image {{
+            opacity: 0;
+            -gtk-icon-size: 8px;
+            transition: opacity 120ms ease;
+        }}
+
+        headerbar.obsidian-header button.titlebutton:hover image {{
+            opacity: 1;
+            color: rgba(0, 0, 0, 0.6);
         }}
 
         headerbar.obsidian-header button.titlebutton.close {{
@@ -49,15 +111,15 @@ pub(super) fn install_css(app_font_size: u32) {
         headerbar.obsidian-header button.titlebutton.maximize {{
             background: #27C93F;
         }}
-        
+
         headerbar.obsidian-header button.titlebutton.close:hover {{
             background: #FF3B30;
         }}
-        
+
         headerbar.obsidian-header button.titlebutton.minimize:hover {{
             background: #E5A323;
         }}
-        
+
         headerbar.obsidian-header button.titlebutton.maximize:hover {{
             background: #1CAD30;
         }}
@@ -132,6 +194,44 @@ pub(super) fn install_css(app_font_size: u32) {
 
         paned.obsidian-split-pane > separator:hover {{
             background: rgba(255, 77, 77, 0.18);
+        }}
+
+        box.obsidian-mux-root {{
+            background: transparent;
+        }}
+
+        box.obsidian-mux-bar {{
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 999px;
+            padding: 4px;
+            margin: 0 0 4px 0;
+        }}
+
+        button.obsidian-mux-session,
+        button.obsidian-mux-action {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            border-radius: 999px;
+            min-height: 22px;
+            min-width: 22px;
+            padding: 0 10px;
+            box-shadow: none;
+            opacity: 0.6;
+            transition: opacity 140ms ease, background 140ms ease, color 140ms ease;
+        }}
+
+        button.obsidian-mux-session:hover,
+        button.obsidian-mux-action:hover {{
+            opacity: 1.0;
+            background: rgba(255, 255, 255, 0.04);
+        }}
+
+        button.obsidian-mux-session.active {{
+            opacity: 1.0;
+            background: rgba(255, 77, 77, 0.1);
+            color: {accent};
         }}
 
         .obsidian-right-pane {{
@@ -257,6 +357,19 @@ pub(super) fn install_css(app_font_size: u32) {
             transition: opacity 140ms ease;
         }}
 
+        menubutton.obsidian-tool-menu > button {{
+            background: transparent;
+            color: {text_primary};
+            border-radius: 50%;
+            padding: 8px;
+            min-height: 28px;
+            min-width: 28px;
+            box-shadow: none;
+            border: none;
+            opacity: 0.6;
+            transition: opacity 140ms ease, background 140ms ease;
+        }}
+
         button.obsidian-search-toggle:hover {{
             opacity: 0.8;
         }}
@@ -265,6 +378,62 @@ pub(super) fn install_css(app_font_size: u32) {
         button.obsidian-tool-button:hover {{
             background: {surface};
             opacity: 1.0;
+        }}
+
+        menubutton.obsidian-tool-menu > button:hover,
+        menubutton.obsidian-tool-menu:checked > button {{
+            background: {surface};
+            opacity: 1.0;
+        }}
+
+        popover.obsidian-inspector-popover {{
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid {border};
+            border-radius: 12px;
+        }}
+
+        popover.obsidian-inspector-popover > contents {{
+            padding: 0;
+            background: transparent;
+            border-radius: 12px;
+        }}
+
+        .obsidian-inspector-panel {{
+            background: transparent;
+            padding: 12px;
+            min-width: 280px;
+        }}
+
+        .obsidian-inspector-title {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            font-weight: 700;
+            opacity: 0.92;
+            margin-bottom: 2px;
+        }}
+
+        .obsidian-inspector-row {{
+            background: rgba(255, 255, 255, 0.018);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+        }}
+
+        .obsidian-inspector-key {{
+            color: {accent};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            font-weight: 700;
+            opacity: 0.78;
+        }}
+
+        .obsidian-inspector-value {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            opacity: 0.62;
+            line-height: 1.45;
         }}
 
         .obsidian-tab-bar-container {{
@@ -542,12 +711,419 @@ pub(super) fn install_css(app_font_size: u32) {
             padding: 6px 8px;
         }}
 
-        .obsidian-web-root {{
-            padding: 6px 4px 0 4px;
+        .obsidian-view-root {{
+            padding: 0 4px 0 4px;
+        }}
+
+        .obsidian-view-header {{
+            padding: 4px 0 12px 0;
+            margin-bottom: 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+        }}
+
+        .obsidian-view-heading {{
+            min-width: 0;
+        }}
+
+        .obsidian-view-title {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_11};
+            font-weight: 700;
+            text-transform: lowercase;
+            letter-spacing: 0.03em;
+            opacity: 0.96;
+        }}
+
+        .obsidian-view-count {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            font-weight: 500;
+            opacity: 0.54;
+            line-height: 1.5;
+        }}
+
+        button.obsidian-view-header-action {{
+            background: transparent;
+            color: {text_primary};
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            min-height: 28px;
+            min-width: 28px;
+            padding: 4px;
+            box-shadow: none;
+            opacity: 0.5;
+            transition: opacity 140ms ease, background 140ms ease, border-color 140ms ease;
+        }}
+
+        button.obsidian-view-header-action:hover {{
+            background: rgba(255, 255, 255, 0.025);
+            border-color: rgba(255, 255, 255, 0.09);
+            opacity: 1.0;
+        }}
+
+        button.obsidian-view-action,
+        button.obsidian-view-open {{
+            background: rgba(255, 255, 255, 0.02);
+            color: {text_primary};
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 999px;
+            min-height: 24px;
+            min-width: 24px;
+            padding: 3px 10px;
+            box-shadow: none;
+            opacity: 0.62;
+            transition: opacity 140ms ease, background 140ms ease, border-color 140ms ease;
+        }}
+
+        button.obsidian-view-action:hover,
+        button.obsidian-view-open:hover {{
+            opacity: 1.0;
+            background: rgba(255, 77, 77, 0.05);
+            border-color: rgba(255, 77, 77, 0.12);
+        }}
+
+        .obsidian-view-file-scroller {{
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.012);
+            border: 1px solid rgba(255, 255, 255, 0.035);
+            border-radius: 14px;
+            padding: 4px;
+        }}
+
+        .obsidian-view-file-list {{
+            background: transparent;
+        }}
+
+        row.obsidian-view-file-row {{
+            background: transparent;
+            border-radius: 10px;
+            margin: 0 0 2px 0;
+            padding: 0;
+            transition: background 140ms ease, border-color 140ms ease;
+        }}
+
+        row.obsidian-view-file-row:hover {{
+            background: rgba(255, 77, 77, 0.03);
+        }}
+
+        row.obsidian-view-file-row:selected {{
+            background: rgba(255, 77, 77, 0.06);
+            border: 1px solid rgba(255, 77, 77, 0.12);
+        }}
+
+        .obsidian-view-file-card {{
+            padding: 8px 10px;
+        }}
+
+        .obsidian-view-file-icon {{
+            color: {text_primary};
+            opacity: 0.5;
+            -gtk-icon-size: 16px;
+        }}
+
+        .obsidian-view-file-name {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            font-weight: 700;
+            opacity: 0.9;
+        }}
+
+        .obsidian-view-file-meta {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            opacity: 0.42;
+            margin-top: -1px;
+        }}
+
+        .obsidian-view-preview {{
+            background: rgba(4, 4, 5, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+        }}
+
+        .obsidian-view-preview-chrome {{
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+            background: rgba(10, 10, 12, 0.98);
+        }}
+
+        .obsidian-view-preview-actions {{
+            margin-left: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 9px;
+            padding: 3px;
+        }}
+
+        .obsidian-view-preview-title {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_11};
+            font-weight: 700;
+            opacity: 0.9;
+        }}
+
+        .obsidian-view-preview-meta {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            opacity: 0.44;
+        }}
+
+        button.obsidian-view-preview-button {{
+            background: transparent;
+            color: {text_primary};
+            border: 1px solid transparent;
+            border-radius: 7px;
+            min-height: 26px;
+            padding: 4px 9px;
+            box-shadow: none;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            opacity: 0.72;
+            transition: background 140ms ease, border-color 140ms ease, opacity 140ms ease;
+        }}
+
+        button.obsidian-view-preview-button:hover {{
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.05);
+            opacity: 1.0;
+        }}
+
+        button.obsidian-view-preview-button:disabled {{
+            opacity: 0.28;
+            background: transparent;
+            border-color: transparent;
+        }}
+
+        button.obsidian-view-preview-button-secondary {{
+            background: transparent;
+        }}
+
+        button.obsidian-view-preview-button-primary {{
+            background: rgba(255, 255, 255, 0.035);
+            border-color: rgba(255, 255, 255, 0.06);
+            opacity: 0.92;
+        }}
+
+        button.obsidian-view-preview-button-primary:hover {{
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.09);
+        }}
+
+        .obsidian-view-preview-stack {{
+            background: transparent;
+        }}
+
+        .obsidian-view-preview-surface,
+        .obsidian-view-code-scroller {{
+            background: rgba(3, 3, 4, 1);
+            border: none;
+        }}
+
+        textview.obsidian-view-code {{
+            background: rgba(3, 3, 4, 1);
+            color: {text_primary};
+        }}
+
+        .obsidian-view-empty-state {{
+            padding: 42px 24px;
+            background: rgba(3, 3, 4, 1);
+        }}
+
+        .obsidian-view-empty-icon {{
+            color: {text_primary};
+            opacity: 0.08;
+            margin-bottom: 12px;
+        }}
+
+        .obsidian-view-empty-text {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            opacity: 0.35;
+            line-height: 1.5;
+        }}
+
+        .obsidian-view-info {{
+            background: rgba(3, 3, 4, 1);
+            padding: 24px 18px;
+        }}
+
+        .obsidian-view-info-title {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            font-weight: 600;
+        }}
+
+        .obsidian-view-info-body {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            opacity: 0.68;
+            line-height: 1.45;
+            margin-top: 2px;
+        }}
+
+        .obsidian-web-tab-row {{
+            padding: 4px 0 4px 0;
+        }}
+
+        .obsidian-web-tab-scroll {{
+            min-content-height: 28px;
+        }}
+
+        .obsidian-web-tabs {{
+            padding: 0 2px;
+        }}
+
+        .obsidian-web-tab {{
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 2px 6px;
+            min-height: 22px;
+            opacity: 0.45;
+            transition: opacity 140ms ease, background 140ms ease, border-color 140ms ease;
+        }}
+
+        .obsidian-web-tab:hover {{
+            opacity: 0.75;
+            background: rgba(255, 255, 255, 0.03);
+        }}
+
+        .obsidian-web-tab.active {{
+            opacity: 1.0;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
+        }}
+
+        .obsidian-web-tab-label {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+        }}
+
+        button.obsidian-web-tab-close {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            border-radius: 50%;
+            min-height: 14px;
+            min-width: 14px;
+            padding: 1px;
+            opacity: 0;
+            box-shadow: none;
+            transition: opacity 140ms ease, background 140ms ease;
+        }}
+
+        .obsidian-web-tab:hover button.obsidian-web-tab-close {{
+            opacity: 0.4;
+        }}
+
+        button.obsidian-web-tab-close:hover {{
+            opacity: 1.0 !important;
+            background: rgba(255, 77, 77, 0.15);
+        }}
+
+        button.obsidian-web-tab-add {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            border-radius: 50%;
+            min-height: 22px;
+            min-width: 22px;
+            padding: 2px;
+            opacity: 0.35;
+            box-shadow: none;
+            transition: opacity 140ms ease;
+        }}
+
+        button.obsidian-web-tab-add:hover {{
+            opacity: 0.9;
         }}
 
         .obsidian-web-controls {{
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+        }}
+
+        .obsidian-web-ssl {{
+            min-width: 14px;
+            min-height: 14px;
+            margin: 0 2px 0 0;
+            opacity: 0.5;
+        }}
+
+        .obsidian-web-ssl.secure {{
+            color: #27C93F;
+            opacity: 0.7;
+        }}
+
+        .obsidian-web-ssl.insecure {{
+            color: #FFBD2E;
+            opacity: 0.7;
+        }}
+
+        progressbar.obsidian-web-progress {{
+            min-height: 2px;
+            margin: 0 2px 4px 2px;
+        }}
+
+        progressbar.obsidian-web-progress trough {{
+            min-height: 2px;
+            background: transparent;
+            border: none;
+            border-radius: 1px;
+        }}
+
+        progressbar.obsidian-web-progress progress {{
+            min-height: 2px;
+            background: {accent};
+            border: none;
+            border-radius: 1px;
+        }}
+
+        .obsidian-web-find-bar {{
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 4px 6px;
+            margin: 0 2px 4px 2px;
+        }}
+
+        entry.obsidian-web-find-entry {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            padding: 2px 4px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            box-shadow: none;
+            outline: none;
+            opacity: 0.7;
+        }}
+
+        entry.obsidian-web-find-entry:focus {{
+            opacity: 1.0;
+            box-shadow: none;
+            outline: none;
+        }}
+
+        .obsidian-web-find-matches {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            opacity: 0.4;
+            margin: 0 4px;
         }}
 
         .obsidian-web-bar {{
@@ -569,7 +1145,7 @@ pub(super) fn install_css(app_font_size: u32) {
             background: rgba(0, 0, 0, 0.22);
             border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 12px;
-            padding: 0 4px 0 10px;
+            padding: 0 4px 0 6px;
         }}
 
         button.obsidian-web-button {{
@@ -645,49 +1221,129 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         .obsidian-logr-header {{
-            padding: 4px 0;
-            margin-bottom: 4px;
+            padding: 4px 0 12px 0;
+            margin-bottom: 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+        }}
+
+        .obsidian-logr-heading {{
+            min-width: 0;
+        }}
+
+        .obsidian-logr-tab-row {{
+            padding: 0 0 8px 0;
+        }}
+
+        .obsidian-logr-tabs {{
+            background: transparent;
+        }}
+
+        .obsidian-logr-tab {{
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 5px 9px;
+            opacity: 0.56;
+            transition: opacity 140ms ease, background 140ms ease, border-color 140ms ease, transform 140ms ease;
+        }}
+
+        .obsidian-logr-tab:hover {{
+            opacity: 0.88;
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.05);
+        }}
+
+        .obsidian-logr-tab.active {{
+            opacity: 1.0;
+            background: rgba(255, 77, 77, 0.035);
+            border-color: rgba(255, 77, 77, 0.12);
+        }}
+
+        .obsidian-logr-tab-label {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            opacity: 0.72;
+        }}
+
+        .obsidian-logr-tab.active .obsidian-logr-tab-label {{
+            color: {accent};
+            opacity: 0.92;
+        }}
+
+        button.obsidian-logr-tab-close,
+        button.obsidian-logr-tab-add {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            border-radius: 10px;
+            min-height: 20px;
+            min-width: 20px;
+            padding: 1px;
+            box-shadow: none;
+            opacity: 0.28;
+            transition: opacity 140ms ease, background 140ms ease;
+        }}
+
+        button.obsidian-logr-tab-close:hover,
+        button.obsidian-logr-tab-add:hover {{
+            opacity: 1.0;
+            background: rgba(255, 255, 255, 0.05);
         }}
 
         .obsidian-logr-title {{
             color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_10};
+            font-size: {font_13};
             font-weight: 700;
-            opacity: 0.5;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
+            opacity: 0.96;
+            text-transform: lowercase;
+            letter-spacing: 0.03em;
         }}
 
         .obsidian-logr-count {{
-            color: {accent};
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
-            opacity: 0.7;
+            opacity: 0.62;
         }}
 
         .obsidian-logr-picker {{
-            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.018);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 999px;
+            padding: 4px 6px;
+            margin: 0 0 6px 0;
+        }}
+
+        .obsidian-logr-inline-icon {{
+            color: {accent};
+            -gtk-icon-size: 12px;
+            margin: 0 2px 0 2px;
+            opacity: 0.7;
         }}
 
         menubutton.obsidian-logr-select > button {{
             background: transparent;
-            border: 1px solid {border};
-            border-radius: 6px;
+            border: 1px solid transparent;
+            border-radius: 999px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             color: {text_primary};
             min-height: 24px;
-            padding: 2px 8px;
+            padding: 3px 10px;
             box-shadow: none;
-            opacity: 0.6;
-            transition: opacity 140ms ease, border-color 140ms ease;
+            opacity: 0.82;
+            transition: opacity 140ms ease, border-color 140ms ease, background 140ms ease;
         }}
 
         menubutton.obsidian-logr-select > button:hover {{
             opacity: 1.0;
-            border-color: {accent};
+            border-color: rgba(255, 77, 77, 0.14);
+            background: rgba(255, 77, 77, 0.045);
         }}
 
         popover.obsidian-logr-popover {{
@@ -736,63 +1392,81 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         button.obsidian-logr-icon-btn {{
-            background: transparent;
+            background: rgba(255, 255, 255, 0.02);
             color: {text_primary};
-            border: none;
-            border-radius: 50%;
-            min-height: 22px;
-            min-width: 22px;
-            padding: 2px;
-            opacity: 0.4;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 999px;
+            min-height: 24px;
+            min-width: 24px;
+            padding: 3px;
+            opacity: 0.62;
             box-shadow: none;
-            transition: opacity 140ms ease;
+            transition: opacity 140ms ease, background 140ms ease, border-color 140ms ease;
         }}
 
         button.obsidian-logr-icon-btn:hover {{
-            opacity: 0.9;
+            opacity: 1.0;
+            background: rgba(255, 77, 77, 0.05);
+            border-color: rgba(255, 77, 77, 0.12);
         }}
 
         .obsidian-logr-controls {{
-            padding: 4px 0;
-            margin-bottom: 2px;
+            background: rgba(255, 255, 255, 0.012);
+            border: 1px solid rgba(255, 255, 255, 0.035);
+            border-radius: 999px;
+            padding: 4px 6px;
+            margin-bottom: 6px;
+        }}
+
+        .obsidian-logr-stream-shell {{
+            background: rgba(255, 255, 255, 0.018);
+            border-radius: 999px;
+            padding: 2px 10px 2px 8px;
+            margin: 0 6px;
+        }}
+
+        .obsidian-logr-stream-icon {{
+            color: #27C93F;
+            -gtk-icon-size: 10px;
+            opacity: 0.72;
         }}
 
         .obsidian-logr-stream-label {{
-            color: {text_primary};
+            color: #B0E4B7;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            opacity: 0.4;
+            opacity: 0.82;
         }}
 
         entry.obsidian-logr-filter {{
-            background: transparent;
+            background: rgba(255, 255, 255, 0.018);
             color: {text_primary};
-            border: none;
-            border-bottom: 1px solid {border};
-            border-radius: 0;
-            padding: 4px 2px;
-            margin-bottom: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 999px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             box-shadow: none;
             outline: none;
-            opacity: 0.6;
-            transition: opacity 140ms ease, border-color 140ms ease;
+            opacity: 0.82;
+            transition: opacity 140ms ease, border-color 140ms ease, background 140ms ease;
         }}
 
         entry.obsidian-logr-filter:focus {{
             opacity: 1.0;
-            border-color: {accent};
+            background: rgba(255, 77, 77, 0.035);
+            border-color: rgba(255, 77, 77, 0.15);
             box-shadow: none;
             outline: none;
         }}
 
         .obsidian-logr-status {{
-            color: {text_primary};
+            color: #FFBD2E;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            opacity: 0.35;
-            padding: 4px 0;
+            opacity: 0.68;
+            padding: 6px 0 0 0;
         }}
 
         .obsidian-logr-empty {{
@@ -810,15 +1484,17 @@ pub(super) fn install_css(app_font_size: u32) {
         .obsidian-log-entry {{
             padding: 3px 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.015);
-            transition: background 160ms ease, padding 160ms ease;
+            border-radius: 8px;
+            transition: background 160ms ease, padding 160ms ease, border-color 160ms ease;
         }}
 
         .obsidian-log-entry:hover {{
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 77, 77, 0.03);
+            border-bottom-color: rgba(255, 77, 77, 0.08);
         }}
 
         .obsidian-log-entry.expanded {{
-            background: rgba(255, 255, 255, 0.025);
+            background: rgba(255, 77, 77, 0.04);
             border-bottom-color: transparent;
             padding-top: 6px;
             transition: background 240ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -844,20 +1520,23 @@ pub(super) fn install_css(app_font_size: u32) {
             font-size: {font_9};
             opacity: 0.6;
             line-height: 1.4;
-            background: rgba(0, 0, 0, 0.12);
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.04);
             padding: 6px 10px;
-            border-radius: 4px;
+            border-radius: 10px;
             /* Container containment */
             overflow-wrap: break-word;
             word-wrap: break-word;
         }}
+
+        .log-level-dot {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 700;
-            min-width: 14px;
-            min-height: 14px;
-            border-radius: 3px;
-            padding: 0;
+            min-width: 16px;
+            min-height: 16px;
+            border-radius: 999px;
+            padding: 1px 0 0 0;
         }}
 
         .log-body {{
@@ -865,6 +1544,14 @@ pub(super) fn install_css(app_font_size: u32) {
             font-size: {font_10};
             color: {text_primary};
             opacity: 0.7;
+        }}
+
+        .obsidian-log-fields {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            opacity: 0.35;
+            margin-left: 4px;
         }}
 
         button.obsidian-log-copy-btn {{
@@ -1197,15 +1884,16 @@ pub(super) fn install_css(app_font_size: u32) {
         .obsidian-settings-title {{
             color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_13};
+            font-size: {font_18};
             font-weight: 700;
             text-transform: lowercase;
-            letter-spacing: 0.06em;
-            opacity: 0.85;
+            letter-spacing: 0.04em;
+            opacity: 0.95;
+            margin-top: 4px;
         }}
 
         .obsidian-settings-content {{
-            padding: 0 18px 0 4px;
+            padding: 4px 18px 24px 0;
         }}
 
         .obsidian-settings-section {{
@@ -1214,73 +1902,85 @@ pub(super) fn install_css(app_font_size: u32) {
             font-size: {font_10};
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            padding: 20px 0 6px 0;
-            margin-top: 2px;
+            letter-spacing: 0.14em;
+            padding: 32px 0 8px 0;
+            opacity: 0.82;
             border-bottom: 1px solid rgba(255, 77, 77, 0.12);
+            margin-bottom: 12px;
         }}
 
         .obsidian-settings-row {{
-            padding: 10px 0;
+            background: transparent;
+            border: none;
             border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+            padding: 12px 0;
+            margin-bottom: 2px;
+            transition: opacity 160ms ease;
         }}
 
-        .obsidian-settings-about {{
-            padding: 12px 0;
+        .obsidian-settings-row:hover {{
+            background: transparent;
+            opacity: 1.0;
         }}
 
         .obsidian-settings-label {{
             color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
-            opacity: 0.6;
+            font-weight: 700;
+            opacity: 0.9;
+        }}
+
+        .obsidian-settings-copy {{
+            color: {text_primary};
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            opacity: 0.42;
+            line-height: 1.5;
+            margin-top: 2px;
         }}
 
         .obsidian-settings-value {{
             color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            opacity: 0.35;
+            opacity: 0.6;
         }}
 
         .obsidian-settings-about-copy {{
             color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
-            line-height: 1.5;
-            opacity: 0.5;
+            font-size: {font_10};
+            line-height: 1.6;
+            opacity: 0.54;
         }}
 
         entry.obsidian-settings-entry {{
-            background: transparent;
+            background: rgba(255, 255, 255, 0.015);
             color: {text_primary};
-            border: none;
-            border-bottom: 1px solid {border};
-            border-radius: 0;
-            padding: 4px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 6px 10px;
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
+            font-size: {font_10};
             box-shadow: none;
             outline: none;
-            min-width: 160px;
-            transition: border-color 140ms ease;
+            transition: border-color 140ms ease, background 140ms ease;
         }}
 
         entry.obsidian-settings-entry:focus {{
+            background: rgba(255, 255, 255, 0.025);
             border-color: {accent};
-            box-shadow: none;
-            outline: none;
         }}
 
-        /* SpinButton: strip grey backgrounds */
         spinbutton.obsidian-settings-spin {{
-            background: transparent;
+            background: rgba(255, 255, 255, 0.015);
             color: {text_primary};
-            border: 1px solid {border};
-            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
-            min-width: 80px;
+            font-size: {font_10};
+            min-width: 90px;
             box-shadow: none;
         }}
 
@@ -1292,22 +1992,18 @@ pub(super) fn install_css(app_font_size: u32) {
             background: transparent;
             color: {text_primary};
             border: none;
-            box-shadow: none;
             opacity: 0.4;
             transition: opacity 140ms ease;
         }}
 
         spinbutton.obsidian-settings-spin > button:hover {{
             opacity: 1.0;
-            background: transparent;
         }}
 
-        /* DropDown: strip grey backgrounds */
         .obsidian-settings-dropdown {{
-            background: transparent;
-            border: 1px solid {border};
-            border-radius: 4px;
-            box-shadow: none;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
             min-width: 140px;
         }}
 
@@ -1315,67 +2011,26 @@ pub(super) fn install_css(app_font_size: u32) {
             background: transparent;
             color: {text_primary};
             border: none;
-            box-shadow: none;
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
-            padding: 4px 8px;
-            opacity: 0.7;
+            font-size: {font_10};
+            padding: 6px 10px;
+            opacity: 0.8;
             transition: opacity 140ms ease;
         }}
 
-        .obsidian-settings-dropdown > button:hover {{
-            opacity: 1.0;
-            background: transparent;
-        }}
-
-        .obsidian-settings-dropdown > popover {{
-            background: {window_bg};
-            border: 1px solid {border};
-            border-radius: 6px;
-        }}
-
-        .obsidian-settings-dropdown > popover > contents {{
-            background: {window_bg};
-            border-radius: 6px;
-            padding: 2px 0;
-        }}
-
-        .obsidian-settings-dropdown > popover listview {{
-            background: transparent;
-        }}
-
-        .obsidian-settings-dropdown > popover listview > row {{
-            background: transparent;
-            color: {text_primary};
-            font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
-            padding: 4px 8px;
-            transition: background 100ms ease;
-        }}
-
-        .obsidian-settings-dropdown > popover listview > row:hover {{
-            background: rgba(255, 255, 255, 0.04);
-        }}
-
-        .obsidian-settings-dropdown > popover listview > row:checked {{
-            background: rgba(255, 77, 77, 0.10);
-            color: {accent};
-        }}
-
-        /* Switch: strip grey backgrounds */
         switch.obsidian-settings-switch {{
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid {border};
-            border-radius: 999px;
-            box-shadow: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
             min-width: 42px;
             min-height: 22px;
-            transition: background 140ms ease, border-color 140ms ease;
+            padding: 0;
+            transition: background 180ms cubic-bezier(0.4, 0, 0.2, 1), border-color 180ms ease;
         }}
 
         switch.obsidian-settings-switch:checked {{
-            background: rgba(255, 77, 77, 0.20);
-            border-color: rgba(255, 77, 77, 0.35);
+            background: rgba(255, 77, 77, 0.08);
+            border-color: rgba(255, 77, 77, 0.18);
         }}
 
         switch.obsidian-settings-switch > image {{
@@ -1383,39 +2038,37 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         switch.obsidian-settings-switch slider {{
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.22);
             border: none;
             border-radius: 50%;
-            box-shadow: none;
-            min-width: 16px;
-            min-height: 16px;
-            margin: 2px;
-            transition: background 140ms ease;
+            min-width: 14px;
+            min-height: 14px;
+            margin: 4px;
+            transition: background 180ms cubic-bezier(0.4, 0, 0.2, 1), transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
         }}
 
         switch.obsidian-settings-switch:checked slider {{
             background: {accent};
-        }}
-
-        .obsidian-settings-footer {{
-            padding: 20px 0 8px 0;
+            box-shadow: 0 0 8px rgba(255, 77, 77, 0.35);
         }}
 
         button.obsidian-settings-link {{
             background: transparent;
-            color: {accent};
-            border: 1px solid rgba(255, 77, 77, 0.18);
-            border-radius: 999px;
-            padding: 4px 12px;
+            color: {text_primary};
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 6px 14px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            box-shadow: none;
-            transition: background 140ms ease, border-color 140ms ease;
+            font-weight: 700;
+            opacity: 0.6;
+            transition: background 140ms ease, border-color 140ms ease, opacity 140ms ease;
         }}
 
         button.obsidian-settings-link:hover {{
-            background: rgba(255, 77, 77, 0.08);
-            border-color: rgba(255, 77, 77, 0.30);
+            background: rgba(255, 255, 255, 0.02);
+            opacity: 1.0;
+            border-color: rgba(255, 255, 255, 0.1);
         }}
 
         .obsidian-settings-about-page {{
@@ -1513,6 +2166,7 @@ pub(super) fn install_css(app_font_size: u32) {
         font_11 = px(11.0, ui_scale),
         font_12 = px(12.0, ui_scale),
         font_13 = px(13.0, ui_scale),
+        font_18 = px(18.0, ui_scale),
         font_22 = px(22.0, ui_scale),
     );
     provider.load_from_data(&css);
@@ -1521,7 +2175,7 @@ pub(super) fn install_css(app_font_size: u32) {
         style_context_add_provider_for_display(
             &display,
             &provider,
-            STYLE_PROVIDER_PRIORITY_APPLICATION,
+            STYLE_PROVIDER_PRIORITY_USER,
         );
     }
 }
