@@ -29,7 +29,7 @@ pub(in crate::linux_terminal) fn build_setup_page(
     on_continue: impl Fn(Settings) + 'static,
 ) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
-    root.add_css_class("obsidian-setup-root");
+    root.add_css_class("magma-setup-root");
     root.set_hexpand(true);
     root.set_vexpand(true);
     root.set_halign(Align::Center);
@@ -48,32 +48,32 @@ pub(in crate::linux_terminal) fn build_setup_page(
     };
 
     let shell = GtkBox::new(Orientation::Vertical, 0);
-    shell.add_css_class("obsidian-setup-shell");
+    shell.add_css_class("magma-setup-shell");
     shell.set_halign(Align::Center);
     shell.set_valign(Align::Center);
 
     shell.append(&controls::build_topbar());
 
     let body = GtkBox::new(Orientation::Vertical, 0);
-    body.add_css_class("obsidian-setup-body");
+    body.add_css_class("magma-setup-body");
 
     let hero = controls::build_hero();
     let (progress, step_markers) = controls::build_progress();
     let page_stack = build_page_stack(&draft, &persist_checkpoint);
     let footer = GtkBox::new(Orientation::Horizontal, 10);
-    footer.add_css_class("obsidian-setup-footer");
+    footer.add_css_class("magma-setup-footer");
 
     let (back_button, _) = controls::build_nav_button(
         "back",
         "go-previous-symbolic",
         true,
-        "obsidian-setup-secondary",
+        "magma-setup-secondary",
     );
     let (next_button, next_button_label) = controls::build_nav_button(
         "next",
         "go-next-symbolic",
         false,
-        "obsidian-setup-action",
+        "magma-setup-action",
     );
     let footer_spacer = GtkBox::new(Orientation::Horizontal, 0);
     footer_spacer.set_hexpand(true);
@@ -90,9 +90,11 @@ pub(in crate::linux_terminal) fn build_setup_page(
     root.append(&shell);
 
     bind_setup_navigation(
-        &back_button,
-        &next_button,
-        &next_button_label,
+        NavigationWidgets {
+            back_button: back_button.clone(),
+            next_button: next_button.clone(),
+            next_button_label: next_button_label.clone(),
+        },
         &page_stack,
         step_markers,
         step_index,
@@ -104,9 +106,16 @@ pub(in crate::linux_terminal) fn build_setup_page(
     root
 }
 
+#[derive(Clone)]
+struct NavigationWidgets {
+    back_button: Button,
+    next_button: Button,
+    next_button_label: Label,
+}
+
 fn build_page_stack(draft: &Rc<RefCell<Settings>>, on_checkpoint: &Rc<dyn Fn()>) -> Stack {
     let page_stack = Stack::new();
-    page_stack.add_css_class("obsidian-setup-pages");
+    page_stack.add_css_class("magma-setup-pages");
     page_stack.set_transition_type(StackTransitionType::SlideLeftRight);
     page_stack.set_transition_duration(180);
     page_stack.add_named(&controls::build_runtime_step(draft, on_checkpoint), Some("runtime"));
@@ -123,9 +132,7 @@ fn build_page_stack(draft: &Rc<RefCell<Settings>>, on_checkpoint: &Rc<dyn Fn()>)
 }
 
 fn bind_setup_navigation(
-    back_button: &Button,
-    next_button: &Button,
-    next_button_label: &Label,
+    nav: NavigationWidgets,
     page_stack: &Stack,
     step_markers: Vec<GtkBox>,
     step_index: Rc<Cell<u32>>,
@@ -136,19 +143,19 @@ fn bind_setup_navigation(
     sync_step_ui(
         &step_index,
         page_stack,
-        back_button,
-        next_button,
-        next_button_label,
+        &nav.back_button,
+        &nav.next_button,
+        &nav.next_button_label,
         &step_markers,
     );
 
     {
         let step_index = step_index.clone();
         let page_stack = page_stack.clone();
-        let back_click = back_button.clone();
-        let back_sync = back_button.clone();
-        let next_sync = next_button.clone();
-        let next_label_sync = next_button_label.clone();
+        let back_click = nav.back_button.clone();
+        let back_sync = nav.back_button.clone();
+        let next_sync = nav.next_button.clone();
+        let next_label_sync = nav.next_button_label.clone();
         let step_markers = step_markers.clone();
         let on_checkpoint = on_checkpoint.clone();
         back_click.connect_clicked(move |_| {
@@ -172,10 +179,10 @@ fn bind_setup_navigation(
         let on_checkpoint = on_checkpoint.clone();
         let on_continue = on_continue.clone();
         let page_stack = page_stack.clone();
-        let next_click = next_button.clone();
-        let back_sync = back_button.clone();
-        let next_sync = next_button.clone();
-        let next_label_sync = next_button_label.clone();
+        let next_click = nav.next_button.clone();
+        let back_sync = nav.back_button.clone();
+        let next_sync = nav.next_button.clone();
+        let next_label_sync = nav.next_button_label.clone();
         next_click.connect_clicked(move |_| {
             let current = step_index.get();
             if current + 1 >= STEP_COUNT {

@@ -69,7 +69,7 @@ fn main() -> io::Result<()> {
     };
     let window = Rc::new(
         WindowBuilder::new()
-            .with_title("Obsidian")
+            .with_title("Magma")
             .with_inner_size(Size::Physical(initial_size))
             .with_window_icon(Some(icon))
             .with_decorations(false) // Custom title bar — we draw our own.

@@ -26,13 +26,13 @@ pub(super) fn build_inspector_button(
 ) -> MenuButton {
     let popover = Popover::new();
     popover.set_has_arrow(false);
-    popover.add_css_class("obsidian-inspector-popover");
+    popover.add_css_class("magma-inspector-popover");
 
     let content = GtkBox::new(Orientation::Vertical, 10);
-    content.add_css_class("obsidian-inspector-panel");
+    content.add_css_class("magma-inspector-panel");
 
     let title = Label::new(Some("terminal inspector"));
-    title.add_css_class("obsidian-inspector-title");
+    title.add_css_class("magma-inspector-title");
     title.set_xalign(0.0);
     content.append(&title);
 
@@ -51,7 +51,7 @@ pub(super) fn build_inspector_button(
     popover.set_child(Some(&content));
 
     let button = MenuButton::new();
-    button.add_css_class("obsidian-tool-menu");
+    button.add_css_class("magma-tool-menu");
     button.set_icon_name("dialog-information-symbolic");
     button.set_tooltip_text(Some("Terminal inspector"));
     button.set_popover(Some(&popover));
@@ -157,14 +157,14 @@ fn refresh_inspector(
 
 fn inspector_row(content: &GtkBox, key: &str) -> Label {
     let row = GtkBox::new(Orientation::Vertical, 3);
-    row.add_css_class("obsidian-inspector-row");
+    row.add_css_class("magma-inspector-row");
 
     let key_label = Label::new(Some(key));
-    key_label.add_css_class("obsidian-inspector-key");
+    key_label.add_css_class("magma-inspector-key");
     key_label.set_xalign(0.0);
 
     let value = Label::new(None);
-    value.add_css_class("obsidian-inspector-value");
+    value.add_css_class("magma-inspector-value");
     value.set_xalign(0.0);
     value.set_wrap(true);
     value.set_selectable(false);

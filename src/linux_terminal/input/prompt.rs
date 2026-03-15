@@ -7,17 +7,17 @@ pub(super) fn build_prompt_box(terminal: &Terminal) -> GtkBox {
     let prompt_container = GtkBox::new(Orientation::Horizontal, 6);
 
     let user_label = Label::new(Some(&current_username()));
-    user_label.add_css_class("obsidian-user-label");
+    user_label.add_css_class("magma-user-label");
     prompt_container.append(&user_label);
 
     let path_label = Label::new(Some(&current_path_display(terminal)));
-    path_label.add_css_class("obsidian-path-label");
+    path_label.add_css_class("magma-path-label");
     path_label.set_ellipsize(pango::EllipsizeMode::Middle);
     path_label.set_xalign(0.0);
     prompt_container.append(&path_label);
 
     let prompt_label = Label::new(Some(">"));
-    prompt_label.add_css_class("obsidian-user-label");
+    prompt_label.add_css_class("magma-user-label");
     prompt_container.append(&prompt_label);
 
     connect_directory_updates(terminal, &path_label);

@@ -83,7 +83,7 @@ pub(super) fn settings_path() -> PathBuf {
         .map(PathBuf::from)
         .or_else(|| env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))
         .unwrap_or_else(|| PathBuf::from("."));
-    base.join("obsidian").join("settings.json")
+    base.join("magma").join("settings.json")
 }
 
 pub(super) fn settings_exist() -> bool {

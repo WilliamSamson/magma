@@ -34,11 +34,11 @@ impl WorkspaceView {
         root.set_focusable(true);
 
         let tab_container = GtkBox::new(Orientation::Horizontal, 4);
-        tab_container.add_css_class("obsidian-tabs-list");
+        tab_container.add_css_class("magma-tabs-list");
         tab_container.set_valign(Align::Center);
 
         let add_button = action_button("list-add-symbolic");
-        add_button.add_css_class("obsidian-add-tab-button");
+        add_button.add_css_class("magma-add-tab-button");
         add_button.set_halign(Align::End);
         add_button.set_valign(Align::Center);
 
@@ -449,7 +449,7 @@ fn tab_bar_row(tab_container: &GtkBox, add_button: &Button) -> (GtkBox, Scrolled
     let bar_scroll = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Automatic)
         .vscrollbar_policy(PolicyType::Never)
-        .css_classes(["obsidian-tab-bar-scroller"])
+        .css_classes(["magma-tab-bar-scroller"])
         .build();
     bar_scroll.set_hexpand(true);
     bar_scroll.set_vexpand(false);
@@ -457,7 +457,7 @@ fn tab_bar_row(tab_container: &GtkBox, add_button: &Button) -> (GtkBox, Scrolled
     bar_scroll.set_child(Some(tab_container));
 
     let row = GtkBox::new(Orientation::Horizontal, 8);
-    row.add_css_class("obsidian-tab-bar-container");
+    row.add_css_class("magma-tab-bar-container");
     row.set_valign(Align::Center);
     row.append(&bar_scroll);
     row.append(add_button);
@@ -470,13 +470,13 @@ fn notebook() -> Notebook {
     notebook.set_show_border(false);
     notebook.set_hexpand(true);
     notebook.set_vexpand(true);
-    notebook.add_css_class("obsidian-notebook");
+    notebook.add_css_class("magma-notebook");
     notebook
 }
 
 fn actions_box() -> (Button, Button, Button, GtkBox) {
     let actions_box = GtkBox::new(Orientation::Horizontal, 0);
-    actions_box.add_css_class("obsidian-workspace-actions");
+    actions_box.add_css_class("magma-workspace-actions");
     let split_tab = action_button("view-split-left-symbolic");
     let close_tab = action_button("window-close-symbolic");
     let profile_tab = action_button("preferences-system-symbolic");
@@ -500,7 +500,7 @@ fn append_tab(
 fn action_button(icon_name: &str) -> Button {
     Button::builder()
         .icon_name(icon_name)
-        .css_classes(["obsidian-workspace-button"])
+        .css_classes(["magma-workspace-button"])
         .build()
 }
 

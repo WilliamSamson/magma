@@ -14,12 +14,12 @@ use crate::linux_terminal::{
 
 pub(super) fn build_topbar() -> GtkBox {
     let topbar = GtkBox::new(Orientation::Horizontal, 8);
-    topbar.add_css_class("obsidian-setup-topbar");
-    topbar.append(&dot("obsidian-setup-dot red"));
-    topbar.append(&dot("obsidian-setup-dot amber"));
-    topbar.append(&dot("obsidian-setup-dot green"));
+    topbar.add_css_class("magma-setup-topbar");
+    topbar.append(&dot("magma-setup-dot red"));
+    topbar.append(&dot("magma-setup-dot amber"));
+    topbar.append(&dot("magma-setup-dot green"));
 
-    let title = setup_label("boot obsidian", "obsidian-setup-topbar-title");
+    let title = setup_label("boot magma", "magma-setup-topbar-title");
     title.set_hexpand(true);
     title.set_xalign(1.0);
     topbar.append(&title);
@@ -28,14 +28,14 @@ pub(super) fn build_topbar() -> GtkBox {
 
 pub(super) fn build_hero() -> GtkBox {
     let hero = GtkBox::new(Orientation::Vertical, 8);
-    hero.add_css_class("obsidian-setup-hero");
+    hero.add_css_class("magma-setup-hero");
 
-    hero.append(&setup_label("FIRST RUN SETUP", "obsidian-setup-eyebrow"));
-    hero.append(&setup_label("prepare the terminal", "obsidian-setup-title"));
+    hero.append(&setup_label("FIRST RUN SETUP", "magma-setup-eyebrow"));
+    hero.append(&setup_label("prepare the terminal", "magma-setup-title"));
 
     let copy = setup_label(
-        "obsidian needs a few first-run decisions before it becomes the active terminal on this device. set the runtime, choose the workspace defaults, then enter the shell.",
-        "obsidian-setup-copy",
+        "magma needs a few first-run decisions before it becomes the active terminal on this device. set the runtime, choose the workspace defaults, then enter the shell.",
+        "magma-setup-copy",
     );
     copy.set_wrap(true);
     hero.append(&copy);
@@ -44,17 +44,17 @@ pub(super) fn build_hero() -> GtkBox {
 
 pub(super) fn build_progress() -> (GtkBox, Vec<GtkBox>) {
     let progress = GtkBox::new(Orientation::Horizontal, 18);
-    progress.add_css_class("obsidian-setup-progress");
+    progress.add_css_class("magma-setup-progress");
     progress.set_homogeneous(true);
 
     let mut markers = Vec::new();
     for (index, name) in ["runtime", "workspace", "appearance"].iter().enumerate() {
         let marker = GtkBox::new(Orientation::Horizontal, 10);
-        marker.add_css_class("obsidian-setup-step");
+        marker.add_css_class("magma-setup-step");
         marker.set_hexpand(true);
 
-        let number = setup_label(&format!("{:02}", index + 1), "obsidian-setup-step-index");
-        let label = setup_label(name, "obsidian-setup-step-label");
+        let number = setup_label(&format!("{:02}", index + 1), "magma-setup-step-index");
+        let label = setup_label(name, "magma-setup-step-label");
         label.set_hexpand(true);
 
         marker.append(&number);
@@ -74,12 +74,12 @@ pub(super) fn build_nav_button(
 ) -> (Button, Label) {
     let button = Button::builder().css_classes([class_name]).build();
     let content = GtkBox::new(Orientation::Horizontal, 8);
-    content.add_css_class("obsidian-setup-nav-content");
+    content.add_css_class("magma-setup-nav-content");
 
     let icon = Image::from_icon_name(icon_name);
-    icon.add_css_class("obsidian-setup-nav-icon");
+    icon.add_css_class("magma-setup-nav-icon");
 
-    let label = setup_label(text, "obsidian-setup-nav-label");
+    let label = setup_label(text, "magma-setup-nav-label");
 
     if icon_first {
         content.append(&icon);
@@ -96,7 +96,7 @@ pub(super) fn build_nav_button(
 pub(super) fn build_runtime_step(draft: &Rc<RefCell<Settings>>, on_checkpoint: &Rc<dyn Fn()>) -> GtkBox {
     let page = step_page(
         "runtime",
-        "choose the shell command and confirm where obsidian will write its local configuration.",
+        "choose the shell command and confirm where magma will write its local configuration.",
     );
     let shell_command = draft.borrow().shell.clone();
     let resolved_shell = runtime::resolve_shell(&shell_command);
@@ -116,7 +116,7 @@ pub(super) fn build_runtime_step(draft: &Rc<RefCell<Settings>>, on_checkpoint: &
         });
     }
 
-    page.append(&setting_row("shell command", "the shell obsidian should launch", &shell_entry));
+    page.append(&setting_row("shell command", "the shell magma should launch", &shell_entry));
     page.append(&display_row("resolved shell", &resolved_value));
     page.append(&display_row("config path", &config_value));
     page
@@ -237,11 +237,11 @@ pub(super) fn build_appearance_step(
 
 fn step_page(title: &str, copy: &str) -> GtkBox {
     let page = GtkBox::new(Orientation::Vertical, 14);
-    page.add_css_class("obsidian-setup-page");
+    page.add_css_class("magma-setup-page");
 
-    page.append(&setup_label(title, "obsidian-setup-page-title"));
+    page.append(&setup_label(title, "magma-setup-page-title"));
 
-    let copy = setup_label(copy, "obsidian-setup-page-copy");
+    let copy = setup_label(copy, "magma-setup-page-copy");
     copy.set_wrap(true);
     page.append(&copy);
 
@@ -250,13 +250,13 @@ fn step_page(title: &str, copy: &str) -> GtkBox {
 
 fn setting_row(title: &str, copy: &str, control: &impl IsA<gtk::Widget>) -> GtkBox {
     let row = GtkBox::new(Orientation::Horizontal, 16);
-    row.add_css_class("obsidian-setup-setting");
+    row.add_css_class("magma-setup-setting");
 
     let copy_box = GtkBox::new(Orientation::Vertical, 4);
     copy_box.set_hexpand(true);
-    copy_box.append(&setup_label(title, "obsidian-setup-setting-title"));
+    copy_box.append(&setup_label(title, "magma-setup-setting-title"));
 
-    let hint = setup_label(copy, "obsidian-setup-setting-copy");
+    let hint = setup_label(copy, "magma-setup-setting-copy");
     hint.set_wrap(true);
     copy_box.append(&hint);
 
@@ -267,8 +267,8 @@ fn setting_row(title: &str, copy: &str, control: &impl IsA<gtk::Widget>) -> GtkB
 
 fn display_row(title: &str, value: &Label) -> GtkBox {
     let row = GtkBox::new(Orientation::Vertical, 6);
-    row.add_css_class("obsidian-setup-setting");
-    row.append(&setup_label(title, "obsidian-setup-setting-title"));
+    row.add_css_class("magma-setup-setting");
+    row.append(&setup_label(title, "magma-setup-setting-title"));
     row.append(value);
     row
 }
@@ -276,7 +276,7 @@ fn display_row(title: &str, value: &Label) -> GtkBox {
 fn entry_field(value: &str) -> Entry {
     let entry = Entry::new();
     entry.set_text(value);
-    entry.add_css_class("obsidian-settings-entry");
+    entry.add_css_class("magma-settings-entry");
     entry.set_hexpand(false);
     entry.set_width_chars(24);
     entry
@@ -285,7 +285,7 @@ fn entry_field(value: &str) -> Entry {
 fn spin_field(value: f64, min: f64, max: f64) -> SpinButton {
     let spin = SpinButton::with_range(min, max, 1.0);
     spin.set_value(value);
-    spin.add_css_class("obsidian-settings-spin");
+    spin.add_css_class("magma-settings-spin");
     spin.set_digits(0);
     spin.set_halign(Align::End);
     spin
@@ -294,7 +294,7 @@ fn spin_field(value: f64, min: f64, max: f64) -> SpinButton {
 fn switch_field(active: bool) -> Switch {
     let switch = Switch::new();
     switch.set_active(active);
-    switch.add_css_class("obsidian-settings-switch");
+    switch.add_css_class("magma-settings-switch");
     switch.set_halign(Align::End);
     switch.set_valign(Align::Center);
     switch
@@ -303,13 +303,13 @@ fn switch_field(active: bool) -> Switch {
 fn dropdown_field(items: &[&str], selected: u32) -> DropDown {
     let model = StringList::new(items);
     let dropdown = DropDown::builder().model(&model).selected(selected).build();
-    dropdown.add_css_class("obsidian-settings-dropdown");
+    dropdown.add_css_class("magma-settings-dropdown");
     dropdown.set_halign(Align::End);
     dropdown
 }
 
 fn value_label(text: &str) -> Label {
-    let label = setup_label(text, "obsidian-setup-value");
+    let label = setup_label(text, "magma-setup-value");
     label.set_wrap(true);
     label.set_wrap_mode(gtk::pango::WrapMode::Char);
     label

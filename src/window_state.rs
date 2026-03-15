@@ -54,7 +54,7 @@ pub(crate) fn save_window_size(size: PhysicalSize<u32>) -> io::Result<()> {
 fn state_path() -> Option<PathBuf> {
     if let Some(config_home) = env::var_os("XDG_CONFIG_HOME") {
         let mut path = PathBuf::from(config_home);
-        path.push("obsidian");
+        path.push("magma");
         path.push("window-state.json");
         return Some(path);
     }
@@ -62,7 +62,7 @@ fn state_path() -> Option<PathBuf> {
     let home = env::var_os("HOME")?;
     let mut path = PathBuf::from(home);
     path.push(".config");
-    path.push("obsidian");
+    path.push("magma");
     path.push("window-state.json");
     Some(path)
 }

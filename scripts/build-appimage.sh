@@ -15,7 +15,7 @@ fi
 "$ROOT_DIR/scripts/package-linux-bundle.sh" "$APPDIR"
 mkdir -p "$OUTPUT_DIR"
 
-APPIMAGE_OUTPUT="$OUTPUT_DIR/Obsidian-x86_64.AppImage"
+APPIMAGE_OUTPUT="$OUTPUT_DIR/Magma-x86_64.AppImage"
 ARCH=x86_64 appimagetool "$APPDIR" "$APPIMAGE_OUTPUT"
 
 echo "Final AppImage created at: $APPIMAGE_OUTPUT"

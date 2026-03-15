@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Generates live JSONL log entries to obsidian-debug.log.jsonl
-# Run this while Obsidian is open and select the file in the logr pane
+# Generates live JSONL log entries to magma-debug.log.jsonl
+# Run this while Magma is open and select the file in the logr pane
 # to see live log tailing in action.
 
-FILE="obsidian-debug.log.jsonl"
+FILE="magma-debug.log.jsonl"
 COMPONENTS=("auth" "api" "db" "cache" "worker" "scheduler")
 LEVELS=("debug" "info" "info" "info" "warn" "error")
 MESSAGES_INFO=(
@@ -39,7 +39,7 @@ MESSAGES_DEBUG=(
 )
 
 echo "writing live logs to $FILE (Ctrl+C to stop)"
-echo "open obsidian, select this file in the logr pane, and watch them stream in"
+echo "open magma, select this file in the logr pane, and watch them stream in"
 echo ""
 
 while true; do

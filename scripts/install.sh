@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# Obsidian Terminal — Installer
+# Magma Terminal — Installer
 #
-# Installs the Obsidian AppImage, .desktop entry, and icon so the
+# Installs the Magma AppImage, .desktop entry, and icon so the
 # application is launchable from both the terminal and app menus.
 #
 # Usage:
@@ -12,9 +12,9 @@
 
 set -euo pipefail
 
-APP_NAME="obsidian"
-DESKTOP_ID="io.obsidian.terminal"
-APPIMAGE_NAME="Obsidian-x86_64.AppImage"
+APP_NAME="magma"
+DESKTOP_ID="io.magma.terminal"
+APPIMAGE_NAME="Magma-x86_64.AppImage"
 
 BIN_DIR="$HOME/.local/bin"
 APPS_DIR="$HOME/.local/share/applications"
@@ -44,7 +44,7 @@ find_appimage() {
 # Locate assets (icon + desktop file)
 # ---------------------------------------------------------------------------
 find_assets_dir() {
-  # Release tarball layout: obsidian-release/assets/
+  # Release tarball layout: magma-release/assets/
   if [[ -d "$SCRIPT_DIR/assets" ]]; then
     echo "$SCRIPT_DIR/assets"
     return
@@ -82,7 +82,7 @@ main() {
     exit 1
   fi
 
-  echo "Installing Obsidian Terminal..."
+  echo "Installing Magma Terminal..."
   echo ""
 
   # -- binary ---------------------------------------------------------------
@@ -123,7 +123,7 @@ main() {
   fi
 
   echo ""
-  echo "Obsidian has been installed."
+  echo "Magma has been installed."
   echo "Launch it from the app menu or run: $APP_NAME"
   echo ""
   echo "On first launch, the setup wizard will guide you through initial configuration."

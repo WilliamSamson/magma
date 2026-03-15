@@ -38,22 +38,22 @@ pub(super) fn create_tab(state: &Rc<WebPaneState>) -> usize {
         .hexpand(true)
         .vexpand(true)
         .build();
-    web_view.add_css_class("obsidian-webview");
+    web_view.add_css_class("magma-webview");
     web_view.set_overflow(Overflow::Hidden);
 
     let label = Label::new(Some("new tab"));
-    label.add_css_class("obsidian-web-tab-label");
+    label.add_css_class("magma-web-tab-label");
     label.set_ellipsize(pango::EllipsizeMode::End);
     label.set_max_width_chars(16);
 
     let close_button = Button::builder()
         .icon_name("window-close-symbolic")
-        .css_classes(["obsidian-web-tab-close"])
+        .css_classes(["magma-web-tab-close"])
         .tooltip_text("Close tab")
         .build();
 
     let tab_button = GtkBox::new(Orientation::Horizontal, 4);
-    tab_button.add_css_class("obsidian-web-tab");
+    tab_button.add_css_class("magma-web-tab");
     tab_button.append(&label);
     tab_button.append(&close_button);
 

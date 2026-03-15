@@ -116,7 +116,7 @@ impl Renderer {
 
         // Draw the custom title bar at the top.
         let brand = TitleBarBrand {
-            title: "Obsidian",
+            title: "Magma",
             icon_rgba: &self.icon_rgba,
             icon_width: self.icon_width,
             icon_height: self.icon_height,

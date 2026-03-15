@@ -11,7 +11,7 @@ use super::{parser::FollowConfig, log_entry::LogEntry};
 pub(crate) fn spawn_file_follower(config: FollowConfig) -> Receiver<LogEntry> {
     let (sender, receiver) = mpsc::channel();
     let _ = thread::Builder::new()
-        .name("obsidian-logs-follower".to_string())
+        .name("magma-logs-follower".to_string())
         .spawn(move || follow_file(config, sender));
     receiver
 }

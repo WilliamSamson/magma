@@ -19,7 +19,7 @@ pub(super) fn build_main_page(
     on_clear_browser_data: Rc<dyn Fn()>,
 ) -> ScrolledWindow {
     let content = GtkBox::new(Orientation::Vertical, 0);
-    content.add_css_class("obsidian-settings-content");
+    content.add_css_class("magma-settings-content");
     content.set_margin_end(10);
     content.set_margin_bottom(12);
 
@@ -46,7 +46,7 @@ fn build_shell_section(
     let shell_entry = text_row(
         content,
         "shell command",
-        "the executable shell launched when a new obsidian session starts.",
+        "the executable shell launched when a new magma session starts.",
         &settings.borrow().shell,
     );
     let shell_settings = settings.clone();
@@ -65,7 +65,7 @@ fn build_logr_section(
     let logr_switch = switch_row(
         content,
         "panel open on start",
-        "automatically reveal the logr and web pane when obsidian boots.",
+        "automatically reveal the logr and web pane when magma boots.",
         settings.borrow().logr_panel_open,
     );
     let logr_settings = settings.clone();
@@ -84,7 +84,7 @@ fn build_about_section(content: &GtkBox, page_stack: &Stack) {
 
     let about_button = action_row(
         content,
-        "obsidian",
+        "magma",
         "view credits, licenses, and core engine details.",
         "open",
     );

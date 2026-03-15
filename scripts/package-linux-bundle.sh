@@ -4,8 +4,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APPDIR="${1:-$ROOT_DIR/dist/AppDir}"
-BIN_PATH="$ROOT_DIR/target/release/obsidian"
-DESKTOP_ID="io.obsidian.terminal"
+BIN_PATH="$ROOT_DIR/target/release/magma"
+DESKTOP_ID="io.magma.terminal"
 WEBKIT_DIR_NAME="webkitgtk-6.0"
 
 system_libdir() {
@@ -36,7 +36,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export APPDIR="$HERE"
-export OBSIDIAN_BUNDLED_SHELL="$HERE/usr/lib/obsidian/bin/bash"
+export MAGMA_BUNDLED_SHELL="$HERE/usr/lib/magma/bin/bash"
 export LD_LIBRARY_PATH="$HERE/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export XDG_DATA_DIRS="$HERE/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
 export GSETTINGS_SCHEMA_DIR="$HERE/usr/share/glib-2.0/schemas"
@@ -47,7 +47,7 @@ if [[ -d "$HERE/usr/lib/gdk-pixbuf-2.0" ]]; then
   export GDK_PIXBUF_MODULE_FILE="$HERE/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
 fi
 
-exec "$HERE/usr/bin/obsidian" "$@"
+exec "$HERE/usr/bin/magma" "$@"
 SH
 
   chmod +x "$APPDIR/AppRun"
@@ -80,12 +80,12 @@ main() {
   mkdir -p \
     "$APPDIR/usr/bin" \
     "$APPDIR/usr/lib" \
-    "$APPDIR/usr/lib/obsidian/bin" \
+    "$APPDIR/usr/lib/magma/bin" \
     "$APPDIR/usr/share/applications" \
     "$APPDIR/usr/share/icons/hicolor/64x64/apps"
 
-  cp "$BIN_PATH" "$APPDIR/usr/bin/obsidian"
-  cp /bin/bash "$APPDIR/usr/lib/obsidian/bin/bash"
+  cp "$BIN_PATH" "$APPDIR/usr/bin/magma"
+  cp /bin/bash "$APPDIR/usr/lib/magma/bin/bash"
 
   cp "$ROOT_DIR/assets/$DESKTOP_ID.desktop" "$APPDIR/usr/share/applications/$DESKTOP_ID.desktop"
   cp "$ROOT_DIR/assets/icons/hicolor/64x64/apps/$DESKTOP_ID.png" \
@@ -93,8 +93,8 @@ main() {
   cp "$ROOT_DIR/assets/$DESKTOP_ID.desktop" "$APPDIR/$DESKTOP_ID.desktop"
   cp "$ROOT_DIR/assets/icons/hicolor/64x64/apps/$DESKTOP_ID.png" "$APPDIR/$DESKTOP_ID.png"
 
-  copy_linked_libs "$APPDIR/usr/bin/obsidian"
-  copy_linked_libs "$APPDIR/usr/lib/obsidian/bin/bash"
+  copy_linked_libs "$APPDIR/usr/bin/magma"
+  copy_linked_libs "$APPDIR/usr/lib/magma/bin/bash"
 
   for helper in WebKitNetworkProcess WebKitWebProcess WebKitGPUProcess; do
     if [[ -x "$libdir/$WEBKIT_DIR_NAME/$helper" ]]; then

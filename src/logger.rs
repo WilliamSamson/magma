@@ -12,7 +12,7 @@ use serde_json::json;
 
 static LOG_FILE: Mutex<Option<std::fs::File>> = Mutex::new(None);
 
-const LOG_FILENAME: &str = "obsidian-debug.log.jsonl";
+const LOG_FILENAME: &str = "magma-debug.log.jsonl";
 
 pub(crate) fn init() {
     let Some((path, file)) = open_log_file() else {
@@ -27,7 +27,7 @@ pub(crate) fn init() {
         };
         *guard = Some(file);
     }
-    info("obsidian started", &[("log_path", path.to_string_lossy().as_ref())]);
+    info("magma started", &[("log_path", path.to_string_lossy().as_ref())]);
 }
 
 pub(crate) fn info(message: &str, fields: &[(&str, &str)]) {
@@ -78,13 +78,13 @@ fn candidate_log_paths() -> Vec<PathBuf> {
     let mut paths = Vec::new();
 
     if let Some(state_home) = env::var_os("XDG_STATE_HOME") {
-        paths.push(PathBuf::from(state_home).join("obsidian").join(LOG_FILENAME));
+        paths.push(PathBuf::from(state_home).join("magma").join(LOG_FILENAME));
     } else if let Some(home) = env::var_os("HOME") {
         paths.push(
             PathBuf::from(home)
                 .join(".local")
                 .join("state")
-                .join("obsidian")
+                .join("magma")
                 .join(LOG_FILENAME),
         );
     }
@@ -110,7 +110,7 @@ fn write_entry(level: &str, message: &str, fields: &[(&str, &str)]) {
     entry.insert("timestamp".into(), json!(timestamp));
     entry.insert("level".into(), json!(level));
     entry.insert("message".into(), json!(message));
-    entry.insert("component".into(), json!("obsidian"));
+    entry.insert("component".into(), json!("magma"));
     for (key, value) in fields {
         entry.insert((*key).to_string(), json!(value));
     }

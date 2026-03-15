@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Obsidian Terminal — Uninstaller
+# Magma Terminal — Uninstaller
 #
 # Removes the binary, desktop entry, and icon installed by install.sh.
 # Optionally removes user configuration data.
@@ -12,13 +12,13 @@
 
 set -euo pipefail
 
-APP_NAME="obsidian"
-DESKTOP_ID="io.obsidian.terminal"
+APP_NAME="magma"
+DESKTOP_ID="io.magma.terminal"
 
 BIN_DIR="$HOME/.local/bin"
 APPS_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons/hicolor/64x64/apps"
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/obsidian"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/magma"
 
 PURGE=false
 if [[ "${1:-}" == "--purge" ]]; then
@@ -36,7 +36,7 @@ remove_file() {
   fi
 }
 
-echo "Uninstalling Obsidian Terminal..."
+echo "Uninstalling Magma Terminal..."
 echo ""
 
 remove_file "$BIN_DIR/$APP_NAME" "binary"
@@ -61,7 +61,7 @@ if $PURGE; then
 fi
 
 echo ""
-echo "Obsidian has been uninstalled."
+echo "Magma has been uninstalled."
 if ! $PURGE; then
   echo "Your configuration in $CONFIG_DIR was kept."
   echo "Run with --purge to also remove config data."

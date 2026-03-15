@@ -60,7 +60,7 @@ impl App {
 
     fn shell_context(&self) -> ShellContext {
         ShellContext {
-            app_name: "obsidian",
+            app_name: "magma",
             feature_name: "logs",
         }
     }

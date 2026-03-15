@@ -31,7 +31,7 @@ pub(super) fn build_editor() -> EditorWidgets {
     install_tags(&buffer);
 
     let view = TextView::with_buffer(&buffer);
-    view.add_css_class("obsidian-view-code");
+    view.add_css_class("magma-view-code");
     view.set_hexpand(true);
     view.set_vexpand(true);
     view.set_monospace(true);
@@ -42,21 +42,21 @@ pub(super) fn build_editor() -> EditorWidgets {
     view.set_right_margin(16);
 
     let root = ScrolledWindow::new();
-    root.add_css_class("obsidian-view-code-scroller");
+    root.add_css_class("magma-view-code-scroller");
     root.set_hexpand(true);
     root.set_vexpand(true);
     root.set_policy(PolicyType::Never, PolicyType::Automatic);
     root.set_child(Some(&view));
 
     let reload_button = Button::with_label("Reload");
-    reload_button.add_css_class("obsidian-view-preview-button");
-    reload_button.add_css_class("obsidian-view-preview-button-secondary");
+    reload_button.add_css_class("magma-view-preview-button");
+    reload_button.add_css_class("magma-view-preview-button-secondary");
     reload_button.set_visible(false);
     reload_button.set_sensitive(false);
 
     let save_button = Button::with_label("Save");
-    save_button.add_css_class("obsidian-view-preview-button");
-    save_button.add_css_class("obsidian-view-preview-button-primary");
+    save_button.add_css_class("magma-view-preview-button");
+    save_button.add_css_class("magma-view-preview-button-primary");
     save_button.set_visible(false);
     save_button.set_sensitive(false);
 

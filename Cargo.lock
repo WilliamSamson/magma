@@ -1875,6 +1875,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "magma"
+version = "0.1.0-beta.1"
+dependencies = [
+ "clap",
+ "crossterm",
+ "fontdue",
+ "gtk4",
+ "image",
+ "portable-pty",
+ "ratatui",
+ "serde",
+ "serde_json",
+ "softbuffer",
+ "tokio",
+ "vte",
+ "vte4",
+ "webkit6",
+ "winit",
+]
+
+[[package]]
 name = "maybe-rayon"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2253,27 +2274,6 @@ dependencies = [
  "objc2 0.6.4",
  "objc2-core-foundation",
  "objc2-foundation",
-]
-
-[[package]]
-name = "obsidian"
-version = "0.1.0-beta.1"
-dependencies = [
- "clap",
- "crossterm",
- "fontdue",
- "gtk4",
- "image",
- "portable-pty",
- "ratatui",
- "serde",
- "serde_json",
- "softbuffer",
- "tokio",
- "vte",
- "vte4",
- "webkit6",
- "winit",
 ]
 
 [[package]]

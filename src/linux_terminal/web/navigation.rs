@@ -5,21 +5,26 @@ use webkit6::prelude::*;
 
 use super::{browser, tabs, WebPaneState};
 
+#[derive(Clone)]
+pub(super) struct NavigationButtons {
+    pub(super) home_button: Button,
+    pub(super) zoom_out_button: Button,
+    pub(super) zoom_reset_button: Button,
+    pub(super) go_button: Button,
+    pub(super) find_prev: Button,
+    pub(super) find_next: Button,
+    pub(super) find_close: Button,
+}
+
 pub(super) fn bind_navigation(
     state: &Rc<WebPaneState>,
-    home_button: &Button,
-    zoom_out_button: &Button,
-    zoom_reset_button: &Button,
-    go_button: &Button,
-    find_prev: &Button,
-    find_next: &Button,
-    find_close: &Button,
+    buttons: NavigationButtons,
 ) {
-    bind_address(state, go_button);
-    bind_home(state, home_button);
+    bind_address(state, &buttons.go_button);
+    bind_home(state, &buttons.home_button);
     bind_reload_stop(state);
-    bind_zoom(state, zoom_out_button, zoom_reset_button);
-    bind_find_bar(state, find_prev, find_next, find_close);
+    bind_zoom(state, &buttons.zoom_out_button, &buttons.zoom_reset_button);
+    bind_find_bar(state, &buttons.find_prev, &buttons.find_next, &buttons.find_close);
     bind_keyboard(state);
     bind_add_tab(state);
 

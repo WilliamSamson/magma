@@ -48,12 +48,12 @@ impl MuxPaneView {
         pane: PaneFocus,
     ) -> Self {
         let root = GtkBox::new(Orientation::Vertical, 8);
-        root.add_css_class("obsidian-mux-root");
+        root.add_css_class("magma-mux-root");
         root.set_hexpand(true);
         root.set_vexpand(true);
 
         let bar = GtkBox::new(Orientation::Horizontal, 6);
-        bar.add_css_class("obsidian-mux-bar");
+        bar.add_css_class("magma-mux-bar");
         bar.set_hexpand(true);
 
         let stack = Stack::new();
@@ -317,7 +317,7 @@ fn rebuild_bar(
 
     for index in 0..session_count {
         let button = Button::with_label(&format!("{:02}", index + 1));
-        button.add_css_class("obsidian-mux-session");
+        button.add_css_class("magma-mux-session");
         button.set_focus_on_click(false);
         if index == current {
             button.add_css_class("active");
@@ -340,12 +340,12 @@ fn rebuild_bar(
 
     let add_button = Button::builder()
         .icon_name("list-add-symbolic")
-        .css_classes(["obsidian-mux-action"])
+        .css_classes(["magma-mux-action"])
         .tooltip_text("New session")
         .build();
     let close_button = Button::builder()
         .icon_name("window-close-symbolic")
-        .css_classes(["obsidian-mux-action"])
+        .css_classes(["magma-mux-action"])
         .tooltip_text("Close session")
         .sensitive(session_count > 1)
         .build();

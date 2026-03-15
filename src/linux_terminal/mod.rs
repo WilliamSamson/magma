@@ -34,8 +34,8 @@ use winit::dpi::PhysicalSize;
 
 use crate::window_state;
 
-const APP_ID: &str = "io.obsidian.terminal";
-const APP_TITLE: &str = "Obsidian";
+const APP_ID: &str = "io.magma.terminal";
+const APP_TITLE: &str = "Magma";
 const HEADER_ICON_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/icon_64.png");
 const ICON_THEME_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/icons");
 const MARGIN_HORIZONTAL: i32 = 16;
@@ -252,7 +252,7 @@ fn build_window(app: &Application, width: u32, height: u32) {
         .default_height(height.max(620) as i32)
         .build();
     gtk::Window::set_default_icon_name(APP_ID);
-    window.add_css_class("obsidian-window");
+    window.add_css_class("magma-window");
     window.set_titlebar(Some(&header));
     window.set_child(Some(&stack));
 
@@ -291,7 +291,7 @@ fn shell_container(
     cwd_provider: Rc<dyn Fn() -> Option<String>>,
 ) -> ShellContainer {
     let container = GtkBox::new(Orientation::Vertical, 0);
-    container.add_css_class("obsidian-shell");
+    container.add_css_class("magma-shell");
     container.set_margin_start(MARGIN_HORIZONTAL);
     container.set_margin_end(MARGIN_HORIZONTAL);
     container.set_margin_top(MARGIN_TOP);

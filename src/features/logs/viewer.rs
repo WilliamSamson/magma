@@ -29,7 +29,7 @@ pub(crate) struct LogsFeature {
 }
 
 impl LogsFeature {
-    const EXPORT_PATH: &str = "obsidian-export.jsonl";
+    const EXPORT_PATH: &str = "magma-export.jsonl";
     pub(crate) fn new(
         source_name: String,
         entries: Vec<LogEntry>,

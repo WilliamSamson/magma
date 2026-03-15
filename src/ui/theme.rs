@@ -1,4 +1,4 @@
-// Obsidian desktop palette.
+// Magma desktop palette.
 // Constraint: black, white, red, with restrained green/yellow accents only.
 
 pub(crate) const BG_PRIMARY: u32 = 0x00000000;

@@ -13,20 +13,20 @@ use super::{
 
 pub(super) fn build_search_view(view: &Rc<GitPaneView>) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
-    root.add_css_class("obsidian-git-search-root");
+    root.add_css_class("magma-git-search-root");
     root.set_vexpand(true);
 
     // Search bar
     let search_row = GtkBox::new(Orientation::Horizontal, 4);
-    search_row.add_css_class("obsidian-git-search-bar");
+    search_row.add_css_class("magma-git-search-bar");
 
     let mode_list = StringList::new(&["message", "author", "file"]);
     let mode_dropdown = DropDown::new(Some(mode_list), None::<gtk::Expression>);
-    mode_dropdown.add_css_class("obsidian-git-search-mode");
+    mode_dropdown.add_css_class("magma-git-search-mode");
     mode_dropdown.set_selected(0);
 
     let search_entry = Entry::new();
-    search_entry.add_css_class("obsidian-git-search-entry");
+    search_entry.add_css_class("magma-git-search-entry");
     search_entry.set_placeholder_text(Some("search commits..."));
     search_entry.set_hexpand(true);
     search_entry.set_icon_from_icon_name(
@@ -40,7 +40,7 @@ pub(super) fn build_search_view(view: &Rc<GitPaneView>) -> GtkBox {
     // Results
     let list = ListBox::new();
     list.set_selection_mode(SelectionMode::None);
-    list.add_css_class("obsidian-git-search-results");
+    list.add_css_class("magma-git-search-results");
 
     let scroller = ScrolledWindow::new();
     scroller.set_vexpand(true);
@@ -48,7 +48,7 @@ pub(super) fn build_search_view(view: &Rc<GitPaneView>) -> GtkBox {
     scroller.set_child(Some(&list));
 
     let count_label = Label::new(None);
-    count_label.add_css_class("obsidian-git-search-count");
+    count_label.add_css_class("magma-git-search-count");
     count_label.set_xalign(0.0);
 
     root.append(&search_row);
@@ -106,7 +106,7 @@ fn perform_search(
 
             if commits.is_empty() {
                 let label = Label::new(Some("no matching commits"));
-                label.add_css_class("obsidian-git-empty");
+                label.add_css_class("magma-git-empty");
                 label.set_xalign(0.0);
                 widgets.list.append(&label);
                 return;
@@ -121,7 +121,7 @@ fn perform_search(
         Err(e) => {
             widgets.count_label.set_text("");
             let label = Label::new(Some(&format!("search error: {e}")));
-            label.add_css_class("obsidian-git-error");
+            label.add_css_class("magma-git-error");
             widgets.list.append(&label);
         }
     }
@@ -129,20 +129,20 @@ fn perform_search(
 
 fn build_search_result(commit: &CommitInfo, view: &Rc<GitPaneView>) -> GtkBox {
     let container = GtkBox::new(Orientation::Vertical, 0);
-    container.add_css_class("obsidian-git-commit-container");
+    container.add_css_class("magma-git-commit-container");
 
     let row = GtkBox::new(Orientation::Horizontal, 6);
-    row.add_css_class("obsidian-git-commit-row");
+    row.add_css_class("magma-git-commit-row");
 
     let info_box = GtkBox::new(Orientation::Vertical, 1);
     info_box.set_hexpand(true);
 
     let top_row = GtkBox::new(Orientation::Horizontal, 6);
     let hash_label = Label::new(Some(&commit.short_hash));
-    hash_label.add_css_class("obsidian-git-commit-hash");
+    hash_label.add_css_class("magma-git-commit-hash");
 
     let msg_label = Label::new(Some(&commit.message));
-    msg_label.add_css_class("obsidian-git-commit-msg");
+    msg_label.add_css_class("magma-git-commit-msg");
     msg_label.set_xalign(0.0);
     msg_label.set_hexpand(true);
     msg_label.set_ellipsize(pango::EllipsizeMode::End);
@@ -152,12 +152,12 @@ fn build_search_result(commit: &CommitInfo, view: &Rc<GitPaneView>) -> GtkBox {
 
     let bottom_row = GtkBox::new(Orientation::Horizontal, 8);
     let author_label = Label::new(Some(&commit.author));
-    author_label.add_css_class("obsidian-git-commit-author");
+    author_label.add_css_class("magma-git-commit-author");
     author_label.set_xalign(0.0);
     author_label.set_hexpand(true);
 
     let date_label = Label::new(Some(&commit.date));
-    date_label.add_css_class("obsidian-git-commit-date");
+    date_label.add_css_class("magma-git-commit-date");
 
     bottom_row.append(&author_label);
     bottom_row.append(&date_label);
@@ -185,7 +185,7 @@ fn build_search_result(commit: &CommitInfo, view: &Rc<GitPaneView>) -> GtkBox {
         let root = view_ref.repo_root.borrow().clone();
         if let Some(root) = root {
             let diff_box = GtkBox::new(Orientation::Vertical, 4);
-            diff_box.add_css_class("obsidian-git-commit-detail");
+            diff_box.add_css_class("magma-git-commit-detail");
 
             if let Ok(stat) = ops::git_diff_stat(&root, &commit_hash) {
                 diff_box.append(&build_diff_stat(&stat));
@@ -213,6 +213,6 @@ fn clear_list(list: &ListBox) {
 }
 
 pub(super) struct SearchWidgets {
-    list: ListBox,
-    count_label: Label,
+    pub(super) list: ListBox,
+    pub(super) count_label: Label,
 }

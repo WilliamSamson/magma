@@ -1,4 +1,4 @@
-# Obsidian Feature List
+# Magma Feature List
 
 This document tracks the current user-facing feature set in the desktop application.
 

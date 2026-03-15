@@ -1,4 +1,4 @@
-# Obsidian Terminal Workspace Guide
+# Magma Terminal Workspace Guide
 This guide covers the GTK/VTE desktop terminal workspace: setup, tabs, panes, side tools, settings, restore behavior, and the main shortcuts.
 ## Launch
 Run the desktop workspace:
@@ -98,7 +98,7 @@ The handle opens one pane at a time:
 - `logr`: structured log viewer
 - `web`: embedded browser
 - `view`: file viewer for the active terminal directory
-If `panel open on start` is enabled, Obsidian starts with `logr` open.
+If `panel open on start` is enabled, Magma starts with `logr` open.
 ### Logr
 Features:
 - scans nearby `log`, `jsonl`, `json`, and `txt` files
@@ -157,7 +157,7 @@ Sections:
 - `logr`: whether the side pane opens on startup
 - `about`: version, config path, credits, engine details
 ## Persistence
-Obsidian saves:
+Magma saves:
 - window size
 - app settings
 - workspace tabs

@@ -1,6 +1,6 @@
-# Obsidian
+# Magma
 
-Obsidian is for developers who live in the terminal and hate switching windows to tail logs, check docs, or do a quick search. It puts your shell, a live JSON log viewer, and a web pane side by side in one workspace — so you stop context-switching and start shipping.
+Magma is for developers who live in the terminal and hate switching windows to tail logs, check docs, or do a quick search. It puts your shell, a live JSON log viewer, and a web pane side by side in one workspace — so you stop context-switching and start shipping.
 
 A GPU-accelerated GTK4/VTE terminal built in Rust for Linux. Designed for backend and DevOps workflows where `kubectl logs`, application traces, and a browser are always one pane away.
 
@@ -20,10 +20,10 @@ A GPU-accelerated GTK4/VTE terminal built in Rust for Linux. Designed for backen
 
 ## Install
 
-Download the latest `.deb` package from [GitHub Releases](https://github.com/WilliamSamson/obsidian/releases) and install:
+Download the latest `.deb` package from [GitHub Releases](https://github.com/WilliamSamson/magma/releases) and install:
 
 ```bash
-sudo dpkg -i obsidian_0.1.0~beta.1_amd64.deb
+sudo dpkg -i magma_0.1.0~beta.1_amd64.deb
 sudo apt-get install -f   # pulls missing dependencies if needed
 ```
 
@@ -35,7 +35,7 @@ Runtime dependencies (installed automatically by apt):
 Uninstall:
 
 ```bash
-sudo apt remove obsidian
+sudo apt remove magma
 ```
 
 ## Features
@@ -80,7 +80,7 @@ Build and run:
 
 ```bash
 cargo build --release
-./target/release/obsidian
+./target/release/magma
 ```
 
 Build the `.deb` package:
@@ -94,25 +94,25 @@ Build the `.deb` package:
 Launch the terminal workspace:
 
 ```bash
-obsidian
+magma
 ```
 
 Open the log viewer against a file:
 
 ```bash
-obsidian sample-logs.jsonl
+magma sample-logs.jsonl
 ```
 
 Pipe logs from another command:
 
 ```bash
-kubectl logs mypod -f | obsidian
+kubectl logs mypod -f | magma
 ```
 
 Start with filters:
 
 ```bash
-obsidian --filter level=error --filter query=request sample-logs.jsonl
+magma --filter level=error --filter query=request sample-logs.jsonl
 ```
 
 Supported filter keys: `level=trace|debug|info|warn|error`, `query=<text>`, `search=<text>`

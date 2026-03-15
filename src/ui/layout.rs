@@ -145,8 +145,8 @@ pub(crate) fn empty_state_lines(has_entries: bool) -> [Line<'static>; 2] {
         ]
     } else {
         [
-            Line::from(Span::styled("Obsidian is open and waiting for log input.", style)),
-            Line::from(Span::styled("Pass a file path or pipe newline-delimited JSON into obsidian.", style)),
+            Line::from(Span::styled("Magma is open and waiting for log input.", style)),
+            Line::from(Span::styled("Pass a file path or pipe newline-delimited JSON into magma.", style)),
         ]
     }
 }
@@ -157,7 +157,7 @@ pub(crate) fn footer_lines(feature_name: &str) -> [Line<'static>; 3] {
     [
         Line::from(""),
         Line::from(Span::styled(
-            format!("obsidian/{feature_name}  Nav: Up/Down j/k PgUp/PgDn Home/End"),
+            format!("magma/{feature_name}  Nav: Up/Down j/k PgUp/PgDn Home/End"),
             style,
         )),
         Line::from(Span::styled(

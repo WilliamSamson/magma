@@ -16,7 +16,7 @@ pub(in crate::linux_terminal) fn build_settings_page(
     let root = GtkBox::new(Orientation::Vertical, 0);
     root.set_vexpand(true);
     root.set_hexpand(true);
-    root.add_css_class("obsidian-settings-root");
+    root.add_css_class("magma-settings-root");
 
     let page_stack = Stack::new();
     page_stack.set_vexpand(true);
@@ -44,11 +44,11 @@ pub(in crate::linux_terminal) fn build_settings_page(
 
 fn build_header(page_stack: &Stack, title: &Label, on_back: Rc<dyn Fn()>) -> GtkBox {
     let header = GtkBox::new(Orientation::Horizontal, 8);
-    header.add_css_class("obsidian-settings-header");
+    header.add_css_class("magma-settings-header");
 
     let back_button = Button::builder()
         .icon_name("go-previous-symbolic")
-        .css_classes(["obsidian-settings-back"])
+        .css_classes(["magma-settings-back"])
         .tooltip_text("Back")
         .build();
 
@@ -61,7 +61,7 @@ fn build_header(page_stack: &Stack, title: &Label, on_back: Rc<dyn Fn()>) -> Gtk
         on_back();
     });
 
-    title.add_css_class("obsidian-settings-title");
+    title.add_css_class("magma-settings-title");
     title.set_xalign(0.0);
     title.set_hexpand(true);
 

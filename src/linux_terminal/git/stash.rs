@@ -13,21 +13,21 @@ use super::{
 
 pub(super) fn build_stash_view(view: &Rc<GitPaneView>) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
-    root.add_css_class("obsidian-git-stash-root");
+    root.add_css_class("magma-git-stash-root");
     root.set_vexpand(true);
 
     // Stash push row
     let push_row = GtkBox::new(Orientation::Horizontal, 4);
-    push_row.add_css_class("obsidian-git-stash-push");
+    push_row.add_css_class("magma-git-stash-push");
 
     let stash_entry = Entry::new();
-    stash_entry.add_css_class("obsidian-git-stash-entry");
+    stash_entry.add_css_class("magma-git-stash-entry");
     stash_entry.set_placeholder_text(Some("stash message (optional)"));
     stash_entry.set_hexpand(true);
 
     let stash_btn = Button::builder()
         .label("stash")
-        .css_classes(["obsidian-git-action-btn"])
+        .css_classes(["magma-git-action-btn"])
         .build();
 
     {
@@ -41,10 +41,10 @@ pub(super) fn build_stash_view(view: &Rc<GitPaneView>) -> GtkBox {
                 match ops::git_stash_push(&root, msg_opt) {
                     Ok(_) => {
                         entry_ref.set_text("");
-                        view_ref.set_status("stashed changes");
+                        view_ref.set_status_ok("stashed changes");
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("stash failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("stash failed: {e}")),
                 }
             }
         });
@@ -56,7 +56,7 @@ pub(super) fn build_stash_view(view: &Rc<GitPaneView>) -> GtkBox {
     // Stash list
     let list = ListBox::new();
     list.set_selection_mode(SelectionMode::None);
-    list.add_css_class("obsidian-git-stash-list");
+    list.add_css_class("magma-git-stash-list");
 
     let scroller = ScrolledWindow::new();
     scroller.set_vexpand(true);
@@ -90,7 +90,7 @@ pub(super) fn refresh_stash(view: &Rc<GitPaneView>) {
         Ok(entries) => {
             if entries.is_empty() {
                 let label = Label::new(Some("no stashes"));
-                label.add_css_class("obsidian-git-empty");
+                label.add_css_class("magma-git-empty");
                 label.set_xalign(0.0);
                 widgets.list.append(&label);
                 return;
@@ -101,7 +101,7 @@ pub(super) fn refresh_stash(view: &Rc<GitPaneView>) {
         }
         Err(e) => {
             let label = Label::new(Some(&format!("error: {e}")));
-            label.add_css_class("obsidian-git-error");
+            label.add_css_class("magma-git-error");
             widgets.list.append(&label);
         }
     }
@@ -109,35 +109,35 @@ pub(super) fn refresh_stash(view: &Rc<GitPaneView>) {
 
 fn build_stash_row(entry: &StashEntry, view: &Rc<GitPaneView>) -> GtkBox {
     let container = GtkBox::new(Orientation::Vertical, 0);
-    container.add_css_class("obsidian-git-stash-row-container");
+    container.add_css_class("magma-git-stash-row-container");
 
     let row = GtkBox::new(Orientation::Horizontal, 6);
-    row.add_css_class("obsidian-git-stash-row");
+    row.add_css_class("magma-git-stash-row");
 
     let index_label = Label::new(Some(&format!("{{{}}}", entry.index)));
-    index_label.add_css_class("obsidian-git-stash-index");
+    index_label.add_css_class("magma-git-stash-index");
 
     let msg_label = Label::new(Some(&entry.message));
-    msg_label.add_css_class("obsidian-git-stash-msg");
+    msg_label.add_css_class("magma-git-stash-msg");
     msg_label.set_xalign(0.0);
     msg_label.set_hexpand(true);
     msg_label.set_ellipsize(pango::EllipsizeMode::End);
 
     let apply_btn = Button::builder()
         .label("apply")
-        .css_classes(["obsidian-git-file-action"])
+        .css_classes(["magma-git-file-action"])
         .tooltip_text("Apply stash (keep in list)")
         .build();
 
     let pop_btn = Button::builder()
         .label("pop")
-        .css_classes(["obsidian-git-file-action"])
+        .css_classes(["magma-git-file-action"])
         .tooltip_text("Apply and remove from list")
         .build();
 
     let drop_btn = Button::builder()
         .icon_name("edit-delete-symbolic")
-        .css_classes(["obsidian-git-file-discard"])
+        .css_classes(["magma-git-file-discard"])
         .tooltip_text("Drop stash")
         .build();
 
@@ -150,10 +150,10 @@ fn build_stash_row(entry: &StashEntry, view: &Rc<GitPaneView>) -> GtkBox {
             if let Some(root) = root {
                 match ops::git_stash_apply(&root, idx) {
                     Ok(_) => {
-                        view_ref.set_status("stash applied");
+                        view_ref.set_status_ok("stash applied");
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("apply failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("apply failed: {e}")),
                 }
             }
         });
@@ -166,10 +166,10 @@ fn build_stash_row(entry: &StashEntry, view: &Rc<GitPaneView>) -> GtkBox {
             if let Some(root) = root {
                 match ops::git_stash_pop(&root, idx) {
                     Ok(_) => {
-                        view_ref.set_status("stash popped");
+                        view_ref.set_status_ok("stash popped");
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("pop failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("pop failed: {e}")),
                 }
             }
         });
@@ -182,10 +182,10 @@ fn build_stash_row(entry: &StashEntry, view: &Rc<GitPaneView>) -> GtkBox {
             if let Some(root) = root {
                 match ops::git_stash_drop(&root, idx) {
                     Ok(_) => {
-                        view_ref.set_status("stash dropped");
+                        view_ref.set_status_ok("stash dropped");
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("drop failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("drop failed: {e}")),
                 }
             }
         });
@@ -214,11 +214,16 @@ fn build_stash_row(entry: &StashEntry, view: &Rc<GitPaneView>) -> GtkBox {
 
         let root = view_ref.repo_root.borrow().clone();
         if let Some(root) = root {
-            if let Ok(diff_text) = ops::git_stash_show(&root, idx) {
-                let hunks = super::ops::parse_diff_text(&diff_text);
-                let diff_widget = build_diff_widget(&hunks, None);
-                revealer_ref.set_child(Some(&diff_widget));
-                revealer_ref.set_reveal_child(true);
+            match ops::git_stash_show(&root, idx) {
+                Ok(diff_text) => {
+                    let hunks = ops::parse_diff_text(&diff_text);
+                    let diff_widget = build_diff_widget(&hunks, None);
+                    revealer_ref.set_child(Some(&diff_widget));
+                    revealer_ref.set_reveal_child(true);
+                }
+                Err(e) => {
+                    view_ref.set_status_err(&format!("stash preview failed: {e}"));
+                }
             }
         }
     });
@@ -236,5 +241,5 @@ fn clear_list(list: &ListBox) {
 }
 
 pub(super) struct StashWidgets {
-    list: ListBox,
+    pub(super) list: ListBox,
 }

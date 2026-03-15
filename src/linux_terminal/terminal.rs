@@ -22,7 +22,7 @@ pub(super) fn build_terminal(profile_id: ProfileId, settings: &Settings) -> Term
         .enable_shaping(settings.ligatures)
         .enable_sixel(settings.image_rendering)
         .build();
-    terminal.add_css_class("obsidian-terminal");
+    terminal.add_css_class("magma-terminal");
 
     let blink = if settings.cursor_blink {
         CursorBlinkMode::On

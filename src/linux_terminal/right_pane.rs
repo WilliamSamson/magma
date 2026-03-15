@@ -58,7 +58,7 @@ pub(super) fn build_side_panes(
     }));
 
     let handle = GtkBox::new(Orientation::Vertical, 3);
-    handle.add_css_class("obsidian-handle");
+    handle.add_css_class("magma-handle");
     handle.set_vexpand(false);
     handle.set_valign(Align::Center);
 
@@ -187,18 +187,18 @@ impl SidePanes {
 
 fn handle_button(icon_name: &str, tooltip: &str) -> Button {
     let button = Button::builder()
-        .css_classes(["obsidian-handle-segment"])
+        .css_classes(["magma-handle-segment"])
         .tooltip_text(tooltip)
         .build();
     let icon = Image::from_icon_name(icon_name);
-    icon.add_css_class("obsidian-handle-icon");
+    icon.add_css_class("magma-handle-icon");
     button.set_child(Some(&icon));
     button
 }
 
 fn wrap_pane(child: &impl IsA<gtk::Widget>) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
-    root.add_css_class("obsidian-right-pane");
+    root.add_css_class("magma-right-pane");
     root.set_size_request(PANE_WIDTH, -1);
     root.set_width_request(PANE_WIDTH);
     root.set_hexpand(false);

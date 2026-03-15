@@ -17,7 +17,7 @@ use webkit6::{NetworkSession, WebContext};
 
 use super::settings::Settings;
 pub(super) use host::WebPaneHost;
-use navigation::bind_navigation;
+use navigation::{bind_navigation, NavigationButtons};
 
 pub(super) fn build_web_pane(
     settings: Rc<RefCell<Settings>>,
@@ -29,7 +29,7 @@ pub(super) fn build_web_pane(
     root.set_hexpand(true);
     root.set_width_request(0);
     root.set_overflow(Overflow::Hidden);
-    root.add_css_class("obsidian-web-root");
+    root.add_css_class("magma-web-root");
     root.set_focusable(true);
 
     let tab_row = build_tab_bar();
@@ -77,13 +77,15 @@ pub(super) fn build_web_pane(
 
     bind_navigation(
         &state,
-        &controls.home_button,
-        &controls.zoom_out_button,
-        &controls.zoom_reset_button,
-        &controls.go_button,
-        &find_bar.prev_button,
-        &find_bar.next_button,
-        &find_bar.close_button,
+        NavigationButtons {
+            home_button: controls.home_button.clone(),
+            zoom_out_button: controls.zoom_out_button.clone(),
+            zoom_reset_button: controls.zoom_reset_button.clone(),
+            go_button: controls.go_button.clone(),
+            find_prev: find_bar.prev_button.clone(),
+            find_next: find_bar.next_button.clone(),
+            find_close: find_bar.close_button.clone(),
+        },
     );
 
     tabs::restore_tabs(&state);
@@ -149,24 +151,24 @@ struct FindBarWidgets {
 
 fn build_tab_bar() -> TabBarWidgets {
     let row = GtkBox::new(Orientation::Horizontal, 0);
-    row.add_css_class("obsidian-web-tab-row");
+    row.add_css_class("magma-web-tab-row");
     row.set_hexpand(true);
     row.set_overflow(Overflow::Hidden);
 
     let scroll = ScrolledWindow::new();
-    scroll.add_css_class("obsidian-web-tab-scroll");
+    scroll.add_css_class("magma-web-tab-scroll");
     scroll.set_hexpand(true);
     scroll.set_vexpand(false);
     scroll.set_policy(PolicyType::Automatic, PolicyType::Never);
 
     let tab_bar = GtkBox::new(Orientation::Horizontal, 2);
-    tab_bar.add_css_class("obsidian-web-tabs");
+    tab_bar.add_css_class("magma-web-tabs");
     scroll.set_child(Some(&tab_bar));
 
     let add_button = Button::builder()
         .icon_name("list-add-symbolic")
         .tooltip_text("New tab (Ctrl+T)")
-        .css_classes(["obsidian-web-tab-add"])
+        .css_classes(["magma-web-tab-add"])
         .build();
 
     row.append(&scroll);
@@ -181,13 +183,13 @@ fn build_tab_bar() -> TabBarWidgets {
 
 fn build_controls() -> ControlWidgets {
     let row = GtkBox::new(Orientation::Horizontal, 0);
-    row.add_css_class("obsidian-web-bar");
-    row.add_css_class("obsidian-web-controls");
+    row.add_css_class("magma-web-bar");
+    row.add_css_class("magma-web-controls");
     row.set_hexpand(true);
     row.set_overflow(Overflow::Hidden);
 
     let nav = GtkBox::new(Orientation::Horizontal, 2);
-    nav.add_css_class("obsidian-web-nav");
+    nav.add_css_class("magma-web-nav");
 
     let back_button = icon_button("go-previous-symbolic", "Back");
     let forward_button = icon_button("go-next-symbolic", "Forward");
@@ -208,17 +210,17 @@ fn build_controls() -> ControlWidgets {
     nav.append(&zoom_reset_button);
 
     let ssl_icon = Image::from_icon_name("channel-insecure-symbolic");
-    ssl_icon.add_css_class("obsidian-web-ssl");
+    ssl_icon.add_css_class("magma-web-ssl");
     ssl_icon.set_visible(false);
 
     let address = Entry::new();
-    address.add_css_class("obsidian-web-entry");
+    address.add_css_class("magma-web-entry");
     address.set_placeholder_text(Some("search or enter address"));
     address.set_hexpand(true);
     address.set_width_request(0);
 
     let address_shell = GtkBox::new(Orientation::Horizontal, 0);
-    address_shell.add_css_class("obsidian-web-address-shell");
+    address_shell.add_css_class("magma-web-address-shell");
     address_shell.set_hexpand(true);
     address_shell.set_overflow(Overflow::Hidden);
     address_shell.append(&ssl_icon);
@@ -245,7 +247,7 @@ fn build_controls() -> ControlWidgets {
 
 fn build_progress_bar() -> ProgressBar {
     let bar = ProgressBar::new();
-    bar.add_css_class("obsidian-web-progress");
+    bar.add_css_class("magma-web-progress");
     bar.set_fraction(0.0);
     bar.set_visible(false);
     bar
@@ -253,7 +255,7 @@ fn build_progress_bar() -> ProgressBar {
 
 fn build_status() -> Label {
     let status = Label::new(Some("ready"));
-    status.add_css_class("obsidian-web-status");
+    status.add_css_class("magma-web-status");
     status.set_xalign(0.0);
     status.set_ellipsize(pango::EllipsizeMode::End);
     status
@@ -261,17 +263,17 @@ fn build_status() -> Label {
 
 fn build_find_bar() -> FindBarWidgets {
     let row = GtkBox::new(Orientation::Horizontal, 4);
-    row.add_css_class("obsidian-web-find-bar");
+    row.add_css_class("magma-web-find-bar");
     row.set_visible(false);
 
     let entry = Entry::new();
-    entry.add_css_class("obsidian-web-find-entry");
+    entry.add_css_class("magma-web-find-entry");
     entry.set_placeholder_text(Some("find in page"));
     entry.set_hexpand(true);
     entry.set_width_request(0);
 
     let matches_label = Label::new(None);
-    matches_label.add_css_class("obsidian-web-find-matches");
+    matches_label.add_css_class("magma-web-find-matches");
 
     let prev_button = icon_button("go-up-symbolic", "Previous match");
     let next_button = icon_button("go-down-symbolic", "Next match");
@@ -297,7 +299,7 @@ fn icon_button(icon_name: &str, tooltip: &str) -> Button {
     Button::builder()
         .icon_name(icon_name)
         .tooltip_text(tooltip)
-        .css_classes(["obsidian-web-button"])
+        .css_classes(["magma-web-button"])
         .build()
 }
 
@@ -305,6 +307,6 @@ fn text_button(label: &str, tooltip: &str) -> Button {
     Button::builder()
         .label(label)
         .tooltip_text(tooltip)
-        .css_classes(["obsidian-web-button", "obsidian-web-text-button"])
+        .css_classes(["magma-web-button", "magma-web-text-button"])
         .build()
 }

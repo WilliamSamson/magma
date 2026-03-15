@@ -21,11 +21,11 @@ struct StatusEvent {
 
 pub(super) fn build_status_widgets(status_path: &Path, notifications: Rc<Cell<bool>>) -> StatusWidgets {
     let status = Label::new(None);
-    status.add_css_class("obsidian-status-label");
-    status.add_css_class("obsidian-status-ok");
+    status.add_css_class("magma-status-label");
+    status.add_css_class("magma-status-ok");
 
     let notice = Label::new(None);
-    notice.add_css_class("obsidian-notice-label");
+    notice.add_css_class("magma-notice-label");
     notice.set_visible(false);
 
     let initial = read_status_event(status_path);
@@ -102,12 +102,12 @@ fn update_status_label(label: &Label, status_code: i32) {
         format!("failed {status_code}")
     };
     label.set_text(&text);
-    label.remove_css_class("obsidian-status-ok");
-    label.remove_css_class("obsidian-status-error");
+    label.remove_css_class("magma-status-ok");
+    label.remove_css_class("magma-status-error");
     if status_code == 0 {
-        label.add_css_class("obsidian-status-ok");
+        label.add_css_class("magma-status-ok");
     } else {
-        label.add_css_class("obsidian-status-error");
+        label.add_css_class("magma-status-error");
     }
 }
 
@@ -116,7 +116,7 @@ fn show_notice(notice: &Label, notice_version: &Cell<u64>, event: &StatusEvent) 
     notice_version.set(version);
 
     let (message, class_name) = if event.status_code == 0 {
-        (format!("done · {}", compact_command(&event.command)), "obsidian-notice-ok")
+        (format!("done · {}", compact_command(&event.command)), "magma-notice-ok")
     } else {
         (
             format!(
@@ -124,13 +124,13 @@ fn show_notice(notice: &Label, notice_version: &Cell<u64>, event: &StatusEvent) 
                 event.status_code,
                 compact_command(&event.command)
             ),
-            "obsidian-notice-error",
+            "magma-notice-error",
         )
     };
 
     notice.set_text(&message);
-    notice.remove_css_class("obsidian-notice-ok");
-    notice.remove_css_class("obsidian-notice-error");
+    notice.remove_css_class("magma-notice-ok");
+    notice.remove_css_class("magma-notice-error");
     notice.add_css_class(class_name);
     notice.set_visible(true);
 

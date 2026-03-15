@@ -2,7 +2,7 @@
 /dist
 
 # Runtime output
-obsidian-export.jsonl
+magma-export.jsonl
 logr-export.jsonl
 *.log
 

@@ -12,21 +12,21 @@ use super::{
 
 pub(super) fn build_branches_view(view: &Rc<GitPaneView>) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
-    root.add_css_class("obsidian-git-branch-root");
+    root.add_css_class("magma-git-branch-root");
     root.set_vexpand(true);
 
     // Create branch row
     let create_row = GtkBox::new(Orientation::Horizontal, 4);
-    create_row.add_css_class("obsidian-git-branch-create");
+    create_row.add_css_class("magma-git-branch-create");
 
     let create_entry = Entry::new();
-    create_entry.add_css_class("obsidian-git-branch-entry");
+    create_entry.add_css_class("magma-git-branch-entry");
     create_entry.set_placeholder_text(Some("new branch name..."));
     create_entry.set_hexpand(true);
 
     let create_btn = Button::builder()
         .label("create")
-        .css_classes(["obsidian-git-action-btn"])
+        .css_classes(["magma-git-action-btn"])
         .sensitive(false)
         .build();
 
@@ -50,10 +50,10 @@ pub(super) fn build_branches_view(view: &Rc<GitPaneView>) -> GtkBox {
                 match ops::git_create_branch(&root, &name) {
                     Ok(_) => {
                         entry_ref.set_text("");
-                        view_ref.set_status(&format!("created & switched to {name}"));
+                        view_ref.set_status_ok(&format!("created & switched to {name}"));
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("create failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("create failed: {e}")),
                 }
             }
         });
@@ -72,21 +72,21 @@ pub(super) fn build_branches_view(view: &Rc<GitPaneView>) -> GtkBox {
 
     // Local branches
     let local_header = Label::new(Some("local"));
-    local_header.add_css_class("obsidian-git-section-title");
+    local_header.add_css_class("magma-git-section-title");
     local_header.set_xalign(0.0);
 
     let local_list = ListBox::new();
     local_list.set_selection_mode(SelectionMode::None);
-    local_list.add_css_class("obsidian-git-branch-list");
+    local_list.add_css_class("magma-git-branch-list");
 
     // Remote branches
     let remote_header = Label::new(Some("remote"));
-    remote_header.add_css_class("obsidian-git-section-title");
+    remote_header.add_css_class("magma-git-section-title");
     remote_header.set_xalign(0.0);
 
     let remote_list = ListBox::new();
     remote_list.set_selection_mode(SelectionMode::None);
-    remote_list.add_css_class("obsidian-git-branch-list");
+    remote_list.add_css_class("magma-git-branch-list");
 
     let scroller = ScrolledWindow::new();
     scroller.set_vexpand(true);
@@ -125,11 +125,7 @@ pub(super) fn refresh_branches(view: &Rc<GitPaneView>) {
     };
 
     match ops::git_branches(&root) {
-        Ok(branches) => {
-            let (local, remote): (Vec<_>, Vec<_>) = branches
-                .into_iter()
-                .partition(|b| !b.name.contains('/'));
-
+        Ok((local, remote)) => {
             for branch in &local {
                 widgets.local_list.append(&build_branch_row(branch, view));
             }
@@ -139,7 +135,7 @@ pub(super) fn refresh_branches(view: &Rc<GitPaneView>) {
         }
         Err(e) => {
             let label = Label::new(Some(&format!("error: {e}")));
-            label.add_css_class("obsidian-git-error");
+            label.add_css_class("magma-git-error");
             widgets.local_list.append(&label);
         }
     }
@@ -147,23 +143,23 @@ pub(super) fn refresh_branches(view: &Rc<GitPaneView>) {
 
 fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
     let row = GtkBox::new(Orientation::Horizontal, 6);
-    row.add_css_class("obsidian-git-branch-row");
+    row.add_css_class("magma-git-branch-row");
 
     if branch.is_current {
-        row.add_css_class("obsidian-git-branch-current");
+        row.add_css_class("magma-git-branch-current");
     }
 
     let indicator = Label::new(Some(if branch.is_current { "\u{25CF}" } else { "" }));
-    indicator.add_css_class("obsidian-git-branch-indicator");
+    indicator.add_css_class("magma-git-branch-indicator");
 
     let name = Label::new(Some(&branch.name));
-    name.add_css_class("obsidian-git-branch-name");
+    name.add_css_class("magma-git-branch-name");
     name.set_xalign(0.0);
     name.set_hexpand(true);
     name.set_ellipsize(pango::EllipsizeMode::End);
 
     let commit = Label::new(Some(&branch.last_commit));
-    commit.add_css_class("obsidian-git-branch-commit");
+    commit.add_css_class("magma-git-branch-commit");
     commit.set_ellipsize(pango::EllipsizeMode::End);
     commit.set_max_width_chars(20);
 
@@ -175,7 +171,7 @@ fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
         // Switch button
         let switch_btn = Button::builder()
             .label("switch")
-            .css_classes(["obsidian-git-file-action"])
+            .css_classes(["magma-git-file-action"])
             .build();
 
         let branch_name = branch.name.clone();
@@ -185,10 +181,10 @@ fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
             if let Some(root) = root {
                 match ops::git_switch_branch(&root, &branch_name) {
                     Ok(_) => {
-                        view_ref.set_status(&format!("switched to {branch_name}"));
+                        view_ref.set_status_ok(&format!("switched to {branch_name}"));
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("switch failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("switch failed: {e}")),
                 }
             }
         });
@@ -197,7 +193,7 @@ fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
         // Delete button
         let delete_btn = Button::builder()
             .icon_name("edit-delete-symbolic")
-            .css_classes(["obsidian-git-file-discard"])
+            .css_classes(["magma-git-file-discard"])
             .tooltip_text("Delete branch")
             .build();
 
@@ -208,10 +204,10 @@ fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
             if let Some(root) = root {
                 match ops::git_delete_branch(&root, &branch_name) {
                     Ok(_) => {
-                        view_ref.set_status(&format!("deleted {branch_name}"));
+                        view_ref.set_status_ok(&format!("deleted {branch_name}"));
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("delete failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("delete failed: {e}")),
                 }
             }
         });
@@ -220,7 +216,7 @@ fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
         // Merge button
         let merge_btn = Button::builder()
             .label("merge")
-            .css_classes(["obsidian-git-file-action"])
+            .css_classes(["magma-git-file-action"])
             .tooltip_text("Merge into current branch")
             .build();
 
@@ -232,10 +228,10 @@ fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
                 match ops::git_merge_branch(&root, &branch_name) {
                     Ok(output) => {
                         let summary = output.lines().next().unwrap_or("merged");
-                        view_ref.set_status(summary);
+                        view_ref.set_status_ok(summary);
                         view_ref.refresh();
                     }
-                    Err(e) => view_ref.set_status(&format!("merge failed: {e}")),
+                    Err(e) => view_ref.set_status_err(&format!("merge failed: {e}")),
                 }
             }
         });
@@ -247,17 +243,17 @@ fn build_branch_row(branch: &BranchInfo, view: &Rc<GitPaneView>) -> GtkBox {
 
 fn build_remote_branch_row(branch: &BranchInfo) -> GtkBox {
     let row = GtkBox::new(Orientation::Horizontal, 6);
-    row.add_css_class("obsidian-git-branch-row");
-    row.add_css_class("obsidian-git-branch-remote");
+    row.add_css_class("magma-git-branch-row");
+    row.add_css_class("magma-git-branch-remote");
 
     let name = Label::new(Some(&branch.name));
-    name.add_css_class("obsidian-git-branch-name");
+    name.add_css_class("magma-git-branch-name");
     name.set_xalign(0.0);
     name.set_hexpand(true);
     name.set_ellipsize(pango::EllipsizeMode::End);
 
     let commit = Label::new(Some(&branch.last_commit));
-    commit.add_css_class("obsidian-git-branch-commit");
+    commit.add_css_class("magma-git-branch-commit");
     commit.set_ellipsize(pango::EllipsizeMode::End);
     commit.set_max_width_chars(25);
 
@@ -273,6 +269,6 @@ fn clear_list(list: &ListBox) {
 }
 
 pub(super) struct BranchWidgets {
-    local_list: ListBox,
-    remote_list: ListBox,
+    pub(super) local_list: ListBox,
+    pub(super) remote_list: ListBox,
 }

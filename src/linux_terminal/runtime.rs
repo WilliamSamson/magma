@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-const BUNDLED_SHELL_ENV: &str = "OBSIDIAN_BUNDLED_SHELL";
+const BUNDLED_SHELL_ENV: &str = "MAGMA_BUNDLED_SHELL";
 
 pub(super) fn resolve_shell(shell_override: &str) -> String {
     if let Some(path) = resolve_executable(shell_override) {
@@ -46,13 +46,13 @@ fn bundled_shell_candidates() -> Vec<PathBuf> {
     let mut candidates = Vec::new();
 
     if let Some(appdir) = env::var_os("APPDIR").map(PathBuf::from) {
-        candidates.push(appdir.join("usr/lib/obsidian/bin/bash"));
+        candidates.push(appdir.join("usr/lib/magma/bin/bash"));
     }
 
     if let Ok(exe) = env::current_exe() {
         if let Some(dir) = exe.parent() {
             candidates.push(dir.join("bash"));
-            candidates.push(dir.join("../lib/obsidian/bin/bash"));
+            candidates.push(dir.join("../lib/magma/bin/bash"));
             candidates.push(dir.join("../Resources/bin/bash"));
         }
     }

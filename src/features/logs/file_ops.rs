@@ -26,7 +26,7 @@ pub(crate) fn remove_line_at(path: &Path, line_num: usize) -> io::Result<()> {
     // Write back to the file
     let mut file = File::create(path)?;
     for line in lines {
-        writeln!(file, "{}", line)?;
+        writeln!(file, "{line}")?;
     }
 
     Ok(())

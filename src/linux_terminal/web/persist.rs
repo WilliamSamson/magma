@@ -58,5 +58,5 @@ fn config_root() -> PathBuf {
         .map(PathBuf::from)
         .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".config")))
         .unwrap_or_else(|| Path::new(".").to_path_buf());
-    base.join("obsidian")
+    base.join("magma")
 }

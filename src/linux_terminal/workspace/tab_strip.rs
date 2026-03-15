@@ -81,8 +81,8 @@ pub(super) fn reveal_active_tab_at(
 
 /// Recursively update active classes on tab button labels and close buttons.
 fn update_children_active(widget: &gtk::Widget, is_active: bool) {
-    if widget.has_css_class("obsidian-tab-button-label")
-        || widget.has_css_class("obsidian-tab-close-button")
+    if widget.has_css_class("magma-tab-button-label")
+        || widget.has_css_class("magma-tab-close-button")
     {
         if is_active {
             widget.add_css_class("active");
@@ -123,7 +123,7 @@ pub(super) fn rebuild_tab_strip_at(
         let is_renaming = rename_state.borrow().is_some_and(|rename_index| rename_index == index);
 
         let tab_root = GtkBox::new(Orientation::Horizontal, 8);
-        tab_root.add_css_class("obsidian-tab-item");
+        tab_root.add_css_class("magma-tab-item");
         if is_active {
             tab_root.add_css_class("active");
         }
@@ -134,8 +134,8 @@ pub(super) fn rebuild_tab_strip_at(
         } else {
             let title = tab.title_label().text();
             let label = Label::new(Some(&title));
-            label.add_css_class("obsidian-tab-label");
-            label.add_css_class("obsidian-tab-button-label");
+            label.add_css_class("magma-tab-label");
+            label.add_css_class("magma-tab-button-label");
             if is_active {
                 label.add_css_class("active");
             }
@@ -147,7 +147,7 @@ pub(super) fn rebuild_tab_strip_at(
         if tab_count > 1 {
             let close_button = Button::builder()
                 .icon_name("window-close-symbolic")
-                .css_classes(["obsidian-tab-close-button"])
+                .css_classes(["magma-tab-close-button"])
                 .focus_on_click(false)
                 .build();
             if is_active {
@@ -319,7 +319,7 @@ fn rename_entry(
     let entry = Entry::new();
     entry.set_text(title);
     entry.set_width_chars(title.len().clamp(8, 24) as i32);
-    entry.add_css_class("obsidian-tab-rename-entry");
+    entry.add_css_class("magma-tab-rename-entry");
     entry.set_hexpand(true);
 
     let tabs_activate = tabs.clone();

@@ -26,7 +26,7 @@ const MAX_VISIBLE_ENTRIES: usize = 200;
 pub(super) fn build_logr_pane() -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
     root.set_vexpand(true);
-    root.add_css_class("obsidian-logr-root");
+    root.add_css_class("magma-logr-root");
     root.set_focusable(true);
 
     // Tab bar
@@ -34,18 +34,18 @@ pub(super) fn build_logr_pane() -> GtkBox {
 
     // Header: title + stats + count
     let header = GtkBox::new(Orientation::Horizontal, 6);
-    header.add_css_class("obsidian-logr-header");
+    header.add_css_class("magma-logr-header");
 
     let title_block = GtkBox::new(Orientation::Vertical, 2);
-    title_block.add_css_class("obsidian-logr-heading");
+    title_block.add_css_class("magma-logr-heading");
     title_block.set_hexpand(true);
 
     let title = Label::new(Some("logr"));
-    title.add_css_class("obsidian-logr-title");
+    title.add_css_class("magma-logr-title");
     title.set_xalign(0.0);
 
     let count_label = Label::new(Some("0"));
-    count_label.add_css_class("obsidian-logr-count");
+    count_label.add_css_class("magma-logr-count");
     count_label.set_xalign(1.0);
 
     title_block.append(&title);
@@ -55,7 +55,7 @@ pub(super) fn build_logr_pane() -> GtkBox {
     // File picker
     let popover_list = ListBox::new();
     popover_list.set_selection_mode(gtk::SelectionMode::Single);
-    popover_list.add_css_class("obsidian-logr-popover-list");
+    popover_list.add_css_class("magma-logr-popover-list");
 
     let popover_scroller = ScrolledWindow::new();
     popover_scroller.set_child(Some(&popover_list));
@@ -67,55 +67,55 @@ pub(super) fn build_logr_pane() -> GtkBox {
     let popover = Popover::new();
     popover.set_child(Some(&popover_scroller));
     popover.set_has_arrow(false);
-    popover.add_css_class("obsidian-logr-popover");
+    popover.add_css_class("magma-logr-popover");
 
     let select_button = MenuButton::builder()
         .label("select log file...")
-        .css_classes(["obsidian-logr-select"])
+        .css_classes(["magma-logr-select"])
         .hexpand(true)
         .popover(&popover)
         .build();
 
     let refresh_button = Button::builder()
         .icon_name("view-refresh-symbolic")
-        .css_classes(["obsidian-logr-icon-btn"])
+        .css_classes(["magma-logr-icon-btn"])
         .tooltip_text("Rescan for log files")
         .build();
 
     let picker_row = GtkBox::new(Orientation::Horizontal, 4);
-    picker_row.add_css_class("obsidian-logr-picker");
+    picker_row.add_css_class("magma-logr-picker");
     let picker_icon = Image::from_icon_name("document-open-symbolic");
-    picker_icon.add_css_class("obsidian-logr-inline-icon");
+    picker_icon.add_css_class("magma-logr-inline-icon");
     picker_row.append(&picker_icon);
     picker_row.append(&select_button);
     picker_row.append(&refresh_button);
 
     // Controls: play/stop + clear/export
     let controls_row = GtkBox::new(Orientation::Horizontal, 4);
-    controls_row.add_css_class("obsidian-logr-controls");
+    controls_row.add_css_class("magma-logr-controls");
 
     let stream_shell = GtkBox::new(Orientation::Horizontal, 6);
-    stream_shell.add_css_class("obsidian-logr-stream-shell");
+    stream_shell.add_css_class("magma-logr-stream-shell");
     let stream_icon = Image::from_icon_name("media-record-symbolic");
-    stream_icon.add_css_class("obsidian-logr-stream-icon");
+    stream_icon.add_css_class("magma-logr-stream-icon");
 
     let play_button = Button::builder()
         .icon_name("media-playback-start-symbolic")
-        .css_classes(["obsidian-logr-icon-btn"])
+        .css_classes(["magma-logr-icon-btn"])
         .tooltip_text("Start live stream")
         .sensitive(false)
         .build();
 
     let stop_button = Button::builder()
         .icon_name("media-playback-stop-symbolic")
-        .css_classes(["obsidian-logr-icon-btn"])
+        .css_classes(["magma-logr-icon-btn"])
         .tooltip_text("Stop live stream")
         .sensitive(false)
         .visible(false)
         .build();
 
     let stream_label = Label::new(Some("select a file to stream"));
-    stream_label.add_css_class("obsidian-logr-stream-label");
+    stream_label.add_css_class("magma-logr-stream-label");
     stream_label.set_xalign(0.0);
     stream_label.set_hexpand(true);
     stream_shell.append(&stream_icon);
@@ -123,13 +123,13 @@ pub(super) fn build_logr_pane() -> GtkBox {
 
     let clear_button = Button::builder()
         .icon_name("edit-clear-all-symbolic")
-        .css_classes(["obsidian-logr-icon-btn"])
+        .css_classes(["magma-logr-icon-btn"])
         .tooltip_text("Clear view (Ctrl+K)")
         .build();
 
     let export_button = Button::builder()
         .icon_name("document-save-symbolic")
-        .css_classes(["obsidian-logr-icon-btn"])
+        .css_classes(["magma-logr-icon-btn"])
         .tooltip_text("Export filtered entries")
         .build();
 
@@ -141,7 +141,7 @@ pub(super) fn build_logr_pane() -> GtkBox {
 
     // Filter entry
     let filter_entry = Entry::new();
-    filter_entry.add_css_class("obsidian-logr-filter");
+    filter_entry.add_css_class("magma-logr-filter");
     filter_entry.set_placeholder_text(Some("filter... (Ctrl+L)"));
     filter_entry.set_hexpand(true);
     filter_entry.set_icon_from_icon_name(gtk::EntryIconPosition::Primary, Some("system-search-symbolic"));
@@ -149,7 +149,7 @@ pub(super) fn build_logr_pane() -> GtkBox {
     // Log list
     let list = ListBox::new();
     list.set_selection_mode(gtk::SelectionMode::None);
-    list.add_css_class("obsidian-log-list");
+    list.add_css_class("magma-log-list");
 
     let scroller = ScrolledWindow::new();
     scroller.set_hexpand(true);
@@ -160,14 +160,14 @@ pub(super) fn build_logr_pane() -> GtkBox {
     let status_row = GtkBox::new(Orientation::Horizontal, 4);
 
     let status = Label::new(Some("idle"));
-    status.add_css_class("obsidian-logr-status");
+    status.add_css_class("magma-logr-status");
     status.set_xalign(0.0);
     status.set_hexpand(true);
     status.set_ellipsize(pango::EllipsizeMode::End);
 
     let jump_button = Button::builder()
         .icon_name("go-bottom-symbolic")
-        .css_classes(["obsidian-logr-icon-btn"])
+        .css_classes(["magma-logr-icon-btn"])
         .tooltip_text("Jump to bottom")
         .visible(false)
         .build();
@@ -289,24 +289,24 @@ struct TabBarWidgets {
 
 fn build_tab_bar() -> TabBarWidgets {
     let row = GtkBox::new(Orientation::Horizontal, 0);
-    row.add_css_class("obsidian-logr-tab-row");
+    row.add_css_class("magma-logr-tab-row");
     row.set_hexpand(true);
     row.set_overflow(Overflow::Hidden);
 
     let scroll = ScrolledWindow::new();
-    scroll.add_css_class("obsidian-logr-tab-scroll");
+    scroll.add_css_class("magma-logr-tab-scroll");
     scroll.set_hexpand(true);
     scroll.set_vexpand(false);
     scroll.set_policy(PolicyType::Automatic, PolicyType::Never);
 
     let tab_bar = GtkBox::new(Orientation::Horizontal, 2);
-    tab_bar.add_css_class("obsidian-logr-tabs");
+    tab_bar.add_css_class("magma-logr-tabs");
     scroll.set_child(Some(&tab_bar));
 
     let add_button = Button::builder()
         .icon_name("list-add-symbolic")
         .tooltip_text("New log tab")
-        .css_classes(["obsidian-logr-tab-add"])
+        .css_classes(["magma-logr-tab-add"])
         .build();
 
     row.append(&scroll);
@@ -338,18 +338,18 @@ fn create_tab(view: &Rc<LogrView>) -> usize {
     };
 
     let label = Label::new(Some("new"));
-    label.add_css_class("obsidian-logr-tab-label");
+    label.add_css_class("magma-logr-tab-label");
     label.set_ellipsize(pango::EllipsizeMode::End);
     label.set_max_width_chars(14);
 
     let close_button = Button::builder()
         .icon_name("window-close-symbolic")
-        .css_classes(["obsidian-logr-tab-close"])
+        .css_classes(["magma-logr-tab-close"])
         .tooltip_text("Close tab")
         .build();
 
     let tab_button = GtkBox::new(Orientation::Horizontal, 4);
-    tab_button.add_css_class("obsidian-logr-tab");
+    tab_button.add_css_class("magma-logr-tab");
     tab_button.append(&label);
     tab_button.append(&close_button);
 
@@ -590,9 +590,9 @@ fn bind_clear_export(view: &Rc<LogrView>) {
                 return;
             }
 
-            match write_filtered("obsidian-export.jsonl", &filtered) {
+            match write_filtered("magma-export.jsonl", &filtered) {
                 Ok(count) => {
-                    let msg = format!("exported {count} entries → obsidian-export.jsonl");
+                    let msg = format!("exported {count} entries → magma-export.jsonl");
                     view_ref.status.set_text(&msg);
                     logger::info("logr: exported", &[("count", &count.to_string())]);
                 }
@@ -733,11 +733,11 @@ fn populate_popover_list(popover_list: &ListBox, discovered: &Rc<RefCell<Vec<Pat
 
         let label = Label::new(Some(&display));
         label.set_xalign(0.0);
-        label.add_css_class("obsidian-logr-popover-item");
+        label.add_css_class("magma-logr-popover-item");
 
         let row = ListBoxRow::new();
         row.set_child(Some(&label));
-        row.add_css_class("obsidian-logr-popover-row");
+        row.add_css_class("magma-logr-popover-row");
         popover_list.append(&row);
     }
 
@@ -917,7 +917,7 @@ fn refresh_view(view: &Rc<LogrView>) {
             "no matches"
         };
         let lbl = Label::new(Some(msg));
-        lbl.add_css_class("obsidian-logr-empty");
+        lbl.add_css_class("magma-logr-empty");
         lbl.set_xalign(0.0);
         view.list.append(&lbl);
         return;
@@ -940,23 +940,23 @@ fn entry_row(
     view: &Rc<LogrView>,
 ) -> GtkBox {
     let container = GtkBox::new(Orientation::Vertical, 0);
-    container.add_css_class("obsidian-log-entry-container");
+    container.add_css_class("magma-log-entry-container");
 
     let row = GtkBox::new(Orientation::Horizontal, 6);
-    row.add_css_class("obsidian-log-entry");
+    row.add_css_class("magma-log-entry");
 
     let level = entry.level_label().to_lowercase();
     row.add_css_class(&format!("log-{level}"));
 
     // Line Number
     let line_num = Label::new(Some(&format!("{:>4}", entry.line_number())));
-    line_num.add_css_class("obsidian-log-line-number");
+    line_num.add_css_class("magma-log-line-number");
 
     // Timestamp
     let ts_label = if let Some(ts) = entry.timestamp() {
         let formatted = format_timestamp(ts);
         let lbl = Label::new(Some(&formatted));
-        lbl.add_css_class("obsidian-log-timestamp");
+        lbl.add_css_class("magma-log-timestamp");
         lbl.set_tooltip_text(Some(ts));
         Some(lbl)
     } else {
@@ -991,7 +991,7 @@ fn entry_row(
     let fields = entry.fields_summary();
     if !fields.is_empty() {
         let fields_label = Label::new(None);
-        fields_label.add_css_class("obsidian-log-fields");
+        fields_label.add_css_class("magma-log-fields");
         if query.is_empty() {
             fields_label.set_text(fields);
         } else {
@@ -1005,13 +1005,13 @@ fn entry_row(
 
     let copy_btn = Button::builder()
         .icon_name("edit-copy-symbolic")
-        .css_classes(["obsidian-log-copy-btn"])
+        .css_classes(["magma-log-copy-btn"])
         .tooltip_text("Copy log line")
         .build();
 
     let delete_btn = Button::builder()
         .icon_name("edit-delete-symbolic")
-        .css_classes(["obsidian-log-delete-btn"])
+        .css_classes(["magma-log-delete-btn"])
         .tooltip_text("Delete log line")
         .build();
 
@@ -1086,7 +1086,7 @@ fn entry_row(
 
     let details_label = Label::new(None);
     details_label.set_markup(&format_details(&raw_content));
-    details_label.add_css_class("obsidian-log-details");
+    details_label.add_css_class("magma-log-details");
     details_label.set_selectable(true);
     details_label.set_wrap(true);
     details_label.set_wrap_mode(pango::WrapMode::WordChar);

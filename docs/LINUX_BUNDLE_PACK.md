@@ -2,7 +2,7 @@
 
 This project can be packaged as a self-contained Linux bundle with:
 
-- the `obsidian` binary
+- the `magma` binary
 - a bundled `bash` shell
 - GTK4, VTE4, and WebKitGTK shared libraries
 - WebKit helper processes
@@ -26,7 +26,7 @@ This project can be packaged as a self-contained Linux bundle with:
 Optional output path:
 
 ```bash
-./scripts/package-linux-bundle.sh dist/Obsidian.AppDir
+./scripts/package-linux-bundle.sh dist/Magma.AppDir
 ```
 
 ## Final AppImage
@@ -40,7 +40,7 @@ If `appimagetool` is installed:
 Optional paths:
 
 ```bash
-./scripts/build-appimage.sh dist/Obsidian.AppDir dist
+./scripts/build-appimage.sh dist/Magma.AppDir dist
 ```
 
 ## Bundle layout
@@ -48,24 +48,24 @@ Optional paths:
 The script creates an AppDir-style structure containing:
 
 - `AppRun`
-- `usr/bin/obsidian`
-- `usr/lib/obsidian/bin/bash`
+- `usr/bin/magma`
+- `usr/lib/magma/bin/bash`
 - `usr/lib/*.so*`
 - `usr/lib/webkitgtk-6.0/*`
-- `usr/share/applications/io.obsidian.terminal.desktop`
-- `usr/share/icons/hicolor/64x64/apps/io.obsidian.terminal.png`
+- `usr/share/applications/io.magma.terminal.desktop`
+- `usr/share/icons/hicolor/64x64/apps/io.magma.terminal.png`
 
 ## Runtime behavior
 
 At launch, `AppRun` sets:
 
-- `OBSIDIAN_BUNDLED_SHELL`
+- `MAGMA_BUNDLED_SHELL`
 - `LD_LIBRARY_PATH`
 - `XDG_DATA_DIRS`
 - `GSETTINGS_SCHEMA_DIR`
 - `WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS`
 
-Obsidian then prefers the bundled shell before falling back to host shells.
+Magma then prefers the bundled shell before falling back to host shells.
 
 ## Notes
 

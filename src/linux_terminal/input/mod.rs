@@ -35,11 +35,11 @@ pub(super) fn append_input_row(
     settings: &Rc<std::cell::RefCell<Settings>>,
 ) -> Entry {
     let separator = Separator::new(Orientation::Horizontal);
-    separator.add_css_class("obsidian-separator");
+    separator.add_css_class("magma-separator");
     container.append(&separator);
 
     let input_container = GtkBox::new(Orientation::Horizontal, 8);
-    input_container.add_css_class("obsidian-input-pill");
+    input_container.add_css_class("magma-input-pill");
 
     let prompt_container = build_prompt_box(terminal);
     input_container.append(&prompt_container);
@@ -50,7 +50,7 @@ pub(super) fn append_input_row(
     input_container.append(&status_widgets.notice);
 
     let entry = Entry::new();
-    entry.add_css_class("obsidian-entry");
+    entry.add_css_class("magma-entry");
     entry.set_hexpand(true);
     entry.set_placeholder_text(Some("Enter command"));
     input_container.append(&entry);
@@ -67,7 +67,7 @@ pub(super) fn append_input_row(
 
     let search_button = Button::builder()
         .icon_name("system-search-symbolic")
-        .css_classes(["obsidian-search-toggle"])
+        .css_classes(["magma-search-toggle"])
         .build();
     input_container.append(&search_button);
 
@@ -109,7 +109,7 @@ pub(super) fn handle_terminal_clipboard_shortcuts(
 fn tool_button(icon_name: &str) -> Button {
     Button::builder()
         .icon_name(icon_name)
-        .css_classes(["obsidian-tool-button"])
+        .css_classes(["magma-tool-button"])
         .build()
 }
 

@@ -28,21 +28,21 @@ pub(super) type CwdProvider = Rc<dyn Fn() -> Option<String>>;
 
 pub(super) fn build_view_pane(cwd_provider: CwdProvider, context: WebContext) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 8);
-    root.add_css_class("obsidian-view-root");
+    root.add_css_class("magma-view-root");
     root.set_vexpand(true);
     root.set_overflow(Overflow::Hidden);
 
     let count_label = Label::new(Some(&format_file_count(0)));
-    count_label.add_css_class("obsidian-view-count");
+    count_label.add_css_class("magma-view-count");
 
     let refresh_button = icon_button("view-refresh-symbolic", "Refresh files");
     let header = build_header(&refresh_button, &count_label);
 
     let list = ListBox::new();
-    list.add_css_class("obsidian-view-file-list");
+    list.add_css_class("magma-view-file-list");
     list.set_selection_mode(SelectionMode::Single);
     let list_scroller = ScrolledWindow::new();
-    list_scroller.add_css_class("obsidian-view-file-scroller");
+    list_scroller.add_css_class("magma-view-file-scroller");
     list_scroller.set_min_content_height(140);
     list_scroller.set_max_content_height(180);
     list_scroller.set_policy(PolicyType::Never, PolicyType::Automatic);

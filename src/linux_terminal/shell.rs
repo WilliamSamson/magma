@@ -96,11 +96,11 @@ fn shell_env(status_path: &Path) -> Vec<String> {
         .collect::<Vec<_>>();
     set_env(&mut env, "TERM", "xterm-256color");
     set_env(&mut env, "COLORTERM", "truecolor");
-    set_env(&mut env, "TERM_PROGRAM", "obsidian");
+    set_env(&mut env, "TERM_PROGRAM", "magma");
     ensure_utf8_locale(&mut env);
     set_env(
         &mut env,
-        "OBSIDIAN_STATUS_FILE",
+        "MAGMA_STATUS_FILE",
         &status_path.to_string_lossy(),
     );
     env
@@ -193,9 +193,9 @@ fn shell_env_items(status_path: &Path) -> Vec<(String, String)> {
     let mut env = vec![
         ("TERM".to_string(), "xterm-256color".to_string()),
         ("COLORTERM".to_string(), "truecolor".to_string()),
-        ("TERM_PROGRAM".to_string(), "obsidian".to_string()),
+        ("TERM_PROGRAM".to_string(), "magma".to_string()),
         (
-            "OBSIDIAN_STATUS_FILE".to_string(),
+            "MAGMA_STATUS_FILE".to_string(),
             status_path.to_string_lossy().to_string(),
         ),
     ];
@@ -256,41 +256,41 @@ export PS1=""
 if [ -s /etc/profile.d/vte-2.91.sh ]; then
     source /etc/profile.d/vte-2.91.sh
 fi
-__obsidian_status_update() {
+__magma_status_update() {
     local exit_code=$?
-    local command_text="${OBSIDIAN_PENDING_COMMAND:-}"
-    if [ "${OBSIDIAN_STATUS_READY:-0}" != "1" ]; then
-        OBSIDIAN_STATUS_READY=1
-        OBSIDIAN_AT_PROMPT=1
+    local command_text="${MAGMA_PENDING_COMMAND:-}"
+    if [ "${MAGMA_STATUS_READY:-0}" != "1" ]; then
+        MAGMA_STATUS_READY=1
+        MAGMA_AT_PROMPT=1
         return
     fi
-    if [ -n "${OBSIDIAN_STATUS_FILE:-}" ]; then
+    if [ -n "${MAGMA_STATUS_FILE:-}" ]; then
         if [ -n "$command_text" ]; then
-            OBSIDIAN_STATUS_SEQ=$(( ${OBSIDIAN_STATUS_SEQ:-0} + 1 ))
+            MAGMA_STATUS_SEQ=$(( ${MAGMA_STATUS_SEQ:-0} + 1 ))
         fi
-        printf "%s\t%s\t%s\n" "${OBSIDIAN_STATUS_SEQ:-0}" "$exit_code" "$command_text" > "$OBSIDIAN_STATUS_FILE"
+        printf "%s\t%s\t%s\n" "${MAGMA_STATUS_SEQ:-0}" "$exit_code" "$command_text" > "$MAGMA_STATUS_FILE"
     fi
-    OBSIDIAN_PENDING_COMMAND=""
-    OBSIDIAN_AT_PROMPT=1
+    MAGMA_PENDING_COMMAND=""
+    MAGMA_AT_PROMPT=1
 }
-OBSIDIAN_STATUS_SEQ=0
-OBSIDIAN_STATUS_READY=0
-OBSIDIAN_AT_PROMPT=0
-OBSIDIAN_PENDING_COMMAND=""
-__obsidian_capture_command() {
-    if [ "${OBSIDIAN_AT_PROMPT:-0}" != "1" ]; then
+MAGMA_STATUS_SEQ=0
+MAGMA_STATUS_READY=0
+MAGMA_AT_PROMPT=0
+MAGMA_PENDING_COMMAND=""
+__magma_capture_command() {
+    if [ "${MAGMA_AT_PROMPT:-0}" != "1" ]; then
         return
     fi
-    OBSIDIAN_PENDING_COMMAND="$BASH_COMMAND"
-    OBSIDIAN_AT_PROMPT=0
+    MAGMA_PENDING_COMMAND="$BASH_COMMAND"
+    MAGMA_AT_PROMPT=0
 }
-trap '__obsidian_capture_command' DEBUG
+trap '__magma_capture_command' DEBUG
 if [[ "$(declare -p PROMPT_COMMAND 2>&1)" =~ "declare -a" ]]; then
-    PROMPT_COMMAND+=(__obsidian_status_update)
+    PROMPT_COMMAND+=(__magma_status_update)
 elif [ -n "${PROMPT_COMMAND:-}" ]; then
-    PROMPT_COMMAND="__obsidian_status_update; ${PROMPT_COMMAND}"
+    PROMPT_COMMAND="__magma_status_update; ${PROMPT_COMMAND}"
 else
-    PROMPT_COMMAND="__obsidian_status_update"
+    PROMPT_COMMAND="__magma_status_update"
 fi
 clear
 "#;
@@ -301,12 +301,12 @@ clear
 }
 
 fn rc_path() -> PathBuf {
-    std::env::temp_dir().join(format!("obsidian_bashrc_{}", std::process::id()))
+    std::env::temp_dir().join(format!("magma_bashrc_{}", std::process::id()))
 }
 
 fn status_path() -> PathBuf {
     let path = std::env::temp_dir().join(format!(
-        "obsidian_shell_status_{}_{}",
+        "magma_shell_status_{}_{}",
         std::process::id(),
         timestamp_nanos()
     ));

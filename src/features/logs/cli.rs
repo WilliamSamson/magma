@@ -15,7 +15,7 @@ pub(crate) struct StartupFilter {
 }
 
 pub(crate) fn parse_args() -> io::Result<ParsedArgs> {
-    let matches = Command::new("obsidian")
+    let matches = Command::new("magma")
         .about("Terminal workspace for structured logs")
         .version(env!("CARGO_PKG_VERSION"))
         .arg(Arg::new("input").value_name("INPUT"))

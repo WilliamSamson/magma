@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# Obsidian Terminal — Build .deb Package
+# Magma Terminal — Build .deb Package
 #
 # Produces a Debian package that can be installed with:
-#   sudo dpkg -i obsidian_<version>_amd64.deb
+#   sudo dpkg -i magma_<version>_amd64.deb
 #
 # If runtime dependencies are missing:
 #   sudo apt-get install -f
@@ -14,7 +14,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 CARGO_TOML="$ROOT_DIR/Cargo.toml"
-DESKTOP_ID="io.obsidian.terminal"
+DESKTOP_ID="io.magma.terminal"
 
 # ---------------------------------------------------------------------------
 # Read metadata from Cargo.toml
@@ -23,11 +23,11 @@ CARGO_VERSION="$(grep -m1 '^version' "$CARGO_TOML" | sed 's/.*"\(.*\)".*/\1/')"
 # Debian uses ~ for pre-release: 0.1.0-beta.1 → 0.1.0~beta.1
 VERSION="$(echo "$CARGO_VERSION" | sed 's/-/~/')"
 ARCH="amd64"
-PKG_NAME="obsidian"
+PKG_NAME="magma"
 DEB_NAME="${PKG_NAME}_${VERSION}_${ARCH}"
 DEB_ROOT="$DIST_DIR/$DEB_NAME"
 
-echo "Building Obsidian $VERSION .deb package..."
+echo "Building Magma $VERSION .deb package..."
 echo ""
 
 # ---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ echo ""
 # ---------------------------------------------------------------------------
 cargo build --release --manifest-path "$CARGO_TOML"
 
-BIN_PATH="$ROOT_DIR/target/release/obsidian"
+BIN_PATH="$ROOT_DIR/target/release/magma"
 if [[ ! -f "$BIN_PATH" ]]; then
   echo "Error: release binary not found at $BIN_PATH" >&2
   exit 1
@@ -62,12 +62,12 @@ Priority: optional
 Architecture: $ARCH
 Installed-Size: $INSTALLED_SIZE
 Depends: libgtk-4-1, libvte-2.91-gtk4-0, libwebkitgtk-6.0-4
-Maintainer: Obsidian Terminal <obsidian@localhost>
+Maintainer: Magma Terminal <magma@localhost>
 Description: GPU-accelerated terminal emulator
  A modern GTK4 terminal workspace with an embedded log viewer,
  web browser pane, and a first-run setup wizard.
  Built with Rust, VTE4, and WebKitGTK.
-Homepage: https://github.com/WilliamSamson/obsidian
+Homepage: https://github.com/WilliamSamson/magma
 EOF
 
 # -- binary -----------------------------------------------------------------

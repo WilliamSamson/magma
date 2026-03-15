@@ -61,7 +61,7 @@ impl TabView {
 
         let base_title = stored_base_title(&snapshot.title, snapshot.profile);
         let title_label = Label::new(Some(&display_title(&base_title, snapshot.profile)));
-        title_label.add_css_class("obsidian-tab-label");
+        title_label.add_css_class("magma-tab-label");
 
         Self {
             root,
@@ -248,7 +248,7 @@ fn stored_base_title(title: &str, profile_id: ProfileId) -> String {
 
 fn build_split_view(left: &GtkBox, right: &GtkBox, split_position: Option<i32>) -> Paned {
     let split_view = Paned::new(Orientation::Horizontal);
-    split_view.add_css_class("obsidian-split-pane");
+    split_view.add_css_class("magma-split-pane");
     split_view.set_hexpand(true);
     split_view.set_vexpand(true);
     split_view.set_wide_handle(true);

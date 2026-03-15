@@ -32,22 +32,22 @@ pub(super) struct PreviewWidgets {
 
 pub(super) fn build_preview(context: WebContext) -> PreviewWidgets {
     let root = GtkBox::new(Orientation::Vertical, 0);
-    root.add_css_class("obsidian-view-preview");
+    root.add_css_class("magma-view-preview");
     root.set_hexpand(true);
     root.set_vexpand(true);
 
     let chrome = GtkBox::new(Orientation::Horizontal, 8);
-    chrome.add_css_class("obsidian-view-preview-chrome");
+    chrome.add_css_class("magma-view-preview-chrome");
     chrome.set_hexpand(true);
     let title_box = GtkBox::new(Orientation::Vertical, 1);
     title_box.set_hexpand(true);
     let title = Label::new(Some("viewer idle"));
-    title.add_css_class("obsidian-view-preview-title");
+    title.add_css_class("magma-view-preview-title");
     title.set_xalign(0.0);
     title.set_hexpand(true);
     title.set_ellipsize(gtk::pango::EllipsizeMode::Middle);
     let meta = Label::new(Some("select a file from the list"));
-    meta.add_css_class("obsidian-view-preview-meta");
+    meta.add_css_class("magma-view-preview-meta");
     meta.set_xalign(0.0);
     meta.set_hexpand(true);
     meta.set_ellipsize(gtk::pango::EllipsizeMode::End);
@@ -55,17 +55,17 @@ pub(super) fn build_preview(context: WebContext) -> PreviewWidgets {
     title_box.append(&meta);
 
     let open_button = Button::with_label("Open external");
-    open_button.add_css_class("obsidian-view-preview-button");
-    open_button.add_css_class("obsidian-view-preview-button-secondary");
+    open_button.add_css_class("magma-view-preview-button");
+    open_button.add_css_class("magma-view-preview-button-secondary");
     open_button.set_sensitive(false);
     let action_box = GtkBox::new(Orientation::Horizontal, 8);
-    action_box.add_css_class("obsidian-view-preview-actions");
+    action_box.add_css_class("magma-view-preview-actions");
     action_box.append(&open_button);
     chrome.append(&title_box);
     chrome.append(&action_box);
 
     let stack = Stack::new();
-    stack.add_css_class("obsidian-view-preview-stack");
+    stack.add_css_class("magma-view-preview-stack");
     stack.set_hexpand(true);
     stack.set_vexpand(true);
 
@@ -80,7 +80,7 @@ pub(super) fn build_preview(context: WebContext) -> PreviewWidgets {
     picture.set_hexpand(true);
     picture.set_vexpand(true);
     let image_scroll = ScrolledWindow::new();
-    image_scroll.add_css_class("obsidian-view-preview-surface");
+    image_scroll.add_css_class("magma-view-preview-surface");
     image_scroll.set_child(Some(&picture));
     stack.add_named(&image_scroll, Some("image"));
 
@@ -90,12 +90,12 @@ pub(super) fn build_preview(context: WebContext) -> PreviewWidgets {
     stack.add_named(&web_view, Some("document"));
 
     let info_box = GtkBox::new(Orientation::Vertical, 8);
-    info_box.add_css_class("obsidian-view-info");
+    info_box.add_css_class("magma-view-info");
     let info_title = Label::new(Some("document"));
-    info_title.add_css_class("obsidian-view-info-title");
+    info_title.add_css_class("magma-view-info-title");
     info_title.set_xalign(0.0);
     let info_body = Label::new(None);
-    info_body.add_css_class("obsidian-view-info-body");
+    info_body.add_css_class("magma-view-info-body");
     info_body.set_wrap(true);
     info_body.set_xalign(0.0);
     info_box.append(&info_title);
@@ -179,7 +179,7 @@ fn find_empty_label(stack: &Stack) -> Option<Label> {
     let mut child = empty.first_child();
     while let Some(w) = child {
         if let Some(lbl) = w.downcast_ref::<Label>() {
-            if lbl.has_css_class("obsidian-view-empty-text") {
+            if lbl.has_css_class("magma-view-empty-text") {
                 return Some(lbl.clone());
             }
         }

@@ -22,21 +22,21 @@ pub(super) struct QuickSwitcher {
 impl QuickSwitcher {
     pub(super) fn new(notebook: &Notebook, tabs: &Rc<RefCell<Vec<TabView>>>) -> Self {
         let root = GtkBox::new(Orientation::Vertical, 10);
-        root.add_css_class("obsidian-switcher-overlay");
+        root.add_css_class("magma-switcher-overlay");
         root.set_halign(gtk::Align::Center);
         root.set_valign(gtk::Align::Start);
         root.set_margin_top(56);
         root.set_visible(false);
 
         let panel = GtkBox::new(Orientation::Vertical, 8);
-        panel.add_css_class("obsidian-switcher-panel");
+        panel.add_css_class("magma-switcher-panel");
 
         let entry = Entry::new();
-        entry.add_css_class("obsidian-switcher-entry");
+        entry.add_css_class("magma-switcher-entry");
         entry.set_placeholder_text(Some("switch tab..."));
 
         let list = ListBox::new();
-        list.add_css_class("obsidian-switcher-list");
+        list.add_css_class("magma-switcher-list");
         list.set_selection_mode(gtk::SelectionMode::Single);
         list.set_activate_on_single_click(true);
 
@@ -200,15 +200,15 @@ impl QuickSwitcher {
 
 fn switcher_row(index: usize, title: &str) -> ListBoxRow {
     let row = ListBoxRow::new();
-    row.add_css_class("obsidian-switcher-row");
+    row.add_css_class("magma-switcher-row");
 
     let content = GtkBox::new(Orientation::Horizontal, 10);
 
     let index_label = Label::new(Some(&(index + 1).to_string()));
-    index_label.add_css_class("obsidian-switcher-index");
+    index_label.add_css_class("magma-switcher-index");
 
     let title_label = Label::new(Some(title));
-    title_label.add_css_class("obsidian-switcher-label");
+    title_label.add_css_class("magma-switcher-label");
     title_label.set_xalign(0.0);
 
     content.append(&index_label);
@@ -223,7 +223,7 @@ fn empty_row() -> ListBoxRow {
     row.set_activatable(false);
 
     let label = Label::new(Some("no matching tabs"));
-    label.add_css_class("obsidian-switcher-empty");
+    label.add_css_class("magma-switcher-empty");
     label.set_xalign(0.0);
     row.set_child(Some(&label));
     row

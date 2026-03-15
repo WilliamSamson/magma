@@ -151,7 +151,7 @@ fn workspace_file() -> PathBuf {
 }
 
 fn default_socket_path() -> PathBuf {
-    if let Some(path) = env::var_os("OBSIDIAN_TMUX_SOCKET").map(PathBuf::from) {
+    if let Some(path) = env::var_os("MAGMA_TMUX_SOCKET").map(PathBuf::from) {
         return path;
     }
 
@@ -167,19 +167,19 @@ fn state_root() -> PathBuf {
         .map(PathBuf::from)
         .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/state")))
         .unwrap_or_else(std::env::temp_dir)
-        .join("obsidian")
+        .join("magma")
 }
 
 fn runtime_root() -> PathBuf {
     env::var_os("XDG_RUNTIME_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| state_root().join("run"))
-        .join("obsidian")
+        .join("magma")
 }
 
 fn generate_session_id() -> String {
     format!(
-        "obsidian-{}-{}",
+        "magma-{}-{}",
         std::process::id(),
         timestamp_nanos()
     )
@@ -215,5 +215,5 @@ fn config_root() -> PathBuf {
         .map(PathBuf::from)
         .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))
         .unwrap_or_else(|| Path::new(".").to_path_buf());
-    base.join("obsidian")
+    base.join("magma")
 }

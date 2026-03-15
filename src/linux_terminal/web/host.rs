@@ -120,7 +120,7 @@ fn data_root() -> PathBuf {
         .map(PathBuf::from)
         .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/share")))
         .unwrap_or_else(|| Path::new(".").to_path_buf())
-        .join("obsidian")
+        .join("magma")
 }
 
 fn cache_root() -> PathBuf {
@@ -128,7 +128,7 @@ fn cache_root() -> PathBuf {
         .map(PathBuf::from)
         .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache")))
         .unwrap_or_else(|| Path::new(".").to_path_buf())
-        .join("obsidian")
+        .join("magma")
 }
 
 fn clear_browser_storage() {
