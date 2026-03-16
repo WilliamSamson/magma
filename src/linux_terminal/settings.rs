@@ -30,6 +30,8 @@ pub(super) struct Settings {
     pub(super) shell: String,
     pub(super) logr_panel_open: bool,
     pub(super) notifications: bool,
+    pub(super) agent_confidence_threshold: f32,
+    pub(super) agent_passive_mode: bool,
 }
 
 impl Default for Settings {
@@ -48,6 +50,8 @@ impl Default for Settings {
             shell,
             logr_panel_open: true,
             notifications: true,
+            agent_confidence_threshold: 0.85,
+            agent_passive_mode: false,
         }
     }
 }

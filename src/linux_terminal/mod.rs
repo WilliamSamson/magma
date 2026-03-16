@@ -1,10 +1,11 @@
-mod git;
+mod agent;
+pub(crate) mod git;
 mod header;
 mod input;
 mod logr;
 mod meta;
 mod mux;
-mod persist;
+pub(crate) mod persist;
 mod profile;
 mod right_pane;
 mod runtime;
@@ -151,6 +152,13 @@ fn build_window(app: &Application, width: u32, height: u32) {
 
     let (header, settings_button) = header::build_header();
     let workspace = std::rc::Rc::new(workspace::WorkspaceView::new(app_settings.clone()));
+    {
+        let workspace_ref = workspace.clone();
+        glib::timeout_add_local(std::time::Duration::from_secs(2), move || {
+            workspace_ref.save();
+            glib::ControlFlow::Continue
+        });
+    }
     // Rc<dyn Fn()> is the lightest way to let side panes query the active terminal cwd on the GTK thread without owning workspace internals.
     let cwd_provider: Rc<dyn Fn() -> Option<String>> = {
         let workspace_ref = workspace.clone();
@@ -302,12 +310,13 @@ fn shell_container(
     view_row.set_vexpand(true);
     view_row.append(child);
 
-    let side_panes = right_pane::build_side_panes(settings, cwd_provider);
+    let side_panes = right_pane::build_side_panes(settings.clone(), cwd_provider);
     view_row.append(side_panes.handle());
     view_row.append(side_panes.logr_revealer());
     view_row.append(side_panes.web_revealer());
     view_row.append(side_panes.view_revealer());
     view_row.append(side_panes.git_revealer());
+    view_row.append(side_panes.agent_revealer());
     container.append(&view_row);
 
     ShellContainer {

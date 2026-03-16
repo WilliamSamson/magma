@@ -121,11 +121,12 @@ fn is_known_text_filename(name: &str) -> bool {
 fn language_for_extension(ext: &str) -> Option<CodeLanguage> {
     match ext {
         "py" | "pyw" | "sh" | "bash" | "zsh" | "fish" | "toml" | "yaml" | "yml" | "rb"
-        | "pl" | "pm" | "nix" | "ini" | "cfg" | "conf" | "env" => Some(CodeLanguage::Hash),
+        | "pl" | "pm" | "nix" | "ini" | "cfg" | "conf" | "env" | "r" | "ex" | "exs"
+        | "nim" | "cr" | "tf" | "hcl" | "graphql" | "gql" | "cmake" => Some(CodeLanguage::Hash),
         "sql" => Some(CodeLanguage::Sql),
-        "html" | "htm" | "xml" => Some(CodeLanguage::Markup),
+        "html" | "htm" | "xml" | "vue" | "svelte" | "astro" => Some(CodeLanguage::Markup),
         "css" | "scss" | "sass" | "less" => Some(CodeLanguage::Css),
-        "md" | "txt" | "log" => Some(CodeLanguage::Plain),
+        "md" | "txt" | "log" | "rst" => Some(CodeLanguage::Plain),
         ext if CODE_EXTENSIONS.contains(&ext) => Some(CodeLanguage::Slash),
         _ => None,
     }
@@ -136,7 +137,9 @@ const CODE_EXTENSIONS: &[&str] = &[
     "zsh", "fish", "json", "jsonc", "toml", "yaml", "yml", "md", "html", "htm", "css", "scss",
     "sass", "less", "sql", "xml", "go", "java", "kt", "kts", "swift", "c", "h", "hh", "hpp",
     "hxx", "cpp", "cc", "cxx", "cs", "php", "rb", "lua", "zig", "nix", "ini", "cfg", "conf",
-    "env", "txt", "log", "pl", "pm", "ps1", "psm1", "bat", "cmd",
+    "env", "txt", "log", "pl", "pm", "ps1", "psm1", "bat", "cmd", "r", "scala", "groovy",
+    "gradle", "ex", "exs", "erl", "hrl", "hs", "ml", "mli", "clj", "cljs", "nim", "cr", "v",
+    "vue", "svelte", "astro", "tf", "hcl", "proto", "graphql", "gql", "prisma", "cmake", "rst",
 ];
 
 const HASH_FILENAMES: &[&str] = &[

@@ -93,11 +93,15 @@ impl WorkspaceView {
             .and_then(TabView::current_cwd)
     }
 
-    pub(super) fn save(&self) {
-        let snapshot = WorkspaceSnapshot {
+    pub(crate) fn snapshot(&self) -> WorkspaceSnapshot {
+        WorkspaceSnapshot {
             active_tab: current_index(&self.notebook),
             tabs: self.tabs.borrow().iter().map(TabView::to_snapshot).collect(),
-        };
+        }
+    }
+
+    pub(super) fn save(&self) {
+        let snapshot = self.snapshot();
         if let Err(error) = persist::save_workspace(&snapshot) {
             eprintln!("workspace save failed: {error}");
         }

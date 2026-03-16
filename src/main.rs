@@ -1,4 +1,5 @@
 mod app;
+mod agent;
 mod features;
 mod linux_terminal;
 mod logger;

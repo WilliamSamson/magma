@@ -12,14 +12,14 @@ use super::profile::ProfileId;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 #[serde(default)]
-pub(super) struct WorkspaceSnapshot {
-    pub(super) active_tab: usize,
-    pub(super) tabs: Vec<TabSnapshot>,
+pub(crate) struct WorkspaceSnapshot {
+    pub(crate) active_tab: usize,
+    pub(crate) tabs: Vec<TabSnapshot>,
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
-pub(super) enum PaneFocus {
+pub(crate) enum PaneFocus {
     #[default]
     Left,
     Right,
@@ -27,15 +27,15 @@ pub(super) enum PaneFocus {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
-pub(super) struct TabSnapshot {
-    pub(super) title: String,
-    pub(super) profile: ProfileId,
+pub(crate) struct TabSnapshot {
+    pub(crate) title: String,
+    pub(crate) profile: ProfileId,
     #[serde(alias = "left_cwd", deserialize_with = "deserialize_optional_pane")]
-    pub(super) left_pane: Option<PaneSnapshot>,
+    pub(crate) left_pane: Option<PaneSnapshot>,
     #[serde(alias = "right_cwd", deserialize_with = "deserialize_optional_pane")]
-    pub(super) right_pane: Option<PaneSnapshot>,
-    pub(super) split_position: Option<i32>,
-    pub(super) active_pane: PaneFocus,
+    pub(crate) right_pane: Option<PaneSnapshot>,
+    pub(crate) split_position: Option<i32>,
+    pub(crate) active_pane: PaneFocus,
 }
 
 impl Default for TabSnapshot {
@@ -53,9 +53,9 @@ impl Default for TabSnapshot {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
-pub(super) struct PaneSnapshot {
-    pub(super) sessions: Vec<SessionSnapshot>,
-    pub(super) active_session: usize,
+pub(crate) struct PaneSnapshot {
+    pub(crate) sessions: Vec<SessionSnapshot>,
+    pub(crate) active_session: usize,
 }
 
 impl Default for PaneSnapshot {
@@ -90,11 +90,11 @@ impl PaneSnapshot {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(default)]
-pub(super) struct SessionSnapshot {
-    pub(super) cwd: Option<String>,
-    pub(super) session_id: Option<String>,
-    pub(super) socket_path: Option<String>,
-    pub(super) status_path: Option<String>,
+pub(crate) struct SessionSnapshot {
+    pub(crate) cwd: Option<String>,
+    pub(crate) session_id: Option<String>,
+    pub(crate) socket_path: Option<String>,
+    pub(crate) status_path: Option<String>,
 }
 
 impl SessionSnapshot {
@@ -124,7 +124,7 @@ impl SessionSnapshot {
     }
 }
 
-pub(super) fn load_workspace() -> io::Result<Option<WorkspaceSnapshot>> {
+pub(crate) fn load_workspace() -> io::Result<Option<WorkspaceSnapshot>> {
     let path = workspace_file();
     if !path.exists() {
         return Ok(None);

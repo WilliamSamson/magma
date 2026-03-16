@@ -15,6 +15,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 CARGO_TOML="$ROOT_DIR/Cargo.toml"
 DESKTOP_ID="io.magma.terminal"
+ICON_SIZES=(48 64 128 256 512)
 
 # ---------------------------------------------------------------------------
 # Read metadata from Cargo.toml
@@ -48,8 +49,11 @@ rm -rf "$DEB_ROOT"
 mkdir -p \
   "$DEB_ROOT/DEBIAN" \
   "$DEB_ROOT/usr/bin" \
-  "$DEB_ROOT/usr/share/applications" \
-  "$DEB_ROOT/usr/share/icons/hicolor/64x64/apps"
+  "$DEB_ROOT/usr/share/applications"
+
+for size in "${ICON_SIZES[@]}"; do
+  mkdir -p "$DEB_ROOT/usr/share/icons/hicolor/${size}x${size}/apps"
+done
 
 # -- control file -----------------------------------------------------------
 INSTALLED_SIZE=$(du -sk "$BIN_PATH" | awk '{print $1}')
@@ -79,9 +83,11 @@ strip "$DEB_ROOT/usr/bin/$PKG_NAME" 2>/dev/null || true
 cp "$ROOT_DIR/assets/$DESKTOP_ID.desktop" \
   "$DEB_ROOT/usr/share/applications/$DESKTOP_ID.desktop"
 
-# -- icon -------------------------------------------------------------------
-cp "$ROOT_DIR/assets/icons/hicolor/64x64/apps/$DESKTOP_ID.png" \
-  "$DEB_ROOT/usr/share/icons/hicolor/64x64/apps/$DESKTOP_ID.png"
+# -- icons ------------------------------------------------------------------
+for size in "${ICON_SIZES[@]}"; do
+  cp "$ROOT_DIR/assets/icons/hicolor/${size}x${size}/apps/$DESKTOP_ID.png" \
+    "$DEB_ROOT/usr/share/icons/hicolor/${size}x${size}/apps/$DESKTOP_ID.png"
+done
 
 # -- postinst: refresh desktop caches after install -------------------------
 cat > "$DEB_ROOT/DEBIAN/postinst" <<'EOF'

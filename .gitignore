@@ -14,6 +14,8 @@ plans/
 
 # Local AI/tool config
 .claude/settings.local.json
+.env.agent
+scripts/load-agent-env.local.sh
 
 # Editor / OS noise
 .idea/

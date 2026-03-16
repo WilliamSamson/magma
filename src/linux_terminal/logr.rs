@@ -13,6 +13,8 @@ use gtk::{
 };
 
 use crate::{
+    agent::effects::take_logr_filter_request,
+    agent::context::{write_log_runtime_snapshot, LogRuntimeSnapshot, LogSnapshot},
     features::logs::{load_source, spawn_file_follower, write_filtered, LogEntry},
     logger,
 };
@@ -232,6 +234,7 @@ pub(super) fn build_logr_pane() -> GtkBox {
 
     // Live follower poll
     watch_follower(&view);
+    watch_agent_filters(&view);
 
     root
 }
@@ -880,6 +883,24 @@ fn scroll_to_bottom(scroller: &ScrolledWindow) {
     adj.set_value(adj.upper() - adj.page_size());
 }
 
+fn watch_agent_filters(view: &Rc<LogrView>) {
+    let view = view.clone();
+    glib::timeout_add_local(std::time::Duration::from_millis(180), move || {
+        let Some(filter) = take_logr_filter_request() else {
+            return glib::ControlFlow::Continue;
+        };
+        let query = filter.query.unwrap_or_default();
+        let active_tab = view.state.borrow().active_tab;
+        if let Some(tab) = view.state.borrow_mut().tabs.get_mut(active_tab) {
+            tab.query = query.clone();
+            tab.level_visible = [filter.levels.is_empty(); 6];
+        }
+        view.filter_entry.set_text(&query);
+        refresh_view(&view);
+        glib::ControlFlow::Continue
+    });
+}
+
 // ─── View rendering ─────────────────────────────────────────────────
 
 fn refresh_view(view: &Rc<LogrView>) {
@@ -925,7 +946,28 @@ fn refresh_view(view: &Rc<LogrView>) {
 
     let query = tab.query.clone();
     let selected_path = tab.selected_path.clone();
+    let snapshot_entries: Vec<LogSnapshot> = tab
+        .entries
+        .iter()
+        .rev()
+        .take(50)
+        .map(|entry| LogSnapshot {
+            level: entry.level_label().to_string(),
+            message: entry.message().to_string(),
+        })
+        .collect();
+    let mut distribution = std::collections::BTreeMap::new();
+    for entry in &tab.entries {
+        *distribution
+            .entry(entry.level_label().to_string())
+            .or_insert(0usize) += 1;
+    }
     drop(state);
+
+    write_log_runtime_snapshot(&LogRuntimeSnapshot {
+        last_entries: snapshot_entries,
+        level_distribution: distribution,
+    });
 
     for entry in filtered.into_iter().skip(start) {
         view.list

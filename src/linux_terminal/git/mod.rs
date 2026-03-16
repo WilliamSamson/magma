@@ -6,7 +6,9 @@ mod diff;
 mod graph;
 mod host;
 #[allow(dead_code)]
-mod ops;
+pub(crate) mod ops;
+#[allow(dead_code)]
+mod patch;
 #[allow(dead_code)]
 mod search;
 #[allow(dead_code)]
@@ -24,7 +26,7 @@ use std::{
 
 use gtk::{
     gdk, glib, prelude::*, Box as GtkBox, Button, EventControllerKey, Label, Orientation,
-    Stack, StackTransitionType,
+    Overflow, Stack, StackTransitionType,
 };
 
 pub(super) use host::GitPaneHost;
@@ -40,6 +42,7 @@ enum SubView {
     Branches,
     Stash,
     Search,
+    Patch,
 }
 
 impl SubView {
@@ -50,6 +53,7 @@ impl SubView {
             SubView::Branches => "branches",
             SubView::Stash => "stash",
             SubView::Search => "search",
+            SubView::Patch => "patch",
         }
     }
 
@@ -60,6 +64,7 @@ impl SubView {
             SubView::Branches => "branches",
             SubView::Stash => "stash",
             SubView::Search => "search",
+            SubView::Patch => "patch",
         }
     }
 }
@@ -70,6 +75,7 @@ const SUB_VIEWS: &[SubView] = &[
     SubView::Branches,
     SubView::Stash,
     SubView::Search,
+    SubView::Patch,
 ];
 
 // ─── Shared pane state ───────────────────────────────────────────────
@@ -96,6 +102,7 @@ pub(super) struct GitPaneView {
     branch_widgets: RefCell<Option<branches::BranchWidgets>>,
     stash_widgets: RefCell<Option<stash::StashWidgets>>,
     search_widgets: RefCell<Option<Rc<search::SearchWidgets>>>,
+    patch_widgets: RefCell<Option<patch::PatchWidgets>>,
 }
 
 impl GitPaneView {
@@ -195,6 +202,7 @@ fn refresh(view: &Rc<GitPaneView>) {
                         SubView::Branches => branches::refresh_branches(view),
                         SubView::Stash => stash::refresh_stash(view),
                         SubView::Search => {} // search refreshes on demand
+                        SubView::Patch => patch::refresh_patch(view),
                     }
                 }
                 Err(e) => view.set_status_err(&format!("status error: {e}")),
@@ -244,6 +252,9 @@ fn clear_all_views(view: &Rc<GitPaneView>) {
         clear_list_box(&sw.list);
         sw.count_label.set_text("");
     }
+    if let Some(pw) = view.patch_widgets.borrow().as_ref() {
+        clear_list_box(&pw.hunk_list);
+    }
 }
 
 fn clear_list_box(list: &gtk::ListBox) {
@@ -264,6 +275,9 @@ impl GitPaneView {
 pub(super) fn build_git_pane(cwd_provider: CwdProvider) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
     root.set_vexpand(true);
+    root.set_hexpand(true);
+    root.set_width_request(0);
+    root.set_overflow(Overflow::Hidden);
     root.add_css_class("magma-git-root");
     root.set_focusable(true);
 
@@ -345,7 +359,9 @@ pub(super) fn build_git_pane(cwd_provider: CwdProvider) -> GtkBox {
     let nav_stack = Stack::new();
     nav_stack.set_transition_type(StackTransitionType::Crossfade);
     nav_stack.set_transition_duration(150);
+    nav_stack.set_hexpand(true);
     nav_stack.set_vexpand(true);
+    nav_stack.set_overflow(Overflow::Hidden);
 
     // ─── Status bar ──────────────────────────────────────────────
     let status_label = Label::new(Some("loading..."));
@@ -378,6 +394,7 @@ pub(super) fn build_git_pane(cwd_provider: CwdProvider) -> GtkBox {
         branch_widgets: RefCell::new(None),
         stash_widgets: RefCell::new(None),
         search_widgets: RefCell::new(None),
+        patch_widgets: RefCell::new(None),
     });
 
     // Build sub-views and add to stack
@@ -386,12 +403,14 @@ pub(super) fn build_git_pane(cwd_provider: CwdProvider) -> GtkBox {
     let branches_view = branches::build_branches_view(&view);
     let stash_view = stash::build_stash_view(&view);
     let search_view = search::build_search_view(&view);
+    let patch_view = patch::build_patch_view(&view);
 
     nav_stack.add_named(&status_view, Some("status"));
     nav_stack.add_named(&log_view, Some("log"));
     nav_stack.add_named(&branches_view, Some("branches"));
     nav_stack.add_named(&stash_view, Some("stash"));
     nav_stack.add_named(&search_view, Some("search"));
+    nav_stack.add_named(&patch_view, Some("patch"));
 
     // ─── Bind navigation buttons ─────────────────────────────────
     for (i, btn) in nav_buttons.iter().enumerate() {
@@ -521,6 +540,7 @@ fn bind_keyboard(view: &Rc<GitPaneView>) {
                 gdk::Key::_3 => Some(SubView::Branches),
                 gdk::Key::_4 => Some(SubView::Stash),
                 gdk::Key::_5 => Some(SubView::Search),
+                gdk::Key::_6 => Some(SubView::Patch),
                 _ => None,
             };
             if let Some(sv) = sv {

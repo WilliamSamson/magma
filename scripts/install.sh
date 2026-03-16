@@ -15,10 +15,13 @@ set -euo pipefail
 APP_NAME="magma"
 DESKTOP_ID="io.magma.terminal"
 APPIMAGE_NAME="Magma-x86_64.AppImage"
+LEGACY_APP_NAME="obsidian"
+LEGACY_DESKTOP_ID="io.obsidian.terminal"
+ICON_SIZES=(48 64 128 256 512)
 
 BIN_DIR="$HOME/.local/bin"
 APPS_DIR="$HOME/.local/share/applications"
-ICON_DIR="$HOME/.local/share/icons/hicolor/64x64/apps"
+ICON_ROOT="$HOME/.local/share/icons/hicolor"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -85,6 +88,11 @@ main() {
   echo "Installing Magma Terminal..."
   echo ""
 
+  # Remove the old Obsidian install first so launchers do not keep both entries around.
+  rm -f "$BIN_DIR/$LEGACY_APP_NAME"
+  rm -f "$APPS_DIR/$LEGACY_DESKTOP_ID.desktop"
+  find "$ICON_ROOT" -path "*/apps/$LEGACY_DESKTOP_ID.png" -delete 2>/dev/null || true
+
   # -- binary ---------------------------------------------------------------
   mkdir -p "$BIN_DIR"
   cp "$appimage" "$BIN_DIR/$APP_NAME"
@@ -99,17 +107,21 @@ main() {
   echo "  desktop → $APPS_DIR/$DESKTOP_ID.desktop"
 
   # -- icon -----------------------------------------------------------------
-  mkdir -p "$ICON_DIR"
-  cp "$assets_dir/icons/hicolor/64x64/apps/$DESKTOP_ID.png" \
-    "$ICON_DIR/$DESKTOP_ID.png"
-  echo "  icon    → $ICON_DIR/$DESKTOP_ID.png"
+  local size
+  for size in "${ICON_SIZES[@]}"; do
+    local icon_dir="$ICON_ROOT/${size}x${size}/apps"
+    mkdir -p "$icon_dir"
+    cp "$assets_dir/icons/hicolor/${size}x${size}/apps/$DESKTOP_ID.png" \
+      "$icon_dir/$DESKTOP_ID.png"
+    echo "  icon    → $icon_dir/$DESKTOP_ID.png"
+  done
 
   # -- desktop database -----------------------------------------------------
   if command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database "$APPS_DIR" 2>/dev/null || true
   fi
   if command -v gtk-update-icon-cache >/dev/null 2>&1; then
-    gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+    gtk-update-icon-cache -f -t "$ICON_ROOT" 2>/dev/null || true
   fi
 
   # -- PATH hint ------------------------------------------------------------

@@ -6,7 +6,7 @@ use std::{
 // ─── Data types ──────────────────────────────────────────────────────
 
 #[derive(Clone, Debug)]
-pub(super) struct RepoStatus {
+pub(crate) struct RepoStatus {
     pub branch: String,
     pub is_detached: bool,
     pub upstream: Option<String>,
@@ -20,14 +20,14 @@ pub(super) struct RepoStatus {
 }
 
 #[derive(Clone, Debug)]
-pub(super) struct FileStatus {
+pub(crate) struct FileStatus {
     pub path: String,
     pub old_path: Option<String>,
     pub status: FileChange,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum FileChange {
+pub(crate) enum FileChange {
     Added,
     Modified,
     Deleted,
@@ -116,14 +116,14 @@ fn run_git(root: &Path, args: &[&str]) -> Result<String, String> {
 
 // ─── Repository detection ────────────────────────────────────────────
 
-pub(super) fn git_repo_root(cwd: &Path) -> Result<PathBuf, String> {
+pub(crate) fn git_repo_root(cwd: &Path) -> Result<PathBuf, String> {
     let out = run_git(cwd, &["rev-parse", "--show-toplevel"])?;
     Ok(PathBuf::from(out.trim()))
 }
 
 // ─── Status ──────────────────────────────────────────────────────────
 
-pub(super) fn git_status(root: &Path) -> Result<RepoStatus, String> {
+pub(crate) fn git_status(root: &Path) -> Result<RepoStatus, String> {
     let out = run_git(root, &["status", "--porcelain=v2", "--branch"])?;
 
     let mut branch = String::from("(unknown)");
@@ -337,6 +337,108 @@ fn parse_diff(text: &str) -> Vec<DiffHunk> {
     }
 
     hunks
+}
+
+// ─── Full diff (all files, unstaged + staged) ────────────────────
+
+/// Returns the raw unified diff for all changed files (both staged and unstaged).
+/// Each entry is (file_path, raw_diff_text).
+pub(super) fn git_diff_all_hunks(root: &Path) -> Result<Vec<(String, Vec<DiffHunk>)>, String> {
+    let mut result: Vec<(String, Vec<DiffHunk>)> = Vec::new();
+
+    // Unstaged changes
+    let unstaged = run_git(root, &["diff", "--color=never", "-U3"])?;
+    collect_file_hunks(&unstaged, &mut result);
+
+    // Staged changes
+    let staged = run_git(root, &["diff", "--cached", "--color=never", "-U3"])?;
+    collect_file_hunks(&staged, &mut result);
+
+    Ok(result)
+}
+
+/// Parse a multi-file diff and group hunks by file path.
+fn collect_file_hunks(diff_text: &str, result: &mut Vec<(String, Vec<DiffHunk>)>) {
+    let mut current_file = String::new();
+    let mut current_header = String::new();
+    let mut current_lines: Vec<DiffLine> = Vec::new();
+    let mut file_hunks: Vec<DiffHunk> = Vec::new();
+    let mut in_hunk = false;
+
+    for line in diff_text.lines() {
+        if line.starts_with("diff --git") {
+            // Flush previous hunk
+            if in_hunk && !current_lines.is_empty() {
+                file_hunks.push(DiffHunk {
+                    header: current_header.clone(),
+                    lines: std::mem::take(&mut current_lines),
+                });
+            }
+            // Flush previous file
+            if !current_file.is_empty() && !file_hunks.is_empty() {
+                // Merge into existing file entry or create new
+                if let Some(entry) = result.iter_mut().find(|(f, _)| f == &current_file) {
+                    entry.1.append(&mut file_hunks);
+                } else {
+                    result.push((current_file.clone(), std::mem::take(&mut file_hunks)));
+                }
+                file_hunks.clear();
+            }
+            // Extract file path from "diff --git a/path b/path"
+            current_file = line
+                .strip_prefix("diff --git a/")
+                .and_then(|rest| rest.split(" b/").next())
+                .unwrap_or("")
+                .to_string();
+            in_hunk = false;
+        } else if line.starts_with("@@") {
+            if in_hunk && !current_lines.is_empty() {
+                file_hunks.push(DiffHunk {
+                    header: current_header.clone(),
+                    lines: std::mem::take(&mut current_lines),
+                });
+            }
+            current_header = line.to_string();
+            in_hunk = true;
+        } else if line.starts_with("index ") || line.starts_with("---") || line.starts_with("+++") {
+            // Skip metadata
+        } else if line.starts_with("Binary files") {
+            file_hunks.push(DiffHunk {
+                header: String::new(),
+                lines: vec![DiffLine {
+                    kind: DiffLineKind::Context,
+                    content: "(binary file)".to_string(),
+                }],
+            });
+        } else if in_hunk {
+            let kind = if line.starts_with('+') {
+                DiffLineKind::Added
+            } else if line.starts_with('-') {
+                DiffLineKind::Removed
+            } else {
+                DiffLineKind::Context
+            };
+            current_lines.push(DiffLine {
+                kind,
+                content: line.to_string(),
+            });
+        }
+    }
+
+    // Flush last hunk + file
+    if in_hunk && !current_lines.is_empty() {
+        file_hunks.push(DiffHunk {
+            header: current_header,
+            lines: current_lines,
+        });
+    }
+    if !current_file.is_empty() && !file_hunks.is_empty() {
+        if let Some(entry) = result.iter_mut().find(|(f, _)| f == &current_file) {
+            entry.1.append(&mut file_hunks);
+        } else {
+            result.push((current_file, file_hunks));
+        }
+    }
 }
 
 // ─── Staging ─────────────────────────────────────────────────────────

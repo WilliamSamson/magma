@@ -13,7 +13,7 @@ use std::{
     time::Duration,
 };
 
-use files::{scan_directory, ViewerFile};
+use files::{category_label, category_order, scan_directory, FileCategory, ViewerFile};
 use gtk::{
     glib, prelude::*, Box as GtkBox, Button, Label, ListBox, Orientation, Overflow, PolicyType,
     ScrolledWindow, SelectionMode,
@@ -38,6 +38,9 @@ pub(super) fn build_view_pane(cwd_provider: CwdProvider, context: WebContext) ->
     let refresh_button = icon_button("view-refresh-symbolic", "Refresh files");
     let header = build_header(&refresh_button, &count_label);
 
+    let scope_bar = GtkBox::new(Orientation::Horizontal, 4);
+    scope_bar.add_css_class("magma-view-scope");
+
     let list = ListBox::new();
     list.add_css_class("magma-view-file-list");
     list.set_selection_mode(SelectionMode::Single);
@@ -50,6 +53,7 @@ pub(super) fn build_view_pane(cwd_provider: CwdProvider, context: WebContext) ->
 
     let preview = build_preview(context);
     root.append(&header);
+    root.append(&scope_bar);
     root.append(&list_scroller);
     root.append(&preview.root);
 
@@ -60,6 +64,7 @@ pub(super) fn build_view_pane(cwd_provider: CwdProvider, context: WebContext) ->
             list: list.clone(),
             count_label,
             preview,
+            scope_bar,
         },
     });
 
@@ -84,12 +89,14 @@ struct ViewModel {
     current_dir: Option<PathBuf>,
     selected_file: Option<PathBuf>,
     files: Vec<ViewerFile>,
+    active_category: FileCategory,
 }
 
 struct ViewWidgets {
     list: ListBox,
     count_label: Label,
     preview: PreviewWidgets,
+    scope_bar: GtkBox,
 }
 
 fn bind_selection(state: &Rc<ViewState>) {
@@ -99,13 +106,24 @@ fn bind_selection(state: &Rc<ViewState>) {
             return;
         };
         let file = {
-            let model = state_ref.model.borrow();
-            model.files.get(row.index() as usize).cloned()
+            let visible = visible_files(&state_ref);
+            visible.get(row.index() as usize).cloned()
         };
         if let Some(file) = file {
             select_file(&state_ref, &file);
         }
     });
+}
+
+fn visible_files(state: &ViewState) -> Vec<ViewerFile> {
+    let model = state.model.borrow();
+    let active = model.active_category;
+    model
+        .files
+        .iter()
+        .filter(|f| active == FileCategory::All || f.category == active)
+        .cloned()
+        .collect()
 }
 
 fn bind_refresh(state: &Rc<ViewState>, refresh_button: &Button) {
@@ -155,6 +173,13 @@ fn update_model(state: &Rc<ViewState>, dir: PathBuf, files: Vec<ViewerFile>) {
         let mut model = state.model.borrow_mut();
         model.current_dir = Some(dir);
         model.files = files;
+        // Reset category if old category has no files in new directory.
+        let active = model.active_category;
+        if active != FileCategory::All
+            && !model.files.iter().any(|f| f.category == active)
+        {
+            model.active_category = FileCategory::All;
+        }
         model.selected_file = model
             .selected_file
             .take()
@@ -162,6 +187,7 @@ fn update_model(state: &Rc<ViewState>, dir: PathBuf, files: Vec<ViewerFile>) {
         model.selected_file.clone()
     };
 
+    rebuild_scope_bar(state);
     rebuild_list(state, selected.as_deref());
     if let Some(path) = selected {
         if let Some(file) = state
@@ -177,7 +203,7 @@ fn update_model(state: &Rc<ViewState>, dir: PathBuf, files: Vec<ViewerFile>) {
         }
     }
 
-    let count = state.model.borrow().files.len();
+    let count = visible_files(state).len();
     state.widgets.count_label.set_text(&format_file_count(count));
 
     if count == 0 {
@@ -190,7 +216,11 @@ fn update_model(state: &Rc<ViewState>, dir: PathBuf, files: Vec<ViewerFile>) {
 
 fn rebuild_list(state: &Rc<ViewState>, selected: Option<&std::path::Path>) {
     clear_list(&state.widgets.list);
-    let files = state.model.borrow().files.clone();
+    let files = visible_files(state);
+    state
+        .widgets
+        .count_label
+        .set_text(&format_file_count(files.len()));
     for file in &files {
         let row = file_row(file);
         state.widgets.list.append(&row);
@@ -204,5 +234,77 @@ fn format_file_count(count: usize) -> String {
     match count {
         1 => "1 file".to_string(),
         _ => format!("{count} files"),
+    }
+}
+
+fn rebuild_scope_bar(state: &Rc<ViewState>) {
+    let bar = &state.widgets.scope_bar;
+    clear_box(bar);
+
+    let model = state.model.borrow();
+    if model.files.is_empty() {
+        bar.set_visible(false);
+        return;
+    }
+
+    // Collect unique categories present in the file list.
+    let mut categories: Vec<FileCategory> = Vec::new();
+    for file in &model.files {
+        if !categories.contains(&file.category) {
+            categories.push(file.category);
+        }
+    }
+    categories.sort_by_key(|c| category_order(*c));
+
+    // Hide scope bar if only one category (no point picking).
+    if categories.len() <= 1 {
+        bar.set_visible(false);
+        return;
+    }
+
+    bar.set_visible(true);
+    let active = model.active_category;
+    drop(model);
+
+    // "all" chip.
+    let all_chip = scope_chip("all", active == FileCategory::All);
+    {
+        let state = state.clone();
+        all_chip.connect_clicked(move |_| set_active_category(&state, FileCategory::All));
+    }
+    bar.append(&all_chip);
+
+    for cat in categories {
+        let chip = scope_chip(category_label(cat), active == cat);
+        {
+            let state = state.clone();
+            chip.connect_clicked(move |_| set_active_category(&state, cat));
+        }
+        bar.append(&chip);
+    }
+}
+
+fn set_active_category(state: &Rc<ViewState>, category: FileCategory) {
+    state.model.borrow_mut().active_category = category;
+    rebuild_scope_bar(state);
+    let selected = state.model.borrow().selected_file.clone();
+    rebuild_list(state, selected.as_deref());
+    if visible_files(state).is_empty() {
+        set_empty_preview(&state.widgets.preview, "no files in this scope");
+    }
+}
+
+fn scope_chip(label: &str, active: bool) -> Button {
+    let btn = Button::with_label(label);
+    btn.add_css_class("magma-view-scope-chip");
+    if active {
+        btn.add_css_class("magma-view-scope-chip-active");
+    }
+    btn
+}
+
+fn clear_box(container: &GtkBox) {
+    while let Some(child) = container.first_child() {
+        container.remove(&child);
     }
 }

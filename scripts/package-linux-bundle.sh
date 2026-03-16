@@ -7,6 +7,7 @@ APPDIR="${1:-$ROOT_DIR/dist/AppDir}"
 BIN_PATH="$ROOT_DIR/target/release/magma"
 DESKTOP_ID="io.magma.terminal"
 WEBKIT_DIR_NAME="webkitgtk-6.0"
+ICON_SIZES=(48 64 128 256 512)
 
 system_libdir() {
   local lib
@@ -81,17 +82,24 @@ main() {
     "$APPDIR/usr/bin" \
     "$APPDIR/usr/lib" \
     "$APPDIR/usr/lib/magma/bin" \
-    "$APPDIR/usr/share/applications" \
-    "$APPDIR/usr/share/icons/hicolor/64x64/apps"
+    "$APPDIR/usr/share/applications"
+
+  local size
+  for size in "${ICON_SIZES[@]}"; do
+    mkdir -p "$APPDIR/usr/share/icons/hicolor/${size}x${size}/apps"
+  done
 
   cp "$BIN_PATH" "$APPDIR/usr/bin/magma"
   cp /bin/bash "$APPDIR/usr/lib/magma/bin/bash"
 
   cp "$ROOT_DIR/assets/$DESKTOP_ID.desktop" "$APPDIR/usr/share/applications/$DESKTOP_ID.desktop"
-  cp "$ROOT_DIR/assets/icons/hicolor/64x64/apps/$DESKTOP_ID.png" \
-    "$APPDIR/usr/share/icons/hicolor/64x64/apps/$DESKTOP_ID.png"
   cp "$ROOT_DIR/assets/$DESKTOP_ID.desktop" "$APPDIR/$DESKTOP_ID.desktop"
-  cp "$ROOT_DIR/assets/icons/hicolor/64x64/apps/$DESKTOP_ID.png" "$APPDIR/$DESKTOP_ID.png"
+  cp "$ROOT_DIR/assets/icons/hicolor/256x256/apps/$DESKTOP_ID.png" "$APPDIR/$DESKTOP_ID.png"
+
+  for size in "${ICON_SIZES[@]}"; do
+    cp "$ROOT_DIR/assets/icons/hicolor/${size}x${size}/apps/$DESKTOP_ID.png" \
+      "$APPDIR/usr/share/icons/hicolor/${size}x${size}/apps/$DESKTOP_ID.png"
+  done
 
   copy_linked_libs "$APPDIR/usr/bin/magma"
   copy_linked_libs "$APPDIR/usr/lib/magma/bin/bash"

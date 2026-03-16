@@ -1,5 +1,5 @@
 use gtk::{
-    prelude::*, Box as GtkBox, Label, Orientation,
+    pango, prelude::*, Box as GtkBox, Label, Orientation, Overflow,
 };
 
 use super::ops::{DiffHunk, DiffLineKind};
@@ -11,6 +11,9 @@ pub(super) fn build_diff_widget(
 ) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
     root.add_css_class("magma-git-diff-root");
+    root.set_hexpand(true);
+    root.set_width_request(0);
+    root.set_overflow(Overflow::Hidden);
 
     if hunks.is_empty() {
         let empty = Label::new(Some("no changes"));
@@ -23,6 +26,9 @@ pub(super) fn build_diff_widget(
     for hunk in hunks {
         let hunk_box = GtkBox::new(Orientation::Vertical, 0);
         hunk_box.add_css_class("magma-git-hunk");
+        hunk_box.set_hexpand(true);
+        hunk_box.set_width_request(0);
+        hunk_box.set_overflow(Overflow::Hidden);
 
         // Hunk header row
         let header_row = GtkBox::new(Orientation::Horizontal, 4);
@@ -44,6 +50,11 @@ pub(super) fn build_diff_widget(
             let line_label = Label::new(Some(&line.content));
             line_label.set_xalign(0.0);
             line_label.set_selectable(true);
+            line_label.set_hexpand(true);
+            line_label.set_width_request(0);
+            line_label.set_wrap(true);
+            line_label.set_wrap_mode(pango::WrapMode::Char);
+            line_label.set_ellipsize(pango::EllipsizeMode::None);
             line_label.add_css_class("magma-git-diff-line");
             line_label.add_css_class(match line.kind {
                 DiffLineKind::Added => "magma-git-line-added",
@@ -74,4 +85,3 @@ pub(super) fn build_diff_stat(stat_text: &str) -> GtkBox {
 
     root
 }
-
