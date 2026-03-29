@@ -1,4 +1,4 @@
-use std::{cell::Cell, cell::RefCell, rc::Rc};
+use std::{cell::Cell, cell::RefCell, path::Path, rc::Rc};
 
 use gtk::{
     prelude::*, Align, Box as GtkBox, Button, Image, Orientation, Overflow, PolicyType,
@@ -6,7 +6,7 @@ use gtk::{
 };
 use webkit6::WebContext;
 
-use super::{agent, git, logr, settings::Settings, view, web};
+use super::{agent, git, logr, notes, settings::Settings, view, web};
 use crate::agent::{
     context::{load_ui_runtime_state, write_ui_runtime_state},
     effects::UiEffect,
@@ -23,6 +23,7 @@ pub(super) enum SidePaneKind {
     View,
     Git,
     Agent,
+    Notes,
 }
 
 #[derive(Clone)]
@@ -34,6 +35,7 @@ pub(super) struct SidePanes {
     view_host: view::ViewPaneHost,
     git_host: git::GitPaneHost,
     agent_host: agent::AgentPaneHost,
+    notes_host: notes::NotesPaneHost,
 }
 
 #[derive(Clone)]
@@ -44,6 +46,7 @@ struct PaneButtons {
     view: Button,
     git: Button,
     agent: Button,
+    notes: Button,
 }
 
 #[derive(Clone)]
@@ -53,6 +56,7 @@ struct PaneRevealers {
     view: Revealer,
     git: Revealer,
     agent: Revealer,
+    notes: Revealer,
 }
 
 pub(super) fn build_side_panes(
@@ -80,11 +84,13 @@ pub(super) fn build_side_panes(
     let view_button = handle_button("image-x-generic-symbolic", "Open viewer");
     let git_button = handle_button("emblem-shared-symbolic", "Open git");
     let agent_button = handle_button("applications-internet-symbolic", "Open agent");
+    let notes_button = handle_button("accessories-text-editor-symbolic", "Open notes");
     handle.append(&logr_button);
     handle.append(&web_button);
     handle.append(&view_button);
     handle.append(&git_button);
     handle.append(&agent_button);
+    handle.append(&notes_button);
 
     let logr_revealer = build_revealer(&wrap_pane(&logr::build_logr_pane()));
     let web_host = web::WebPaneHost::new(settings.clone());
@@ -95,6 +101,8 @@ pub(super) fn build_side_panes(
     let git_revealer = build_revealer(&wrap_pane(git_host.widget()));
     let agent_host = agent::AgentPaneHost::new(settings.clone());
     let agent_revealer = build_revealer(&wrap_pane(agent_host.widget()));
+    let notes_host = notes::NotesPaneHost::new();
+    let notes_revealer = build_revealer(&wrap_pane(notes_host.widget()));
 
     let buttons = PaneButtons {
         handle: handle.clone(),
@@ -103,6 +111,7 @@ pub(super) fn build_side_panes(
         view: view_button.clone(),
         git: git_button.clone(),
         agent: agent_button.clone(),
+        notes: notes_button.clone(),
     };
     let revealers = PaneRevealers {
         logr: logr_revealer.clone(),
@@ -110,6 +119,7 @@ pub(super) fn build_side_panes(
         view: view_revealer.clone(),
         git: git_revealer.clone(),
         agent: agent_revealer.clone(),
+        notes: notes_revealer.clone(),
     };
 
     let side_panes = SidePanes {
@@ -120,6 +130,7 @@ pub(super) fn build_side_panes(
         view_host,
         git_host,
         agent_host,
+        notes_host,
     };
 
     {
@@ -147,6 +158,11 @@ pub(super) fn build_side_panes(
         agent_button.connect_clicked(move |_| side_panes.toggle(SidePaneKind::Agent));
     }
 
+    {
+        let side_panes = side_panes.clone();
+        notes_button.connect_clicked(move |_| side_panes.toggle(SidePaneKind::Notes));
+    }
+
     side_panes.sync();
     {
         let side_panes = side_panes.clone();
@@ -159,10 +175,15 @@ pub(super) fn build_side_panes(
                         crate::agent::actions::PaneType::View => SidePaneKind::View,
                         crate::agent::actions::PaneType::Git => SidePaneKind::Git,
                         crate::agent::actions::PaneType::Agent => SidePaneKind::Agent,
+                        crate::agent::actions::PaneType::Notes => SidePaneKind::Notes,
                     }),
                     UiEffect::Message(_) => {
                         // Messages are now surfaced in the agent pane's
                         // conversation log via runtime.log_entries().
+                    }
+                    UiEffect::DispatchTerminalCommand(command) => {
+                        side_panes.agent_host.dispatch_command(&command);
+                        side_panes.open(SidePaneKind::Agent);
                     }
                 }
             }
@@ -197,6 +218,10 @@ impl SidePanes {
         &self.revealers.agent
     }
 
+    pub(super) fn notes_revealer(&self) -> &Revealer {
+        &self.revealers.notes
+    }
+
     pub(super) fn apply_settings(&self, settings: &Settings) {
         let next = match (settings.logr_panel_open, self.active_pane.get()) {
             (true, SidePaneKind::None) => SidePaneKind::Logr,
@@ -228,16 +253,13 @@ impl SidePanes {
         self.sync();
     }
 
+    pub(crate) fn open_view_file(&self, path: &Path) {
+        self.view_host.open_file(path);
+        self.open(SidePaneKind::View);
+    }
+
     fn sync(&self) {
-        sync_side_panes(
-            self.active_pane.get(),
-            &self.revealers,
-            &self.buttons,
-            &self.web_host,
-            &self.view_host,
-            &self.git_host,
-            &self.agent_host,
-        );
+        sync_side_panes(self);
     }
 }
 
@@ -290,55 +312,55 @@ fn build_revealer(child: &impl IsA<gtk::Widget>) -> Revealer {
     revealer
 }
 
-fn sync_side_panes(
-    active: SidePaneKind,
-    revealers: &PaneRevealers,
-    buttons: &PaneButtons,
-    web_host: &web::WebPaneHost,
-    view_host: &view::ViewPaneHost,
-    git_host: &git::GitPaneHost,
-    agent_host: &agent::AgentPaneHost,
-) {
+fn sync_side_panes(side_panes: &SidePanes) {
+    let active = side_panes.active_pane.get();
     let show_logr = active == SidePaneKind::Logr;
     let show_web = active == SidePaneKind::Web;
     let show_view = active == SidePaneKind::View;
     let show_git = active == SidePaneKind::Git;
     let show_agent = active == SidePaneKind::Agent;
+    let show_notes = active == SidePaneKind::Notes;
 
     if show_web {
-        web_host.ensure_loaded();
+        side_panes.web_host.ensure_loaded();
     }
     if show_view {
-        view_host.ensure_loaded();
+        side_panes.view_host.ensure_loaded();
     }
     if show_git {
-        git_host.ensure_loaded();
+        side_panes.git_host.ensure_loaded();
     }
     if show_agent {
-        agent_host.ensure_loaded();
+        side_panes.agent_host.ensure_loaded();
+    }
+    if show_notes {
+        side_panes.notes_host.ensure_loaded();
     }
 
-    revealers.logr.set_visible(show_logr);
-    revealers.web.set_visible(show_web);
-    revealers.view.set_visible(show_view);
-    revealers.git.set_visible(show_git);
-    revealers.agent.set_visible(show_agent);
-    revealers.logr.set_reveal_child(show_logr);
-    revealers.web.set_reveal_child(show_web);
-    revealers.view.set_reveal_child(show_view);
-    revealers.git.set_reveal_child(show_git);
-    revealers.agent.set_reveal_child(show_agent);
+    side_panes.revealers.logr.set_visible(show_logr);
+    side_panes.revealers.web.set_visible(show_web);
+    side_panes.revealers.view.set_visible(show_view);
+    side_panes.revealers.git.set_visible(show_git);
+    side_panes.revealers.agent.set_visible(show_agent);
+    side_panes.revealers.notes.set_visible(show_notes);
+    side_panes.revealers.logr.set_reveal_child(show_logr);
+    side_panes.revealers.web.set_reveal_child(show_web);
+    side_panes.revealers.view.set_reveal_child(show_view);
+    side_panes.revealers.git.set_reveal_child(show_git);
+    side_panes.revealers.agent.set_reveal_child(show_agent);
+    side_panes.revealers.notes.set_reveal_child(show_notes);
 
-    set_active_button(&buttons.logr, show_logr);
-    set_active_button(&buttons.web, show_web);
-    set_active_button(&buttons.view, show_view);
-    set_active_button(&buttons.git, show_git);
-    set_active_button(&buttons.agent, show_agent);
+    set_active_button(&side_panes.buttons.logr, show_logr);
+    set_active_button(&side_panes.buttons.web, show_web);
+    set_active_button(&side_panes.buttons.view, show_view);
+    set_active_button(&side_panes.buttons.git, show_git);
+    set_active_button(&side_panes.buttons.agent, show_agent);
+    set_active_button(&side_panes.buttons.notes, show_notes);
 
     if active == SidePaneKind::None {
-        buttons.handle.add_css_class("collapsed");
+        side_panes.buttons.handle.add_css_class("collapsed");
     } else {
-        buttons.handle.remove_css_class("collapsed");
+        side_panes.buttons.handle.remove_css_class("collapsed");
     }
 
     let mut state = load_ui_runtime_state();
@@ -349,6 +371,7 @@ fn sync_side_panes(
         SidePaneKind::View => Some("view".to_string()),
         SidePaneKind::Git => Some("git".to_string()),
         SidePaneKind::Agent => Some("agent".to_string()),
+        SidePaneKind::Notes => Some("notes".to_string()),
     };
     write_ui_runtime_state(&state);
 }

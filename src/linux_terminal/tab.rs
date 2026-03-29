@@ -211,6 +211,10 @@ impl TabView {
         self.active_mux_pane().current_cwd()
     }
 
+    pub(super) fn current_terminal(&self) -> Option<vte4::Terminal> {
+        self.active_mux_pane().current_terminal()
+    }
+
     fn active_mux_pane(&self) -> &MuxPaneView {
         if self.active_pane.get() == PaneFocus::Right {
             if let Some(right) = &self.right {

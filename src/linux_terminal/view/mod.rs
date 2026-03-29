@@ -23,10 +23,11 @@ use ui::{build_header, clear_list, file_row, icon_button};
 use webkit6::WebContext;
 
 pub(super) use host::ViewPaneHost;
+use host::OpenFileSlot;
 
 pub(super) type CwdProvider = Rc<dyn Fn() -> Option<String>>;
 
-pub(super) fn build_view_pane(cwd_provider: CwdProvider, context: WebContext) -> GtkBox {
+fn build_view_pane(cwd_provider: CwdProvider, context: WebContext, open_file_slot: OpenFileSlot) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 8);
     root.add_css_class("magma-view-root");
     root.set_vexpand(true);
@@ -74,6 +75,7 @@ pub(super) fn build_view_pane(cwd_provider: CwdProvider, context: WebContext) ->
     bind_refresh(&state, &refresh_button);
     refresh_from_terminal(&state, true);
     watch_terminal_directory(&state);
+    watch_open_file_slot(&state, open_file_slot);
 
     root
 }
@@ -135,6 +137,19 @@ fn watch_terminal_directory(state: &Rc<ViewState>) {
     let state_ref = state.clone();
     glib::timeout_add_local(Duration::from_millis(1200), move || {
         refresh_from_terminal(&state_ref, false);
+        glib::ControlFlow::Continue
+    });
+}
+
+fn watch_open_file_slot(state: &Rc<ViewState>, slot: OpenFileSlot) {
+    let state_ref = state.clone();
+    glib::timeout_add_local(Duration::from_millis(200), move || {
+        let request = slot.borrow_mut().take();
+        if let Some(path) = request {
+            if let Some(file) = files::viewer_file_for_path(&path) {
+                select_file(&state_ref, &file);
+            }
+        }
         glib::ControlFlow::Continue
     });
 }

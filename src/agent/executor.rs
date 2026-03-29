@@ -77,9 +77,8 @@ impl Default for ExecutorConfig {
 }
 
 enum RuntimeCommand {
-    Prompt(String),
+    Command(String),
     Decision(bool),
-    SetPassive(bool),
 }
 
 pub(crate) struct AgentRuntimeHandle {
@@ -118,16 +117,12 @@ impl AgentRuntimeHandle {
         self.state.lock().map(|s| s.log.len()).unwrap_or(0)
     }
 
-    pub(crate) fn submit_prompt(&self, prompt: String) {
-        let _ = self.tx.send(RuntimeCommand::Prompt(prompt));
+    pub(crate) fn submit_command(&self, command: String) {
+        let _ = self.tx.send(RuntimeCommand::Command(command));
     }
 
     pub(crate) fn respond(&self, accept: bool) {
         let _ = self.tx.send(RuntimeCommand::Decision(accept));
-    }
-
-    pub(crate) fn set_passive_mode(&self, passive: bool) {
-        let _ = self.tx.send(RuntimeCommand::SetPassive(passive));
     }
 
     pub(crate) fn drain_ui_effects(&self) -> Vec<UiEffect> {
@@ -167,24 +162,19 @@ fn spawn(config: ExecutorConfig) -> AgentRuntimeHandle {
 
         loop {
             match rx.recv_timeout(Duration::from_millis(250)) {
-                Ok(RuntimeCommand::Prompt(prompt)) => {
+                Ok(RuntimeCommand::Command(command)) => {
                     push_log(
                         &state_ref,
                         LogEntry {
                             role: LogRole::User,
-                            text: prompt.clone(),
+                            text: command.clone(),
                             timestamp_ms: now_ms(),
                         },
                     );
-                    // User prompts always go through immediately.
-                    process_request(
-                        &model,
+                    process_command(
                         &state_ref,
-                        &effects_ref,
                         &mut pending_action,
-                        &mut passive_mode,
-                        config.confidence_threshold,
-                        RequestKind::Prompt(prompt),
+                        command,
                     );
                 }
                 Ok(RuntimeCommand::Decision(accept)) => {
@@ -220,7 +210,6 @@ fn spawn(config: ExecutorConfig) -> AgentRuntimeHandle {
                         }
                     }
                 }
-                Ok(RuntimeCommand::SetPassive(passive)) => passive_mode = passive,
                 Err(RecvTimeoutError::Disconnected) => break,
                 Err(RecvTimeoutError::Timeout) => {}
             }
@@ -279,7 +268,36 @@ fn spawn(config: ExecutorConfig) -> AgentRuntimeHandle {
 
 enum RequestKind {
     BatchedEvents(String, Vec<WorkspaceEvent>),
-    Prompt(String),
+}
+
+fn process_command(
+    state: &Arc<Mutex<RuntimeState>>,
+    pending_action: &mut Option<AgentAction>,
+    command: String,
+) {
+    let action = AgentAction::RunCommand {
+        command: command.clone(),
+        confidence: 1.0,
+    };
+    let dry_run = action.dry_run();
+    push_log(
+        state,
+        LogEntry {
+            role: LogRole::Agent,
+            text: format!("queued command: {command}"),
+            timestamp_ms: now_ms(),
+        },
+    );
+    *pending_action = Some(action.clone());
+    set_ui(
+        state,
+        UiUpdate {
+            status: "Awaiting".to_string(),
+            message: Some("command ready".to_string()),
+            pending_action: Some(action),
+            dry_run: Some(dry_run),
+        },
+    );
 }
 
 fn process_request(
@@ -293,7 +311,6 @@ fn process_request(
 ) {
     let intent = match &request_kind {
         RequestKind::BatchedEvents(intent, _) => intent.clone(),
-        RequestKind::Prompt(prompt) => prompt.clone(),
     };
 
     set_ui(
@@ -302,7 +319,6 @@ fn process_request(
             status: "Thinking".to_string(),
             message: Some(match &request_kind {
                 RequestKind::BatchedEvents(_, _) => "processing events".to_string(),
-                RequestKind::Prompt(_) => "processing prompt".to_string(),
             }),
             pending_action: None,
             dry_run: None,
@@ -327,10 +343,6 @@ fn process_request(
                 // Use fallback for the first event only.
                 events.first().map(fallback_actions).unwrap_or_default()
             }
-            RequestKind::Prompt(prompt) => vec![AgentAction::SurfaceMessage {
-                message: format!("No model output for prompt: {prompt}"),
-                confidence: 0.25,
-            }],
         }
     });
 
@@ -425,6 +437,9 @@ fn apply_action(
                 let message = match &effect {
                     UiEffect::OpenPane(pane) => format!("opened {pane:?}"),
                     UiEffect::Message(message) => message.clone(),
+                    UiEffect::DispatchTerminalCommand(command) => {
+                        format!("sent to terminal: {command}")
+                    }
                 };
                 push_log(
                     state,
@@ -527,7 +542,6 @@ fn log_action(request_kind: &RequestKind, action: &AgentAction, dry_run: &str) {
         "ts": now_ms(),
         "source": match request_kind {
             RequestKind::BatchedEvents(_, _) => "event".to_string(),
-            RequestKind::Prompt(_) => "prompt".to_string(),
         },
         "action": action,
         "dry_run": dry_run,

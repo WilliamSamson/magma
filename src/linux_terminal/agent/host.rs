@@ -1,4 +1,4 @@
-use std::{cell::Cell, cell::RefCell, rc::Rc};
+use std::{cell::Cell, cell::RefCell, collections::VecDeque, rc::Rc};
 
 use gtk::{prelude::*, Box as GtkBox, Orientation, Overflow};
 
@@ -10,6 +10,7 @@ pub(in crate::linux_terminal) struct AgentPaneHost {
     root: GtkBox,
     loaded: Rc<Cell<bool>>,
     settings: Rc<RefCell<Settings>>,
+    command_slot: Rc<RefCell<VecDeque<String>>>,
 }
 
 impl AgentPaneHost {
@@ -24,6 +25,7 @@ impl AgentPaneHost {
             root,
             loaded: Rc::new(Cell::new(false)),
             settings,
+            command_slot: Rc::new(RefCell::new(VecDeque::new())),
         }
     }
 
@@ -36,7 +38,13 @@ impl AgentPaneHost {
             return;
         }
 
-        let pane = build_agent_pane(self.settings.clone());
+        let pane = build_agent_pane(self.settings.clone(), self.command_slot.clone());
         self.root.append(&pane);
+    }
+
+    pub(in crate::linux_terminal) fn dispatch_command(&self, command: &str) {
+        self.command_slot
+            .borrow_mut()
+            .push_back(command.to_string());
     }
 }

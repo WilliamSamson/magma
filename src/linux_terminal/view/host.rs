@@ -1,17 +1,24 @@
-use std::{cell::Cell, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    path::{Path, PathBuf},
+    rc::Rc,
+};
 
 use gtk::{prelude::*, Box as GtkBox, Orientation, Overflow};
 use webkit6::WebContext;
 
 use super::{build_view_pane, CwdProvider};
 
+/// Shared slot for requesting the view pane to open a specific file.
+pub(super) type OpenFileSlot = Rc<RefCell<Option<PathBuf>>>;
+
 #[derive(Clone)]
 pub(in crate::linux_terminal) struct ViewPaneHost {
     root: GtkBox,
-    // Rc<Cell<bool>> is enough because the viewer only needs one shared lazy-load flag on the GTK thread.
     loaded: Rc<Cell<bool>>,
     cwd_provider: CwdProvider,
     context: WebContext,
+    open_file_slot: OpenFileSlot,
 }
 
 impl ViewPaneHost {
@@ -27,6 +34,7 @@ impl ViewPaneHost {
             loaded: Rc::new(Cell::new(false)),
             cwd_provider,
             context,
+            open_file_slot: Rc::new(RefCell::new(None)),
         }
     }
 
@@ -39,7 +47,17 @@ impl ViewPaneHost {
             return;
         }
 
-        let pane = build_view_pane(self.cwd_provider.clone(), self.context.clone());
+        let pane = build_view_pane(
+            self.cwd_provider.clone(),
+            self.context.clone(),
+            self.open_file_slot.clone(),
+        );
         self.root.append(&pane);
+    }
+
+    /// Request the view pane to open a specific file.
+    /// The pane will pick this up on its next refresh cycle.
+    pub(in crate::linux_terminal) fn open_file(&self, path: &Path) {
+        *self.open_file_slot.borrow_mut() = Some(path.to_path_buf());
     }
 }

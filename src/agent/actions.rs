@@ -8,6 +8,7 @@ pub(crate) enum PaneType {
     View,
     Git,
     Agent,
+    Notes,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -82,6 +83,7 @@ impl PaneType {
             Self::View => "viewer",
             Self::Git => "git",
             Self::Agent => "agent",
+            Self::Notes => "notes",
         }
     }
 }

@@ -313,6 +313,238 @@ pub(super) fn install_css(app_font_size: u32) {
             color: {accent};
         }}
 
+        /* ── Left handle (folder pane toggle) ── */
+
+        .magma-left-handle {{
+            min-width: 30px;
+            margin: 0 3px;
+            padding: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.015);
+            transition: border-color 180ms ease, background 180ms ease, opacity 180ms ease;
+        }}
+
+        .magma-left-handle:hover {{
+            background: rgba(255, 255, 255, 0.025);
+            border-color: rgba(255, 255, 255, 0.08);
+        }}
+
+        .magma-left-handle.collapsed {{
+            background: rgba(255, 255, 255, 0.01);
+        }}
+
+        .magma-left-handle.collapsed:hover {{
+            background: rgba(255, 77, 77, 0.05);
+            border-color: rgba(255, 77, 77, 0.18);
+        }}
+
+        button.magma-left-handle-segment {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            border-radius: 9px;
+            min-width: 24px;
+            min-height: 32px;
+            padding: 0;
+            box-shadow: none;
+            opacity: 0.34;
+            transition: opacity 180ms ease, background 180ms ease, color 180ms ease;
+        }}
+
+        button.magma-left-handle-segment:hover {{
+            opacity: 0.86;
+            background: rgba(255, 255, 255, 0.035);
+        }}
+
+        button.magma-left-handle-segment.active {{
+            opacity: 1.0;
+            background: rgba(255, 77, 77, 0.08);
+        }}
+
+        .magma-left-handle-icon {{
+            color: {text_primary};
+            -gtk-icon-size: 14px;
+            opacity: inherit;
+            transition: opacity 180ms ease, color 180ms ease;
+        }}
+
+        .magma-left-handle.collapsed button.magma-left-handle-segment {{
+            opacity: 0.28;
+        }}
+
+        .magma-left-handle.collapsed:hover button.magma-left-handle-segment {{
+            opacity: 0.72;
+            background: rgba(255, 77, 77, 0.035);
+        }}
+
+        .magma-left-handle.collapsed:hover .magma-left-handle-icon {{
+            color: {accent};
+        }}
+
+        button.magma-left-handle-segment.active .magma-left-handle-icon {{
+            color: {accent};
+        }}
+
+        /* ── Left pane (folder tree) ── */
+
+        .magma-left-pane {{
+            background: transparent;
+            padding: 8px 14px 8px 4px;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+        }}
+
+        .magma-folder-header {{
+            padding: 4px 4px 8px 4px;
+            border-bottom: 1px solid {border};
+        }}
+
+        .magma-folder-title {{
+            color: {text_secondary};
+            font-size: {folder_title_size};
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }}
+
+        button.magma-folder-action {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            border-radius: 6px;
+            min-width: 22px;
+            min-height: 22px;
+            padding: 2px;
+            box-shadow: none;
+            opacity: 0.4;
+            transition: opacity 140ms ease, background 140ms ease;
+        }}
+
+        button.magma-folder-action:hover {{
+            opacity: 1.0;
+            background: rgba(255, 255, 255, 0.04);
+        }}
+
+        .magma-folder-action-icon {{
+            -gtk-icon-size: 12px;
+        }}
+
+        .magma-folder-tree {{
+            padding: 4px 0;
+        }}
+
+        button.magma-folder-item {{
+            background: transparent;
+            color: {text_primary};
+            border: none;
+            border-radius: 6px;
+            min-height: 26px;
+            padding: 2px 8px;
+            box-shadow: none;
+            transition: background 120ms ease;
+        }}
+
+        button.magma-folder-item:hover {{
+            background: rgba(255, 255, 255, 0.04);
+        }}
+
+        button.magma-folder-dir {{
+            font-weight: 500;
+        }}
+
+        button.magma-folder-file {{
+            opacity: 0.78;
+        }}
+
+        .magma-folder-chevron {{
+            -gtk-icon-size: 10px;
+            opacity: 0.5;
+        }}
+
+        .magma-folder-icon {{
+            -gtk-icon-size: 14px;
+            opacity: 0.7;
+        }}
+
+        .magma-folder-name {{
+            font-size: {folder_name_size};
+        }}
+
+        .magma-folder-empty {{
+            color: {text_dim};
+            font-size: {folder_name_size};
+            padding: 16px 8px;
+        }}
+
+        /* ── File-type colors (muted palette) ── */
+
+        .ft-default  {{ color: {text_secondary}; opacity: 0.78; }}
+        .ft-folder   {{ color: {text_primary}; }}
+        .ft-source   {{ color: #E8C87A; }}
+        .ft-test     {{ color: #7FB685; }}
+        .ft-build    {{ color: #B0896E; }}
+        .ft-dep      {{ color: {text_dim}; }}
+        .ft-doc      {{ color: #8AB4D6; }}
+        .ft-asset    {{ color: #C79DD6; }}
+        .ft-git      {{ color: #E87070; }}
+        .ft-config   {{ color: #B0896E; }}
+        .ft-secret   {{ color: #E87070; opacity: 0.85; }}
+        .ft-lock     {{ color: {text_dim}; }}
+
+        .ft-rust     {{ color: #E87050; }}
+        .ft-js       {{ color: #E8C87A; }}
+        .ft-ts       {{ color: #5B9BD5; }}
+        .ft-html     {{ color: #E87050; }}
+        .ft-css      {{ color: #8AB4D6; }}
+        .ft-json     {{ color: #B0896E; }}
+        .ft-python   {{ color: #7FB685; }}
+        .ft-go       {{ color: #6CC7D6; }}
+        .ft-c        {{ color: #8AB4D6; }}
+        .ft-java     {{ color: #E87050; }}
+        .ft-shell    {{ color: #7FB685; }}
+        .ft-image    {{ color: #C79DD6; }}
+        .ft-archive  {{ color: #B0896E; }}
+        .ft-binary   {{ color: {text_dim}; }}
+
+        /* ── Git status dots ── */
+
+        .magma-git-dot {{
+            font-size: 8px;
+            margin: 0 2px 0 4px;
+            opacity: 0.9;
+        }}
+
+        .git-modified  {{ color: #E8C87A; }}
+        .git-staged    {{ color: #7FB685; }}
+        .git-untracked {{ color: {text_dim}; }}
+        .git-conflict  {{ color: {accent}; }}
+
+        /* ── Breadcrumb bar ── */
+
+        .magma-breadcrumb {{
+            padding: 2px 4px 6px 4px;
+            min-height: 18px;
+        }}
+
+        .magma-breadcrumb-sep {{
+            color: {text_dim};
+            font-size: {folder_title_size};
+            margin: 0 1px;
+            opacity: 0.5;
+        }}
+
+        .magma-breadcrumb-segment {{
+            color: {text_dim};
+            font-size: {folder_title_size};
+        }}
+
+        .magma-breadcrumb-active {{
+            color: {text_secondary};
+            font-weight: 600;
+        }}
+
         box.magma-input-pill {{
             background: transparent;
             border: 1px solid {border};
@@ -878,7 +1110,6 @@ pub(super) fn install_css(app_font_size: u32) {
             border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 16px;
             padding: 0;
-            overflow: hidden;
         }}
 
         .magma-view-preview-chrome {{
@@ -1013,7 +1244,6 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         .magma-web-tab-scroll {{
-            min-content-height: 28px;
         }}
 
         .magma-web-tabs {{
@@ -1065,7 +1295,7 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         button.magma-web-tab-close:hover {{
-            opacity: 1.0 !important;
+            opacity: 1.0;
             background: rgba(255, 77, 77, 0.15);
         }}
 
@@ -1541,7 +1771,6 @@ pub(super) fn install_css(app_font_size: u32) {
             opacity: 0.15;
             min-width: 28px;
             margin-right: 2px;
-            text-align: right;
         }}
 
         .magma-log-entry:hover .magma-log-line-number {{
@@ -1558,9 +1787,6 @@ pub(super) fn install_css(app_font_size: u32) {
             border: 1px solid rgba(255, 255, 255, 0.04);
             padding: 6px 10px;
             border-radius: 10px;
-            /* Container containment */
-            overflow-wrap: break-word;
-            word-wrap: break-word;
         }}
 
         .log-level-dot {{
@@ -1606,7 +1832,7 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         button.magma-log-copy-btn:hover {{
-            opacity: 1.0 !important;
+            opacity: 1.0;
             background: rgba(255, 255, 255, 0.08);
         }}
 
@@ -1628,7 +1854,7 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         button.magma-log-delete-btn:hover {{
-            opacity: 1.0 !important;
+            opacity: 1.0;
             background: rgba(255, 77, 77, 0.15);
             color: #FF4D4D;
         }}
@@ -3097,98 +3323,77 @@ pub(super) fn install_css(app_font_size: u32) {
 
         .magma-agent-pane {{
             background: transparent;
+            padding: 0;
         }}
 
         .magma-agent-header {{
-            padding: 6px 8px;
+            padding: 10px 10px 8px 10px;
             border-bottom: 1px solid {border};
         }}
 
         .magma-agent-title {{
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
+            font-size: {font_10};
             font-weight: 700;
             color: {text_primary};
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
         }}
 
         .magma-agent-status {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: rgba(255, 255, 255, 0.4);
-        }}
-
-        .magma-agent-toggle {{
-            background: transparent;
-            color: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 4px;
-            padding: 1px 8px;
-            font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_9};
-            box-shadow: none;
-            min-height: 0;
-        }}
-
-        .magma-agent-toggle:hover {{
-            color: {text_primary};
-            border-color: rgba(255, 255, 255, 0.16);
-        }}
-
-        .magma-agent-brain {{
-            margin: 12px 8px 8px 8px;
+            color: rgba(255, 255, 255, 0.38);
         }}
 
         .magma-agent-log-scroll {{
             background: transparent;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }}
 
         .magma-agent-log {{
-            padding: 8px 10px;
+            padding: 8px 10px 10px 10px;
         }}
 
         .magma-agent-log-row {{
-            padding: 3px 2px;
+            padding: 4px 0;
         }}
 
         .magma-agent-log-badge {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 600;
-            padding: 1px 5px;
-            min-width: 38px;
-            border-radius: 3px;
+            padding: 0;
+            min-width: 14px;
+            border-radius: 0;
+            background: transparent;
         }}
 
         .magma-agent-role-user {{
-            color: #7AAFDA;
-            background: rgba(122, 175, 218, 0.08);
+            color: {accent};
         }}
 
         .magma-agent-role-agent {{
-            color: #B39DDB;
-            background: rgba(179, 157, 219, 0.08);
+            color: #CEB8EF;
         }}
 
         .magma-agent-role-system {{
-            color: rgba(255, 255, 255, 0.30);
-            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.3);
         }}
 
         .magma-agent-role-action {{
             color: #81C784;
-            background: rgba(129, 199, 132, 0.08);
         }}
 
         .magma-agent-log-text {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
+            line-height: 1.45;
         }}
 
         .magma-agent-text-user {{
-            color: rgba(255, 255, 255, 0.82);
+            color: rgba(255, 255, 255, 0.86);
         }}
 
         .magma-agent-text-agent {{
@@ -3203,19 +3408,43 @@ pub(super) fn install_css(app_font_size: u32) {
             color: #A5D6A7;
         }}
 
+        .magma-agent-console {{
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+        }}
+
+        .magma-agent-console-title {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            font-weight: 700;
+            color: {text_primary};
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+
+        .magma-agent-console-body {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.45;
+        }}
+
         .magma-agent-pending {{
-            padding: 8px 10px;
-            margin: 0 6px;
-            border: 1px solid rgba(179, 157, 219, 0.12);
-            border-radius: 4px;
-            background: rgba(179, 157, 219, 0.03);
+            padding: 10px;
+            margin: 10px 10px 0 10px;
+            border: 1px solid rgba(255, 77, 77, 0.14);
+            border-radius: 8px;
+            background: rgba(255, 77, 77, 0.04);
         }}
 
         .magma-agent-pending-label {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 600;
-            color: #B39DDB;
+            color: {accent};
             margin-bottom: 4px;
         }}
 
@@ -3231,10 +3460,10 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         .magma-agent-confirm {{
-            background: rgba(129, 199, 132, 0.10);
-            color: #81C784;
-            border: 1px solid rgba(129, 199, 132, 0.18);
-            border-radius: 4px;
+            background: rgba(255, 77, 77, 0.1);
+            color: {accent};
+            border: 1px solid rgba(255, 77, 77, 0.16);
+            border-radius: 6px;
             padding: 4px 16px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
@@ -3244,15 +3473,15 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         .magma-agent-confirm:hover {{
-            background: rgba(129, 199, 132, 0.18);
-            color: #A5D6A7;
+            background: rgba(255, 77, 77, 0.16);
+            color: #FF8D8D;
         }}
 
         .magma-agent-reject {{
             background: rgba(255, 255, 255, 0.03);
             color: rgba(255, 255, 255, 0.40);
             border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 4px;
+            border-radius: 6px;
             padding: 4px 16px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
@@ -3267,12 +3496,21 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         .magma-agent-prompt {{
-            padding: 8px 10px;
+            padding: 10px;
             border-top: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(0, 0, 0, 0.35);
+        }}
+
+        .magma-agent-prompt-glyph {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            font-weight: 700;
+            color: {accent};
+            padding: 0 2px 0 0;
         }}
 
         .magma-agent-prompt-input {{
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(0, 0, 0, 0.72);
             color: {text_primary};
             border: 1px solid rgba(255, 255, 255, 0.07);
             border-radius: 6px;
@@ -3284,14 +3522,14 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         .magma-agent-prompt-input:focus {{
-            border-color: rgba(179, 157, 219, 0.25);
-            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 77, 77, 0.25);
+            background: rgba(0, 0, 0, 0.88);
         }}
 
         .magma-agent-prompt-send {{
-            background: rgba(179, 157, 219, 0.10);
-            color: #B39DDB;
-            border: 1px solid rgba(179, 157, 219, 0.15);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 6px;
             padding: 4px 14px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3302,8 +3540,493 @@ pub(super) fn install_css(app_font_size: u32) {
         }}
 
         .magma-agent-prompt-send:hover {{
-            background: rgba(179, 157, 219, 0.18);
-            color: #CEB8EF;
+            background: rgba(255, 255, 255, 0.08);
+            color: {text_primary};
+        }}
+
+        /* ─── Notes pane ─────────────────────────────────────── */
+
+        .magma-notes-pane {{
+            background: #000000;
+            border-left: 1px solid #1A1A1A;
+            min-width: 392px;
+        }}
+
+        .magma-notes-header {{
+            padding: 16px 14px;
+            border-bottom: 1px solid #1A1A1A;
+            background: #000000;
+        }}
+
+        .magma-notes-title-stack {{
+            padding: 0;
+        }}
+
+        .magma-notes-title {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_11};
+            font-weight: 800;
+            color: #F3F3EF;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }}
+
+        .magma-notes-subtitle {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #6B6B66;
+            margin-top: 2px;
+        }}
+
+        .magma-notes-count {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #BABAB3;
+            background: #0A0A0A;
+            border: 1px solid #1A1A1A;
+            border-radius: 999px;
+            padding: 4px 10px;
+        }}
+
+        .magma-notes-new {{
+            background: #0A0A0A;
+            color: #F3F3EF;
+            border: 1px solid #1A1A1A;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            font-weight: 600;
+            box-shadow: none;
+            min-height: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-new:hover {{
+            background: #151515;
+            border-color: #252525;
+            color: #FFFFFF;
+        }}
+
+        .magma-notes-board {{
+            background: #0A0A0A;
+            color: #F3F3EF;
+            border: 1px solid #1A1A1A;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            font-weight: 600;
+            box-shadow: none;
+            min-height: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-board:hover {{
+            background: #151515;
+            border-color: #252525;
+            color: #FFFFFF;
+        }}
+
+        .magma-notes-recovery {{
+            background: #0A0A0A;
+            border-bottom: 1px solid #1A1A1A;
+            padding: 10px 14px;
+        }}
+
+        .magma-notes-recovery-label {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #BABAB3;
+        }}
+
+        .magma-notes-recovery-continue,
+        .magma-notes-recovery-discard {{
+            background: #0A0A0A;
+            color: #F3F3EF;
+            border: 1px solid #1A1A1A;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            box-shadow: none;
+            min-height: 0;
+            text-transform: uppercase;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-recovery-continue:hover,
+        .magma-notes-recovery-discard:hover {{
+            background: #151515;
+            border-color: #252525;
+            color: #FFFFFF;
+        }}
+
+        .magma-notes-search {{
+            background: #0A0A0A;
+            color: #F3F3EF;
+            border: 1px solid #1A1A1A;
+            border-radius: 8px;
+            margin: 12px 14px 10px 14px;
+            padding: 10px 12px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            box-shadow: none;
+            min-height: 0;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-search:focus {{
+            border-color: #252525;
+            background: #0A0A0A;
+        }}
+
+        .magma-notes-list-area,
+        .magma-notes-editor-area {{
+            background: #000000;
+        }}
+
+        .magma-notes-list-scroll,
+        .magma-notes-editor-scroll,
+        .magma-notes-media-scroll {{
+            background: #000000;
+            border: none;
+        }}
+
+        .magma-notes-tiles {{
+            background: transparent;
+            padding: 0 14px 16px 14px;
+        }}
+
+        .magma-notes-tile-row {{
+            background: transparent;
+        }}
+
+        .magma-notes-list-empty {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #6B6B66;
+            padding: 20px 14px;
+        }}
+
+        .magma-notes-tile {{
+            background: #0A0A0A;
+            border: 1px solid #1A1A1A;
+            border-radius: 10px;
+            padding: 12px;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-tile:hover {{
+            background: #0F0F0F;
+            border-color: #252525;
+        }}
+
+        .magma-notes-tile-compact {{
+            min-height: 160px;
+        }}
+
+        .magma-notes-tile-tall {{
+            min-height: 200px;
+        }}
+
+        .magma-notes-tile-wide {{
+            min-height: 180px;
+        }}
+
+        .magma-notes-tile-feature {{
+            min-height: 220px;
+        }}
+
+        .magma-notes-tile-top {{
+            background: transparent;
+            padding: 0;
+        }}
+
+        .magma-notes-tile-menu {{
+            background: transparent;
+            color: #F3F3EF;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            min-height: 20px;
+            min-width: 20px;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-tile-menu:hover {{
+            color: #FFFFFF;
+        }}
+
+        .magma-notes-menu-popover {{
+            background: transparent;
+        }}
+
+        .magma-notes-menu-panel,
+        .magma-notes-emoji-panel {{
+            background: #0A0A0A;
+            border: 1px solid #1A1A1A;
+            border-radius: 8px;
+            padding: 8px;
+        }}
+
+        .magma-notes-menu-item {{
+            background: transparent;
+            color: #F3F3EF;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            box-shadow: none;
+            min-height: 0;
+            padding: 6px 10px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            text-transform: uppercase;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-menu-item:hover {{
+            background: #151515;
+            border-color: #252525;
+            color: #FFFFFF;
+        }}
+
+        .magma-notes-menu-delete {{
+            color: #FF4D4D;
+        }}
+
+        .magma-notes-menu-delete:hover {{
+            color: #FF6B6B;
+            background: #1A0A0A;
+            border-color: #5A2A2A;
+        }}
+
+        .magma-notes-row-title {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_10};
+            font-weight: 700;
+            color: #F3F3EF;
+        }}
+
+        .magma-notes-row-preview {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #BABAB3;
+            margin-top: 4px;
+            line-height: 1.4;
+        }}
+
+        .magma-notes-row-meta {{
+            margin-top: 8px;
+        }}
+
+        .magma-notes-row-time {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #6B6B66;
+        }}
+
+        .magma-notes-row-pin {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #388C50;
+            font-weight: 600;
+            background: #0A0A0A;
+            border: 1px solid #1A1A1A;
+            border-radius: 999px;
+            padding: 2px 8px;
+        }}
+
+        .magma-notes-row-media {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #F3F3EF;
+            background: #0A0A0A;
+            border: 1px solid #1A1A1A;
+            border-radius: 999px;
+            padding: 2px 8px;
+        }}
+
+        .magma-notes-editor-area {{
+            border-top: 1px solid #1A1A1A;
+            padding: 14px 14px 16px 14px;
+        }}
+
+        .magma-notes-editor-title {{
+            background: #000000;
+            color: #F3F3EF;
+            border: none;
+            border-bottom: 1px solid #1A1A1A;
+            border-radius: 0;
+            padding: 0 0 12px 0;
+            margin-bottom: 12px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_12};
+            font-weight: 800;
+            box-shadow: none;
+            min-height: 0;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-editor-title:focus {{
+            background: #000000;
+            border-bottom-color: #252525;
+        }}
+
+        .magma-notes-editor-body {{
+            background: #000000;
+            color: #F3F3EF;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            caret-color: #FFFFFF;
+            line-height: 1.5;
+        }}
+
+        .magma-notes-media-strip {{
+            background: transparent;
+            padding: 10px 0 4px 0;
+        }}
+
+        .magma-notes-media-card {{
+            background: #0A0A0A;
+            border: 1px solid #1A1A1A;
+            border-radius: 8px;
+            padding: 6px;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-media-card:hover {{
+            border-color: #252525;
+        }}
+
+        .magma-notes-media-picture {{
+            background: #000000;
+            border-radius: 6px;
+        }}
+
+        .magma-notes-media-remove {{
+            background: #1A0A0A;
+            color: #FF4D4D;
+            border: 1px solid #5A2A2A;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            box-shadow: none;
+            min-height: 0;
+            text-transform: uppercase;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-media-remove:hover {{
+            background: #2A1515;
+            color: #FF6B6B;
+            border-color: #7A3A3A;
+        }}
+
+        .magma-notes-editor-actions {{
+            padding: 12px 14px 0 14px;
+        }}
+
+        .magma-notes-editor-meta {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            color: #6B6B66;
+        }}
+
+        .magma-notes-tool-scroll {{
+            background: transparent;
+            border: none;
+            margin: 0 10px;
+            min-height: 28px;
+        }}
+
+        .magma-notes-tool-scroll scrollbar {{
+            background: transparent;
+            border: none;
+            min-height: 10px;
+        }}
+
+        .magma-notes-tool-scroll scrollbar.horizontal {{
+            margin: 4px 8px 0 8px;
+        }}
+
+        .magma-notes-tool-scroll scrollbar slider {{
+            background: rgba(255, 77, 77, 0.88);
+            border: 1px solid #7A3A3A;
+            border-radius: 999px;
+            min-height: 3px;
+            min-width: 16px;
+        }}
+
+        .magma-notes-tool-scroll scrollbar slider:hover {{
+            background: rgba(255, 107, 107, 0.96);
+            border-color: #A24A4A;
+        }}
+
+        .magma-notes-tool-strip,
+        .magma-notes-alignment-row,
+        .magma-notes-list-row {{
+            background: transparent;
+        }}
+
+        .magma-notes-tool-pill {{
+            background: #000000;
+            border: 1px solid #5A2A2A;
+            border-radius: 999px;
+            padding: 4px 0 6px 0;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-tool-pill:hover {{
+            background: #000000;
+            border-color: #5A2A2A;
+        }}
+
+        .magma-notes-tool {{
+            background: transparent;
+            color: #F3F3EF;
+            border: none;
+            border-radius: 999px;
+            padding: 3px 6px;
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_9};
+            box-shadow: none;
+            min-height: 0;
+            min-width: 24px;
+            text-transform: uppercase;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-tool:hover {{
+            background: transparent;
+            color: #F3F3EF;
+        }}
+
+        .magma-notes-tool-icon {{
+            min-width: 22px;
+            padding: 3px 5px;
+        }}
+
+        .magma-notes-emoji-item {{
+            background: #0A0A0A;
+            color: #F3F3EF;
+            border: 1px solid #1A1A1A;
+            border-radius: 6px;
+            box-shadow: none;
+            min-height: 0;
+            min-width: 28px;
+            padding: 4px 6px;
+            transition: all 120ms ease;
+        }}
+
+        .magma-notes-emoji-item:hover {{
+            background: #151515;
+            border-color: #252525;
+            color: #FFFFFF;
         }}
         ",
         window_bg = css_color(theme::BG_PRIMARY),
@@ -3312,7 +4035,11 @@ pub(super) fn install_css(app_font_size: u32) {
         surface = css_color(theme::SURFACE_BASE),
         border = css_color(theme::BORDER_STRONG),
         text_primary = css_color(theme::TEXT_PRIMARY),
+        text_secondary = css_color(theme::TEXT_SECONDARY),
+        text_dim = css_color(theme::TEXT_DIM),
         accent = css_color(theme::ACCENT),
+        folder_title_size = px(9.0, ui_scale),
+        folder_name_size = px(11.0, ui_scale),
         font_9 = px(9.0, ui_scale),
         font_10 = px(10.0, ui_scale),
         font_11 = px(11.0, ui_scale),

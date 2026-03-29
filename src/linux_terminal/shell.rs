@@ -10,10 +10,12 @@ use vte4::{prelude::*, PtyFlags, Terminal};
 
 use super::{persist::SessionSnapshot, runtime};
 
+#[allow(dead_code)]
 pub(super) struct ShellRuntime {
     status_path: PathBuf,
 }
 
+#[allow(dead_code)]
 impl ShellRuntime {
     pub(super) fn status_path(&self) -> &Path {
         &self.status_path

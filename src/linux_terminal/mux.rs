@@ -127,6 +127,10 @@ impl MuxPaneView {
         current_session(&self.state).and_then(|session| session.current_cwd())
     }
 
+    pub(super) fn current_terminal(&self) -> Option<vte4::Terminal> {
+        current_session(&self.state).map(|session| session.terminal().clone())
+    }
+
     pub(super) fn focus_terminal(&self) {
         if let Some(session) = current_session(&self.state) {
             self.focus.active_pane.set(self.focus.pane);

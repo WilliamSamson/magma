@@ -36,11 +36,11 @@ impl SessionView {
         let snapshot = snapshot.clone().normalized();
         let settings_ref = settings.borrow();
         let terminal = terminal::build_terminal(profile_id, &settings_ref);
-        let runtime = shell::spawn_shell(&terminal, &snapshot, &settings_ref.shell);
+        let _runtime = shell::spawn_shell(&terminal, &snapshot, &settings_ref.shell);
         drop(settings_ref);
 
         root.append(&terminal);
-        let _ = input::append_input_row(&root, &terminal, runtime.status_path(), &settings);
+        let _ = input::append_input_row(&root, &terminal);
         wire_terminal_clipboard(&terminal);
 
         Self {
@@ -52,6 +52,10 @@ impl SessionView {
 
     pub(super) fn root(&self) -> &GtkBox {
         &self.root
+    }
+
+    pub(super) fn terminal(&self) -> &Terminal {
+        &self.terminal
     }
 
     pub(super) fn focus_terminal(&self) {

@@ -1,9 +1,10 @@
 mod history;
-mod inspector;
+pub(super) mod inspector;
 mod prompt;
+#[allow(dead_code)]
 mod status;
 
-use std::{cell::Cell, path::Path, rc::Rc};
+use std::{cell::Cell, rc::Rc};
 
 use gtk::{
     gdk, prelude::*, Box as GtkBox, Button, Entry, EventControllerFocus, EventControllerKey,
@@ -14,16 +15,12 @@ use vte4::{prelude::*, Regex, Terminal};
 use self::{
     history::{record_history, InputHistory},
     prompt::build_prompt_box,
-    status::build_status_widgets,
 };
-use crate::linux_terminal::settings::Settings;
 
 /// Widgets that toggle visibility between command and search mode.
 #[derive(Clone)]
 struct SearchWidgets {
     prompt: GtkBox,
-    status: gtk::Label,
-    notice: gtk::Label,
     prev_btn: Button,
     next_btn: Button,
 }
@@ -31,8 +28,6 @@ struct SearchWidgets {
 pub(super) fn append_input_row(
     container: &GtkBox,
     terminal: &Terminal,
-    status_path: &Path,
-    settings: &Rc<std::cell::RefCell<Settings>>,
 ) -> Entry {
     let separator = Separator::new(Orientation::Horizontal);
     separator.add_css_class("magma-separator");
@@ -43,11 +38,6 @@ pub(super) fn append_input_row(
 
     let prompt_container = build_prompt_box(terminal);
     input_container.append(&prompt_container);
-
-    let notifications = Rc::new(Cell::new(settings.borrow().notifications));
-    let status_widgets = build_status_widgets(status_path, notifications.clone());
-    input_container.append(&status_widgets.status);
-    input_container.append(&status_widgets.notice);
 
     let entry = Entry::new();
     entry.add_css_class("magma-entry");
@@ -62,9 +52,6 @@ pub(super) fn append_input_row(
     input_container.append(&prev_button);
     input_container.append(&next_button);
 
-    let inspector_button = inspector::build_inspector_button(terminal, settings.clone());
-    input_container.append(&inspector_button);
-
     let search_button = Button::builder()
         .icon_name("system-search-symbolic")
         .css_classes(["magma-search-toggle"])
@@ -77,8 +64,6 @@ pub(super) fn append_input_row(
     let history = Rc::new(InputHistory::default());
     let sw = SearchWidgets {
         prompt: prompt_container,
-        status: status_widgets.status,
-        notice: status_widgets.notice,
         prev_btn: prev_button,
         next_btn: next_button,
     };
@@ -255,8 +240,6 @@ fn set_search_mode(
         entry.set_placeholder_text(Some("Search output..."));
         entry.add_css_class("search-active");
         sw.prompt.set_visible(false);
-        sw.status.set_visible(false);
-        sw.notice.set_visible(false);
         sw.prev_btn.set_visible(true);
         sw.next_btn.set_visible(true);
         apply_search(terminal, entry.text().as_str());
@@ -264,7 +247,6 @@ fn set_search_mode(
         entry.set_placeholder_text(Some("Enter command"));
         entry.remove_css_class("search-active");
         sw.prompt.set_visible(true);
-        sw.status.set_visible(true);
         sw.prev_btn.set_visible(false);
         sw.next_btn.set_visible(false);
         terminal.search_set_regex(None, 0);

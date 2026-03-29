@@ -95,6 +95,25 @@ pub(super) fn format_size(size_bytes: u64) -> String {
     format!("{value:.1} {}", UNITS[unit])
 }
 
+/// Construct a ViewerFile from an arbitrary path, if the view pane supports it.
+pub(super) fn viewer_file_for_path(path: &Path) -> Option<ViewerFile> {
+    let kind = kind_for_path(path)?;
+    let category = category_for_path(path, kind);
+    let metadata = fs::metadata(path).ok()?;
+    Some(ViewerFile {
+        name: path.file_name()?.to_string_lossy().to_string(),
+        path: path.to_path_buf(),
+        kind,
+        category,
+        size_bytes: metadata.len(),
+        modified_secs: metadata
+            .modified()
+            .ok()
+            .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+            .map_or(0, |duration| duration.as_secs()),
+    })
+}
+
 pub(super) fn kind_label(kind: FileKind) -> &'static str {
     match kind {
         FileKind::Image => "image",

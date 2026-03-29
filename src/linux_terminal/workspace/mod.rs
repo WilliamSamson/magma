@@ -93,6 +93,13 @@ impl WorkspaceView {
             .and_then(TabView::current_cwd)
     }
 
+    pub(super) fn current_terminal(&self) -> Option<vte4::Terminal> {
+        self.tabs
+            .borrow()
+            .get(current_index(&self.notebook))
+            .and_then(TabView::current_terminal)
+    }
+
     pub(crate) fn snapshot(&self) -> WorkspaceSnapshot {
         WorkspaceSnapshot {
             active_tab: current_index(&self.notebook),

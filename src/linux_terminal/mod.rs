@@ -1,10 +1,13 @@
 mod agent;
+mod folder;
 pub(crate) mod git;
 mod header;
 mod input;
+mod left_pane;
 mod logr;
 mod meta;
 mod mux;
+mod notes;
 pub(crate) mod persist;
 mod profile;
 mod right_pane;
@@ -150,7 +153,7 @@ fn build_window(app: &Application, width: u32, height: u32) {
 
     style::install_css(app_settings.borrow().app_font_size);
 
-    let (header, settings_button) = header::build_header();
+    let (header, settings_button, inspector_button) = header::build_header();
     let workspace = std::rc::Rc::new(workspace::WorkspaceView::new(app_settings.clone()));
     {
         let workspace_ref = workspace.clone();
@@ -164,7 +167,16 @@ fn build_window(app: &Application, width: u32, height: u32) {
         let workspace_ref = workspace.clone();
         Rc::new(move || workspace_ref.current_cwd())
     };
-    let shell = shell_container(workspace.root(), app_settings.clone(), cwd_provider);
+    let terminal_provider: Rc<dyn Fn() -> Option<vte4::Terminal>> = {
+        let workspace_ref = workspace.clone();
+        Rc::new(move || workspace_ref.current_terminal())
+    };
+    header::wire_inspector(&inspector_button, terminal_provider.clone(), app_settings.clone());
+    let shell = shell_container(
+        workspace.root(),
+        app_settings.clone(),
+        cwd_provider,
+    );
 
     // Stack: workspace (main) <-> settings
     let stack = Stack::new();
@@ -274,8 +286,10 @@ fn build_window(app: &Application, width: u32, height: u32) {
 }
 
 #[derive(Clone)]
+#[allow(dead_code)]
 struct ShellContainer {
     root: GtkBox,
+    left_pane: left_pane::LeftPane,
     side_panes: right_pane::SidePanes,
 }
 
@@ -308,19 +322,42 @@ fn shell_container(
     let view_row = GtkBox::new(Orientation::Horizontal, 0);
     view_row.set_spacing(2);
     view_row.set_vexpand(true);
+
+    // Deferred side_panes reference so the file-click callback can reach it
+    let side_panes_slot: Rc<RefCell<Option<right_pane::SidePanes>>> =
+        Rc::new(RefCell::new(None));
+
+    // Left pane: folder revealer + handle (handle sits to the right of the pane)
+    let on_file_click: Rc<dyn Fn(&std::path::Path)> = {
+        let slot = side_panes_slot.clone();
+        Rc::new(move |path: &std::path::Path| {
+            if let Some(sp) = slot.borrow().as_ref() {
+                sp.open_view_file(path);
+            }
+        })
+    };
+    let left_pane = left_pane::build_left_pane(cwd_provider.clone(), on_file_click);
+    view_row.append(left_pane.revealer());
+    view_row.append(left_pane.handle());
+
+    // Workspace (terminal) sits in the center
     view_row.append(child);
 
+    // Right pane: handle + feature revealers
     let side_panes = right_pane::build_side_panes(settings.clone(), cwd_provider);
+    *side_panes_slot.borrow_mut() = Some(side_panes.clone());
     view_row.append(side_panes.handle());
     view_row.append(side_panes.logr_revealer());
     view_row.append(side_panes.web_revealer());
     view_row.append(side_panes.view_revealer());
     view_row.append(side_panes.git_revealer());
     view_row.append(side_panes.agent_revealer());
+    view_row.append(side_panes.notes_revealer());
     container.append(&view_row);
 
     ShellContainer {
         root: container,
+        left_pane,
         side_panes,
     }
 }

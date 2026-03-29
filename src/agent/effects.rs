@@ -35,7 +35,9 @@ pub(crate) fn execute_side_effect(action: &AgentAction) -> Result<Option<UiEffec
                 hunk.file, hunk.hunk_index
             ))))
         }
-        AgentAction::RunCommand { command, .. } => run_command(command).map(UiEffect::Message).map(Some),
+        AgentAction::RunCommand { command, .. } => Ok(Some(UiEffect::DispatchTerminalCommand(
+            command.clone(),
+        ))),
     }
 }
 
@@ -43,6 +45,7 @@ pub(crate) fn execute_side_effect(action: &AgentAction) -> Result<Option<UiEffec
 pub(crate) enum UiEffect {
     OpenPane(super::actions::PaneType),
     Message(String),
+    DispatchTerminalCommand(String),
 }
 
 pub(crate) fn logr_filter_request_path() -> PathBuf {
@@ -62,36 +65,6 @@ fn write_logr_filter_request(filter: &super::actions::LogFilter) -> Result<(), S
     super::ensure_parent(&path);
     let payload = serde_json::to_string(filter).map_err(|error| error.to_string())?;
     fs::write(path, payload).map_err(|error| error.to_string())
-}
-
-fn run_command(command: &str) -> Result<String, String> {
-    let context = build_workspace_context();
-    let cwd = context
-        .git
-        .repo_root
-        .as_deref()
-        .or(context.terminal.cwd.as_deref())
-        .unwrap_or(".");
-    let output = Command::new("bash")
-        .arg("-c")
-        .arg(command)
-        .current_dir(cwd)
-        .output()
-        .map_err(|error| format!("failed to run command: {error}"))?;
-    let status = output.status.code().unwrap_or(-1);
-    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if output.status.success() {
-        Ok(if stdout.is_empty() {
-            format!("command completed: {command}")
-        } else {
-            format!("command completed: {stdout}")
-        })
-    } else if stderr.is_empty() {
-        Err(format!("command failed with {status}: {command}"))
-    } else {
-        Err(format!("command failed with {status}: {stderr}"))
-    }
 }
 
 fn write_annotation(hunk: &HunkRef, note: &str) -> Result<(), String> {
@@ -196,4 +169,3 @@ fn select_hunk_patch(repo_root: &Path, file: &str, hunk_index: usize) -> Result<
         .ok_or_else(|| format!("hunk {hunk_index} not found in {file}"))?;
     Ok(format!("{}\n{}\n", header.join("\n"), selected))
 }
-
