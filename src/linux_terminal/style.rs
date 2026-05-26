@@ -764,14 +764,14 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-tab-bar-container {{
             background: transparent;
             margin: 0 12px;
-            padding: 4px 0;
-            min-height: 40px;
+            padding: 2px 0;
+            min-height: 30px;
         }}
 
         .magma-tab-bar-scroller {{
             background: transparent;
             margin-right: 8px;
-            min-height: 40px;
+            min-height: 30px;
         }}
 
         .magma-switcher-overlay {{
@@ -854,9 +854,9 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-tab-item {{
             background: transparent;
-            border-radius: 6px;
+            border-radius: 4px;
             border: 1px solid transparent;
-            padding: 6px 12px;
+            padding: 4px 10px;
             margin: 0 3px;
             transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0.5;
@@ -884,13 +884,14 @@ pub(super) fn install_css(settings: &Settings) {
             color: {text_primary};
             border: none;
             border-radius: 4px;
-            min-height: 18px;
-            min-width: 18px;
+            min-height: 14px;
+            min-width: 14px;
             padding: 0;
-            margin-left: 6px;
+            margin-left: 4px;
             opacity: 0;
             box-shadow: none;
             transition: all 180ms ease;
+            -gtk-icon-size: 8px;
         }}
 
         .magma-tab-item:hover button.magma-tab-close-button,
@@ -917,13 +918,14 @@ pub(super) fn install_css(settings: &Settings) {
             background: transparent;
             color: {text_primary};
             border: none;
-            padding: 6px;
-            min-height: 26px;
-            min-width: 26px;
+            padding: 4px;
+            min-height: 22px;
+            min-width: 22px;
             opacity: 0.5;
             margin: 0 4px;
-            border-radius: 6px;
+            border-radius: 4px;
             transition: all 180ms ease;
+            -gtk-icon-size: 10px;
         }}
 
         button.magma-add-tab-button:hover {{
@@ -939,7 +941,7 @@ pub(super) fn install_css(settings: &Settings) {
         label.magma-tab-label {{
             color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
+            font-size: {font_10};
             font-weight: 700;
             text-transform: lowercase;
         }}
@@ -952,7 +954,7 @@ pub(super) fn install_css(settings: &Settings) {
             border-radius: 0;
             padding: 2px 0;
             font-family: \"DejaVu Sans Mono\", monospace;
-            font-size: {font_11};
+            font-size: {font_10};
             font-weight: 700;
             box-shadow: none;
             outline: none;
@@ -4250,12 +4252,12 @@ pub(super) fn install_css(settings: &Settings) {
         font_12 = px(12.0, ui_scale),
         font_13 = px(13.0, ui_scale),
         font_22 = px(22.0, ui_scale),
-        terminal_radius = px(14.0, ui_scale),
-        terminal_padding = px(8.0, ui_scale),
-        bar_radius = px(12.0, ui_scale),
-        bar_padding = px(4.0, ui_scale),
-        mux_btn_size = px(22.0, ui_scale),
-        mux_btn_padding = px(8.0, ui_scale),
+        terminal_radius = px(10.0, ui_scale),
+        terminal_padding = px(6.0, ui_scale),
+        bar_radius = px(8.0, ui_scale),
+        bar_padding = px(2.5, ui_scale),
+        mux_btn_size = px(18.0, ui_scale),
+        mux_btn_padding = px(6.0, ui_scale),
         split_width = px(8.0, ui_scale),
         split_margin = px(3.0, ui_scale),
     );
