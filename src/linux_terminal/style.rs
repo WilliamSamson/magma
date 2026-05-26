@@ -269,38 +269,56 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         box.magma-mux-bar {{
-            background: alpha({text_primary}, 0.018);
-            border: 1px solid alpha({text_primary}, 0.04);
-            border-radius: {bar_radius};
-            padding: {bar_padding};
-            margin: 0 0 {bar_margin_bottom} 0;
+            background: alpha({text_primary}, 0.015);
+            border: 1px solid alpha({text_primary}, 0.06);
+            border-bottom: 1px solid alpha({text_primary}, 0.04);
+            border-radius: {bar_radius} {bar_radius} 0 0;
+            padding: {bar_padding} calc({bar_padding} * 2);
+            margin: 0;
+        }}
+
+        box.magma-mux-root terminal.magma-terminal {{
+            border-radius: 0 0 {terminal_radius} {terminal_radius};
+            border: 1px solid alpha({text_primary}, 0.06);
+            border-top: none;
+            background: alpha({text_primary}, 0.003);
+            padding: {terminal_padding};
         }}
 
         button.magma-mux-session,
         button.magma-mux-action {{
             background: transparent;
-            color: {text_primary};
-            border: none;
-            border-radius: 999px;
+            color: alpha({text_primary}, 0.6);
+            border: 1px solid transparent;
+            border-radius: 6px;
             min-height: {mux_btn_size};
             min-width: {mux_btn_size};
-            padding: 0 {mux_btn_padding};
+            padding: 2px {mux_btn_padding};
             box-shadow: none;
-            opacity: 0.6;
-            transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.8;
+            transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: monospace;
+            font-weight: 700;
         }}
 
         button.magma-mux-session:hover,
         button.magma-mux-action:hover {{
             opacity: 1.0;
             background: alpha({text_primary}, 0.04);
-            transform: scale(1.05) translateY(-0.5px);
+            color: {text_primary};
         }}
 
         button.magma-mux-session.active {{
             opacity: 1.0;
-            background: alpha({accent}, 0.1);
+            background: {window_bg};
             color: {accent};
+            border: 1px solid alpha({text_primary}, 0.06);
+            box-shadow: 0 2px 6px alpha(#000000, 0.15);
+        }}
+
+        button.magma-mux-action.close-session:hover {{
+            color: {sem_orange};
+            background: alpha({sem_orange}, 0.1);
         }}
 
         .magma-right-pane {{
@@ -619,16 +637,18 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         box.magma-input-pill {{
-            background: transparent;
-            border: 1px solid {border};
-            border-radius: 999px;
-            padding: 4px 16px;
+            background: alpha({text_primary}, 0.012);
+            border: 1px solid alpha({text_primary}, 0.06);
+            border-radius: 8px;
+            padding: 4px 12px;
             margin: 0 0 8px 0;
-            transition: border-color 140ms ease;
+            transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
         }}
 
         box.magma-input-pill:focus-within {{
             border-color: {accent};
+            background: alpha({accent}, 0.015);
+            box-shadow: 0 0 0 2px alpha({accent}, 0.15);
         }}
 
         box.magma-input-pill.terminal-active {{
@@ -4226,8 +4246,7 @@ pub(super) fn install_css(settings: &Settings) {
         terminal_radius = px(14.0, ui_scale),
         terminal_padding = px(8.0, ui_scale),
         bar_radius = px(12.0, ui_scale),
-        bar_padding = px(3.0, ui_scale),
-        bar_margin_bottom = px(4.0, ui_scale),
+        bar_padding = px(4.0, ui_scale),
         mux_btn_size = px(22.0, ui_scale),
         mux_btn_padding = px(8.0, ui_scale),
         split_width = px(8.0, ui_scale),

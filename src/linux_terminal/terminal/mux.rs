@@ -357,7 +357,7 @@ fn rebuild_bar(
         .build();
     let close_button = Button::builder()
         .icon_name("window-close-symbolic")
-        .css_classes(["magma-mux-action"])
+        .css_classes(["magma-mux-action", "close-session"])
         .tooltip_text("Close session")
         .sensitive(session_count > 1)
         .build();
