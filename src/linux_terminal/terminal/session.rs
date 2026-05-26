@@ -6,35 +6,40 @@ use std::{
 use gtk::{
     gdk, gio, prelude::*, Box as GtkBox, EventControllerFocus, EventControllerKey, Orientation,
 };
-use vte4::{prelude::*, CursorBlinkMode, CursorShape, Format, Terminal};
+use vte4::{prelude::*, Format, Terminal};
 
 use super::{
+    profile::{profile, ProfileId},
+    scaled_spacing,
+    shell,
+    widget as terminal,
+};
+use super::super::{
     input,
     persist::SessionSnapshot,
-    profile::{profile, ProfileId},
     settings::Settings,
-    shell,
-    terminal,
 };
 
-pub(super) struct SessionView {
+pub(crate) struct SessionView {
     root: GtkBox,
     terminal: Terminal,
     snapshot: SessionSnapshot,
 }
 
 impl SessionView {
-    pub(super) fn new(
+    pub(crate) fn new(
         profile_id: ProfileId,
         snapshot: &SessionSnapshot,
         settings: Rc<RefCell<Settings>>,
     ) -> Self {
-        let root = GtkBox::new(Orientation::Vertical, 8);
+        let settings_ref = settings.borrow();
+        let spacing = scaled_spacing(8, &settings_ref);
+        let root = GtkBox::new(Orientation::Vertical, spacing);
         root.set_hexpand(true);
         root.set_vexpand(true);
 
+        // Snapshot is cloned because SessionView needs to own its specific session state.
         let snapshot = snapshot.clone().normalized();
-        let settings_ref = settings.borrow();
         let terminal = terminal::build_terminal(profile_id, &settings_ref);
         let _runtime = shell::spawn_shell(&terminal, &snapshot, &settings_ref.shell);
         drop(settings_ref);
@@ -50,25 +55,25 @@ impl SessionView {
         }
     }
 
-    pub(super) fn root(&self) -> &GtkBox {
+    pub(crate) fn root(&self) -> &GtkBox {
         &self.root
     }
 
-    pub(super) fn terminal(&self) -> &Terminal {
+    pub(crate) fn terminal(&self) -> &Terminal {
         &self.terminal
     }
 
-    pub(super) fn focus_terminal(&self) {
+    pub(crate) fn focus_terminal(&self) {
         self.terminal.grab_focus();
     }
 
-    pub(super) fn connect_focus_enter(&self, on_focus: impl Fn() + 'static) {
+    pub(crate) fn connect_focus_enter(&self, on_focus: impl Fn() + 'static) {
         let controller = EventControllerFocus::new();
         controller.connect_enter(move |_| on_focus());
         self.terminal.add_controller(controller);
     }
 
-    pub(super) fn current_cwd(&self) -> Option<String> {
+    pub(crate) fn current_cwd(&self) -> Option<String> {
         self.terminal
             .current_directory_uri()
             .as_deref()
@@ -76,38 +81,19 @@ impl SessionView {
             .map(|path| path.display().to_string())
     }
 
-    pub(super) fn to_snapshot(&self) -> SessionSnapshot {
+    pub(crate) fn to_snapshot(&self) -> SessionSnapshot {
         let mut snapshot = self.snapshot.clone();
         snapshot.cwd = self.current_cwd().or_else(|| snapshot.cwd.clone());
         snapshot
     }
 
-    pub(super) fn apply_profile(&self, profile_id: ProfileId) {
+    pub(crate) fn apply_profile(&self, profile_id: ProfileId) {
         let config = profile(profile_id);
         self.terminal.set_font_scale(config.font_scale);
     }
 
-    pub(super) fn apply_settings(&self, settings: &Settings, profile_id: ProfileId) {
-        self.terminal
-            .set_font(Some(&terminal::terminal_font_description(settings)));
-        self.terminal.set_font_scale(profile(profile_id).font_scale);
-        self.terminal.set_scrollback_lines(settings.scrollback_lines as i64);
-        self.terminal.set_enable_sixel(settings.image_rendering);
-        self.terminal.set_enable_shaping(settings.ligatures);
-
-        let blink = if settings.cursor_blink {
-            CursorBlinkMode::On
-        } else {
-            CursorBlinkMode::Off
-        };
-        self.terminal.set_cursor_blink_mode(blink);
-
-        let shape = match settings.cursor_style.as_str() {
-            "block" => CursorShape::Block,
-            "underline" => CursorShape::Underline,
-            _ => CursorShape::Ibeam,
-        };
-        self.terminal.set_cursor_shape(shape);
+    pub(crate) fn apply_settings(&self, settings: &Settings, profile_id: ProfileId) {
+        terminal::apply_terminal_settings(&self.terminal, profile_id, settings);
     }
 }
 

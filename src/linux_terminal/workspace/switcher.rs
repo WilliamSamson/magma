@@ -7,7 +7,7 @@ use gtk::{
     ScrolledWindow,
 };
 
-use super::super::tab::TabView;
+use super::super::terminal::TabView;
 
 #[derive(Clone)]
 pub(super) struct QuickSwitcher {

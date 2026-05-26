@@ -11,9 +11,8 @@ use gtk::{
 
 use super::{
     persist::{self, PaneSnapshot, TabSnapshot, WorkspaceSnapshot},
-    profile::{next_profile, ProfileId},
     settings::Settings,
-    tab::TabView,
+    terminal::{next_profile, ProfileId, TabView},
 };
 
 pub(super) struct WorkspaceView {

@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use gtk::Notebook;
 
-use super::super::tab::TabView;
+use super::super::terminal::TabView;
 
 pub(super) fn close_tab_at(
     tabs: &Rc<RefCell<Vec<TabView>>>,

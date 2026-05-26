@@ -7,12 +7,12 @@ pub(crate) enum ProfileId {
     Compact,
 }
 
-pub(super) struct TerminalProfile {
-    pub(super) label: &'static str,
-    pub(super) font_scale: f64,
+pub(crate) struct TerminalProfile {
+    pub(crate) label: &'static str,
+    pub(crate) font_scale: f64,
 }
 
-pub(super) fn profile(id: ProfileId) -> TerminalProfile {
+pub(crate) fn profile(id: ProfileId) -> TerminalProfile {
     match id {
         ProfileId::Default => TerminalProfile {
             label: "Default",
@@ -29,7 +29,7 @@ pub(super) fn profile(id: ProfileId) -> TerminalProfile {
     }
 }
 
-pub(super) fn next_profile(id: ProfileId) -> ProfileId {
+pub(crate) fn next_profile(id: ProfileId) -> ProfileId {
     match id {
         ProfileId::Default => ProfileId::Focus,
         ProfileId::Focus => ProfileId::Compact,

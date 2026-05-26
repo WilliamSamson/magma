@@ -8,21 +8,22 @@ use std::{
 use gtk::{gio, glib};
 use vte4::{prelude::*, PtyFlags, Terminal};
 
-use super::{persist::SessionSnapshot, runtime};
+use super::runtime;
+use super::super::persist::SessionSnapshot;
 
 #[allow(dead_code)]
-pub(super) struct ShellRuntime {
+pub(crate) struct ShellRuntime {
     status_path: PathBuf,
 }
 
 #[allow(dead_code)]
 impl ShellRuntime {
-    pub(super) fn status_path(&self) -> &Path {
+    pub(crate) fn status_path(&self) -> &Path {
         &self.status_path
     }
 }
 
-pub(super) fn spawn_shell(
+pub(crate) fn spawn_shell(
     terminal: &Terminal,
     session: &SessionSnapshot,
     shell_override: &str,

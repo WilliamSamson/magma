@@ -7,7 +7,7 @@ use gtk::{
     GestureDrag, Label, Notebook, Orientation, ScrolledWindow,
 };
 
-use super::{ops, super::tab::TabView};
+use super::{ops, super::terminal::TabView};
 
 const DRAG_THRESHOLD: f64 = 8.0;
 pub(super) type RenameState = Rc<RefCell<Option<usize>>>;

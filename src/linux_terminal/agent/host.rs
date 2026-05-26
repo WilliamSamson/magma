@@ -3,7 +3,7 @@ use std::{cell::Cell, cell::RefCell, collections::VecDeque, rc::Rc};
 use gtk::{prelude::*, Box as GtkBox, Orientation, Overflow};
 
 use super::build_agent_pane;
-use crate::linux_terminal::settings::Settings;
+use crate::linux_terminal::{settings::Settings, terminal::{self, ProfileId}};
 
 #[derive(Clone)]
 pub(in crate::linux_terminal) struct AgentPaneHost {
@@ -11,6 +11,7 @@ pub(in crate::linux_terminal) struct AgentPaneHost {
     loaded: Rc<Cell<bool>>,
     settings: Rc<RefCell<Settings>>,
     command_slot: Rc<RefCell<VecDeque<String>>>,
+    terminal: Rc<RefCell<Option<vte4::Terminal>>>,
 }
 
 impl AgentPaneHost {
@@ -26,6 +27,7 @@ impl AgentPaneHost {
             loaded: Rc::new(Cell::new(false)),
             settings,
             command_slot: Rc::new(RefCell::new(VecDeque::new())),
+            terminal: Rc::new(RefCell::new(None)),
         }
     }
 
@@ -38,8 +40,18 @@ impl AgentPaneHost {
             return;
         }
 
-        let pane = build_agent_pane(self.settings.clone(), self.command_slot.clone());
+        let pane = build_agent_pane(
+            self.settings.clone(),
+            self.command_slot.clone(),
+            self.terminal.clone(),
+        );
         self.root.append(&pane);
+    }
+
+    pub(in crate::linux_terminal) fn apply_settings(&self, settings: &Settings) {
+        if let Some(terminal) = self.terminal.borrow().as_ref() {
+            terminal::apply_terminal_settings(terminal, ProfileId::Compact, settings);
+        }
     }
 
     pub(in crate::linux_terminal) fn dispatch_command(&self, command: &str) {

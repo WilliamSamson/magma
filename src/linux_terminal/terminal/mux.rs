@@ -6,9 +6,12 @@ use std::{
 use gtk::{prelude::*, Box as GtkBox, Button, Orientation, Stack, StackTransitionType};
 
 use super::{
-    persist::{PaneFocus, PaneSnapshot, SessionSnapshot},
     profile::ProfileId,
+    scaled_spacing,
     session::SessionView,
+};
+use super::super::{
+    persist::{PaneFocus, PaneSnapshot, SessionSnapshot},
     settings::Settings,
 };
 
@@ -30,7 +33,7 @@ struct FocusBinding {
     pane: PaneFocus,
 }
 
-pub(super) struct MuxPaneView {
+pub(crate) struct MuxPaneView {
     root: GtkBox,
     bar: GtkBox,
     stack: Stack,
@@ -40,19 +43,24 @@ pub(super) struct MuxPaneView {
 }
 
 impl MuxPaneView {
-    pub(super) fn new(
+    pub(crate) fn new(
         snapshot: PaneSnapshot,
         profile_id: ProfileId,
         settings: Rc<RefCell<Settings>>,
         active_pane: Rc<Cell<PaneFocus>>,
         pane: PaneFocus,
     ) -> Self {
-        let root = GtkBox::new(Orientation::Vertical, 8);
+        let settings_ref = settings.borrow();
+        let root_spacing = scaled_spacing(8, &settings_ref);
+        let bar_spacing = scaled_spacing(6, &settings_ref);
+        drop(settings_ref);
+
+        let root = GtkBox::new(Orientation::Vertical, root_spacing);
         root.add_css_class("magma-mux-root");
         root.set_hexpand(true);
         root.set_vexpand(true);
 
-        let bar = GtkBox::new(Orientation::Horizontal, 6);
+        let bar = GtkBox::new(Orientation::Horizontal, bar_spacing);
         bar.add_css_class("magma-mux-bar");
         bar.set_hexpand(true);
 
@@ -104,11 +112,11 @@ impl MuxPaneView {
         pane_view
     }
 
-    pub(super) fn root(&self) -> &GtkBox {
+    pub(crate) fn root(&self) -> &GtkBox {
         &self.root
     }
 
-    pub(super) fn to_snapshot(&self) -> PaneSnapshot {
+    pub(crate) fn to_snapshot(&self) -> PaneSnapshot {
         let sessions = self
             .state
             .sessions
@@ -123,36 +131,36 @@ impl MuxPaneView {
         }
     }
 
-    pub(super) fn current_cwd(&self) -> Option<String> {
+    pub(crate) fn current_cwd(&self) -> Option<String> {
         current_session(&self.state).and_then(|session| session.current_cwd())
     }
 
-    pub(super) fn current_terminal(&self) -> Option<vte4::Terminal> {
+    pub(crate) fn current_terminal(&self) -> Option<vte4::Terminal> {
         current_session(&self.state).map(|session| session.terminal().clone())
     }
 
-    pub(super) fn focus_terminal(&self) {
+    pub(crate) fn focus_terminal(&self) {
         if let Some(session) = current_session(&self.state) {
             self.focus.active_pane.set(self.focus.pane);
             session.focus_terminal();
         }
     }
 
-    pub(super) fn apply_profile(&self, profile_id: ProfileId) {
+    pub(crate) fn apply_profile(&self, profile_id: ProfileId) {
         self.state.profile_id.set(profile_id);
         for entry in self.state.sessions.borrow().iter() {
             entry.view.apply_profile(profile_id);
         }
     }
 
-    pub(super) fn apply_settings(&self, settings: &Settings) {
+    pub(crate) fn apply_settings(&self, settings: &Settings) {
         let profile_id = self.state.profile_id.get();
         for entry in self.state.sessions.borrow().iter() {
             entry.view.apply_settings(settings, profile_id);
         }
     }
 
-    pub(super) fn new_session(&self) {
+    pub(crate) fn new_session(&self) {
         let cwd = self.current_cwd();
         let snapshot = SessionSnapshot::new(cwd);
         let index = append_session(
@@ -172,7 +180,7 @@ impl MuxPaneView {
         );
     }
 
-    pub(super) fn close_active_session(&self) -> bool {
+    pub(crate) fn close_active_session(&self) -> bool {
         close_active_session(
             &self.state,
             &self.stack,
@@ -182,7 +190,7 @@ impl MuxPaneView {
         )
     }
 
-    pub(super) fn focus_next_session(&self) -> bool {
+    pub(crate) fn focus_next_session(&self) -> bool {
         let session_count = self.state.sessions.borrow().len();
         if session_count <= 1 {
             return false;
@@ -199,7 +207,7 @@ impl MuxPaneView {
         )
     }
 
-    pub(super) fn focus_previous_session(&self) -> bool {
+    pub(crate) fn focus_previous_session(&self) -> bool {
         let session_count = self.state.sessions.borrow().len();
         if session_count <= 1 {
             return false;
@@ -221,7 +229,7 @@ impl MuxPaneView {
         )
     }
 
-    pub(super) fn focus_session(&self, index: usize) -> bool {
+    pub(crate) fn focus_session(&self, index: usize) -> bool {
         switch_to(
             &self.state,
             &self.stack,

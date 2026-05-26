@@ -15,15 +15,14 @@ use crate::agent::executor::{AgentRuntimeHandle, ExecutorConfig, LogEntry, LogRo
 
 use super::{
     persist::SessionSnapshot,
-    profile::ProfileId,
     settings::Settings,
-    shell,
-    terminal,
+    terminal::{self, ProfileId},
 };
 
 pub(super) fn build_agent_pane(
     settings: Rc<RefCell<Settings>>,
     command_slot: Rc<RefCell<VecDeque<String>>>,
+    terminal_slot: Rc<RefCell<Option<vte4::Terminal>>>,
 ) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
     root.add_css_class("magma-agent-pane");
@@ -39,7 +38,7 @@ pub(super) fn build_agent_pane(
     root.append(&build_header(runtime));
     root.append(&build_terminal_intro());
     root.append(&build_log_area(runtime));
-    root.append(&build_agent_terminal(&settings, command_slot));
+    root.append(&build_agent_terminal(&settings, command_slot, terminal_slot));
     root.append(&build_pending_bar(runtime));
     root.append(&build_command_bar(runtime));
     root
@@ -140,6 +139,7 @@ fn build_log_area(runtime: &'static AgentRuntimeHandle) -> ScrolledWindow {
 fn build_agent_terminal(
     settings: &Rc<RefCell<Settings>>,
     command_slot: Rc<RefCell<VecDeque<String>>>,
+    terminal_slot: Rc<RefCell<Option<vte4::Terminal>>>,
 ) -> GtkBox {
     let shell_box = GtkBox::new(Orientation::Vertical, 0);
     shell_box.add_css_class("magma-agent-shell");
@@ -147,8 +147,10 @@ fn build_agent_terminal(
 
     let terminal = terminal::build_terminal(ProfileId::Compact, &settings.borrow());
     terminal.add_css_class("magma-agent-shell-terminal");
+    // Keep a GTK reference so settings changes can update the already-mounted terminal.
+    *terminal_slot.borrow_mut() = Some(terminal.clone());
     let session = SessionSnapshot::new(None);
-    let _runtime = shell::spawn_shell(&terminal, &session, &settings.borrow().shell);
+    let _runtime = terminal::spawn_shell(&terminal, &session, &settings.borrow().shell);
     shell_box.append(&terminal);
 
     {

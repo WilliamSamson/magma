@@ -7,12 +7,15 @@ use std::{
 
 use super::{
     mux::MuxPaneView,
-    persist::{PaneFocus, PaneSnapshot, TabSnapshot},
     profile::{profile, ProfileId},
+    scaled_spacing,
+};
+use super::super::{
+    persist::{PaneFocus, PaneSnapshot, TabSnapshot},
     settings::Settings,
 };
 
-pub(super) struct TabView {
+pub(crate) struct TabView {
     root: GtkBox,
     title_label: Label,
     base_title: String,
@@ -25,8 +28,12 @@ pub(super) struct TabView {
 }
 
 impl TabView {
-    pub(super) fn new(snapshot: TabSnapshot, settings: Rc<RefCell<Settings>>) -> Self {
-        let root = GtkBox::new(Orientation::Horizontal, 12);
+    pub(crate) fn new(snapshot: TabSnapshot, settings: Rc<RefCell<Settings>>) -> Self {
+        let settings_ref = settings.borrow();
+        let spacing = scaled_spacing(12, &settings_ref);
+        drop(settings_ref);
+
+        let root = GtkBox::new(Orientation::Horizontal, spacing);
         root.set_hexpand(true);
         root.set_vexpand(true);
 
@@ -76,23 +83,23 @@ impl TabView {
         }
     }
 
-    pub(super) fn root(&self) -> &GtkBox {
+    pub(crate) fn root(&self) -> &GtkBox {
         &self.root
     }
 
-    pub(super) fn title_label(&self) -> &Label {
+    pub(crate) fn title_label(&self) -> &Label {
         &self.title_label
     }
 
-    pub(super) fn base_title(&self) -> &str {
+    pub(crate) fn base_title(&self) -> &str {
         &self.base_title
     }
 
-    pub(super) fn profile_id(&self) -> ProfileId {
+    pub(crate) fn profile_id(&self) -> ProfileId {
         self.profile_id
     }
 
-    pub(super) fn to_snapshot(&self) -> TabSnapshot {
+    pub(crate) fn to_snapshot(&self) -> TabSnapshot {
         TabSnapshot {
             title: self.base_title.clone(),
             profile: self.profile_id,
@@ -103,7 +110,7 @@ impl TabView {
         }
     }
 
-    pub(super) fn cycle_profile(&mut self, next_profile: ProfileId) {
+    pub(crate) fn cycle_profile(&mut self, next_profile: ProfileId) {
         self.profile_id = next_profile;
         self.left.apply_profile(next_profile);
         if let Some(right) = &self.right {
@@ -112,7 +119,7 @@ impl TabView {
         self.sync_title_label();
     }
 
-    pub(super) fn rename(&mut self, title: &str) {
+    pub(crate) fn rename(&mut self, title: &str) {
         let trimmed = title.trim();
         if trimmed.is_empty() {
             return;
@@ -122,7 +129,7 @@ impl TabView {
         self.sync_title_label();
     }
 
-    pub(super) fn toggle_split(&mut self) {
+    pub(crate) fn toggle_split(&mut self) {
         if self.right.is_some() {
             if let Some(split_view) = self.split_view.take() {
                 self.root.remove(&split_view);
@@ -152,7 +159,7 @@ impl TabView {
         }
     }
 
-    pub(super) fn focus_left_pane(&self) -> bool {
+    pub(crate) fn focus_left_pane(&self) -> bool {
         if self.right.is_none() {
             return false;
         }
@@ -161,7 +168,7 @@ impl TabView {
         true
     }
 
-    pub(super) fn focus_right_pane(&self) -> bool {
+    pub(crate) fn focus_right_pane(&self) -> bool {
         let Some(right) = &self.right else {
             return false;
         };
@@ -170,27 +177,27 @@ impl TabView {
         true
     }
 
-    pub(super) fn focus_next_session(&self) -> bool {
+    pub(crate) fn focus_next_session(&self) -> bool {
         self.active_mux_pane().focus_next_session()
     }
 
-    pub(super) fn focus_previous_session(&self) -> bool {
+    pub(crate) fn focus_previous_session(&self) -> bool {
         self.active_mux_pane().focus_previous_session()
     }
 
-    pub(super) fn new_mux_session(&self) {
+    pub(crate) fn new_mux_session(&self) {
         self.active_mux_pane().new_session();
     }
 
-    pub(super) fn close_active_session(&self) -> bool {
+    pub(crate) fn close_active_session(&self) -> bool {
         self.active_mux_pane().close_active_session()
     }
 
-    pub(super) fn focus_session(&self, index: usize) -> bool {
+    pub(crate) fn focus_session(&self, index: usize) -> bool {
         self.active_mux_pane().focus_session(index)
     }
 
-    pub(super) fn restore_focus(&self) {
+    pub(crate) fn restore_focus(&self) {
         if self.right.is_some() && self.active_pane.get() == PaneFocus::Right {
             if let Some(right) = &self.right {
                 right.focus_terminal();
@@ -200,18 +207,18 @@ impl TabView {
         self.left.focus_terminal();
     }
 
-    pub(super) fn apply_settings(&self, settings: &Settings) {
+    pub(crate) fn apply_settings(&self, settings: &Settings) {
         self.left.apply_settings(settings);
         if let Some(right) = &self.right {
             right.apply_settings(settings);
         }
     }
 
-    pub(super) fn current_cwd(&self) -> Option<String> {
+    pub(crate) fn current_cwd(&self) -> Option<String> {
         self.active_mux_pane().current_cwd()
     }
 
-    pub(super) fn current_terminal(&self) -> Option<vte4::Terminal> {
+    pub(crate) fn current_terminal(&self) -> Option<vte4::Terminal> {
         self.active_mux_pane().current_terminal()
     }
 

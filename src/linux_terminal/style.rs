@@ -227,9 +227,9 @@ pub(super) fn install_css(settings: &Settings) {
         terminal.magma-terminal {{
             background: transparent;
             color: {text_primary};
-            border: 1px solid {border};
-            border-radius: 18px;
-            padding: 10px;
+            border: 1px solid alpha({text_primary}, 0.06);
+            border-radius: {terminal_radius};
+            padding: {terminal_padding};
         }}
 
         box.magma-workspace-actions {{
@@ -253,8 +253,8 @@ pub(super) fn install_css(settings: &Settings) {
 
         paned.magma-split-pane > separator {{
             background: alpha({text_primary}, 0.04);
-            min-width: 10px;
-            margin: 0 4px;
+            min-width: {split_width};
+            margin: 0 {split_margin};
             border-radius: 999px;
             transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
         }}
@@ -269,11 +269,11 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         box.magma-mux-bar {{
-            background: alpha({text_primary}, 0.02);
-            border: 1px solid alpha({text_primary}, 0.05);
-            border-radius: 999px;
-            padding: 4px;
-            margin: 0 0 4px 0;
+            background: alpha({text_primary}, 0.018);
+            border: 1px solid alpha({text_primary}, 0.04);
+            border-radius: {bar_radius};
+            padding: {bar_padding};
+            margin: 0 0 {bar_margin_bottom} 0;
         }}
 
         button.magma-mux-session,
@@ -282,9 +282,9 @@ pub(super) fn install_css(settings: &Settings) {
             color: {text_primary};
             border: none;
             border-radius: 999px;
-            min-height: 22px;
-            min-width: 22px;
-            padding: 0 10px;
+            min-height: {mux_btn_size};
+            min-width: {mux_btn_size};
+            padding: 0 {mux_btn_padding};
             box-shadow: none;
             opacity: 0.6;
             transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -4223,6 +4223,15 @@ pub(super) fn install_css(settings: &Settings) {
         font_12 = px(12.0, ui_scale),
         font_13 = px(13.0, ui_scale),
         font_22 = px(22.0, ui_scale),
+        terminal_radius = px(14.0, ui_scale),
+        terminal_padding = px(8.0, ui_scale),
+        bar_radius = px(12.0, ui_scale),
+        bar_padding = px(3.0, ui_scale),
+        bar_margin_bottom = px(4.0, ui_scale),
+        mux_btn_size = px(22.0, ui_scale),
+        mux_btn_padding = px(8.0, ui_scale),
+        split_width = px(8.0, ui_scale),
+        split_margin = px(3.0, ui_scale),
     );
     // Post-process alpha(#HEX, factor) -> rgba(R, G, B, factor) for GTK4 compat
     let css = resolve_alpha(&css);

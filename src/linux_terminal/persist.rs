@@ -8,7 +8,7 @@ use std::{
 
 use serde::{Deserialize, Deserializer, Serialize};
 
-use super::profile::ProfileId;
+use super::terminal::ProfileId;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 #[serde(default)]

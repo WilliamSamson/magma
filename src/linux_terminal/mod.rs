@@ -6,18 +6,12 @@ mod input;
 mod left_pane;
 mod logr;
 mod meta;
-mod mux;
 mod notes;
 pub(crate) mod persist;
-mod profile;
 mod right_pane;
-mod runtime;
-mod session;
 pub(crate) mod settings;
-mod shell;
 mod setup;
 mod style;
-mod tab;
 mod terminal;
 pub(crate) mod theme;
 mod view;
@@ -301,7 +295,13 @@ fn build_window(app: &Application, width: u32, height: u32) {
     window.set_titlebar(Some(header.widget()));
     window.set_child(Some(&stack));
 
+    let close_stack = stack.clone();
     window.connect_close_request(move |window| {
+        if close_stack.visible_child_name().as_deref() == Some("settings") {
+            close_stack.set_visible_child_name("workspace");
+            return glib::Propagation::Stop;
+        }
+
         workspace.save();
         persist_window_size(window);
         glib::Propagation::Proceed

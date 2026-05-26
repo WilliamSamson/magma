@@ -5,7 +5,7 @@ use std::{
 
 const BUNDLED_SHELL_ENV: &str = "MAGMA_BUNDLED_SHELL";
 
-pub(super) fn resolve_shell(shell_override: &str) -> String {
+pub(crate) fn resolve_shell(shell_override: &str) -> String {
     if let Some(path) = resolve_executable(shell_override) {
         return path.display().to_string();
     }
@@ -29,7 +29,7 @@ pub(super) fn resolve_shell(shell_override: &str) -> String {
     shell_override.to_string()
 }
 
-pub(super) fn bundled_shell() -> Option<PathBuf> {
+pub(crate) fn bundled_shell() -> Option<PathBuf> {
     if let Ok(path) = env::var(BUNDLED_SHELL_ENV) {
         let path = PathBuf::from(path);
         if path.is_file() {
@@ -60,7 +60,7 @@ fn bundled_shell_candidates() -> Vec<PathBuf> {
     candidates
 }
 
-pub(super) fn resolve_executable(input: &str) -> Option<PathBuf> {
+pub(crate) fn resolve_executable(input: &str) -> Option<PathBuf> {
     if input.trim().is_empty() {
         return None;
     }

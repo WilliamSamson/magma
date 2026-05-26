@@ -8,8 +8,9 @@ use gtk::{
 
 use super::setup_label;
 use crate::linux_terminal::{
-    runtime,
     settings::{self, Settings},
+    terminal::runtime,
+    theme::ThemeMode,
 };
 
 pub(super) fn build_topbar() -> GtkBox {
@@ -171,6 +172,7 @@ pub(super) fn build_workspace_step(
 pub(super) fn build_appearance_step(
     draft: &Rc<RefCell<Settings>>,
     on_checkpoint: &Rc<dyn Fn()>,
+    on_preview: &Rc<dyn Fn(&Settings)>,
 ) -> GtkBox {
     let page = step_page(
         "appearance",
@@ -178,6 +180,7 @@ pub(super) fn build_appearance_step(
     );
     let terminal_font = spin_field(draft.borrow().font_size as f64, 6.0, 32.0);
     let app_font = spin_field(draft.borrow().app_font_size as f64, 8.0, 20.0);
+    let theme_dropdown = dropdown_field(&ThemeMode::OPTIONS, draft.borrow().theme_mode.selected_index());
     let cursor_styles = ["ibeam", "block", "underline"];
     let selected_cursor = cursor_styles
         .iter()
@@ -189,18 +192,33 @@ pub(super) fn build_appearance_step(
     {
         let draft = draft.clone();
         let on_checkpoint = on_checkpoint.clone();
+        let on_preview = on_preview.clone();
         terminal_font.connect_value_changed(move |spin| {
             draft.borrow_mut().font_size = spin.value() as u32;
             on_checkpoint();
+            preview_draft(&draft, &on_preview);
         });
     }
 
     {
         let draft = draft.clone();
         let on_checkpoint = on_checkpoint.clone();
+        let on_preview = on_preview.clone();
         app_font.connect_value_changed(move |spin| {
             draft.borrow_mut().app_font_size = spin.value() as u32;
             on_checkpoint();
+            preview_draft(&draft, &on_preview);
+        });
+    }
+
+    {
+        let draft = draft.clone();
+        let on_checkpoint = on_checkpoint.clone();
+        let on_preview = on_preview.clone();
+        theme_dropdown.connect_selected_notify(move |dropdown| {
+            draft.borrow_mut().theme_mode = ThemeMode::from_index(dropdown.selected());
+            on_checkpoint();
+            preview_draft(&draft, &on_preview);
         });
     }
 
@@ -228,11 +246,18 @@ pub(super) fn build_appearance_step(
         });
     }
 
+    page.append(&setting_row("theme", "choose the workspace light or dark palette", &theme_dropdown));
     page.append(&setting_row("terminal font size", "shell text scale", &terminal_font));
     page.append(&setting_row("app font size", "window and interface scale", &app_font));
     page.append(&setting_row("cursor style", "terminal cursor shape", &cursor_dropdown));
     page.append(&setting_row("cursor blink", "blink active cursor", &blink_switch));
     page
+}
+
+fn preview_draft(draft: &Rc<RefCell<Settings>>, on_preview: &Rc<dyn Fn(&Settings)>) {
+    // Clone once so setup previews can apply a stable snapshot without holding a RefCell borrow.
+    let snapshot = draft.borrow().clone();
+    on_preview(&snapshot);
 }
 
 fn step_page(title: &str, copy: &str) -> GtkBox {
