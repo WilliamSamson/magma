@@ -849,62 +849,68 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-tabs-list {{
             background: transparent;
-            padding: 0 4px;
+            padding: 2px 4px;
         }}
 
         .magma-tab-item {{
             background: transparent;
-            border-radius: 0;
-            padding: 6px 14px;
-            margin: 0 2px;
-            transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
-            border-bottom: 2px solid transparent;
-            opacity: 0.4;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            padding: 6px 12px;
+            margin: 0 3px;
+            transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.5;
         }}
 
         .magma-tab-item:hover {{
-            background: alpha({text_primary}, 0.03);
-            opacity: 0.8;
-            transform: translateY(-0.5px);
+            background: alpha({text_primary}, 0.035);
+            opacity: 0.85;
+            transform: scale(1.01) translateY(-0.5px);
         }}
 
         .magma-tab-item.active {{
-            background: transparent;
-            border-bottom-color: {accent};
+            background: alpha({accent}, 0.05);
+            border: 1px solid alpha({accent}, 0.15);
+            box-shadow: 0 2px 6px alpha(#000000, 0.12);
             opacity: 1.0;
+        }}
+
+        .magma-tab-item.active label.magma-tab-label {{
+            color: {accent};
         }}
 
         button.magma-tab-close-button {{
             background: transparent;
             color: {text_primary};
             border: none;
-            border-radius: 50%;
-            min-height: 20px;
-            min-width: 20px;
+            border-radius: 4px;
+            min-height: 18px;
+            min-width: 18px;
             padding: 0;
-            margin-left: 2px;
+            margin-left: 6px;
             opacity: 0;
             box-shadow: none;
-            transition: opacity 140ms ease, background 140ms ease;
+            transition: all 180ms ease;
         }}
 
         .magma-tab-item:hover button.magma-tab-close-button,
         .magma-tab-item.active button.magma-tab-close-button {{
-            opacity: 0.4;
+            opacity: 0.5;
         }}
 
         button.magma-tab-close-button:hover {{
-            background: alpha({text_primary}, 0.1);
+            background: alpha({sem_orange}, 0.15);
+            color: {sem_orange};
             opacity: 1.0;
         }}
 
         .magma-tab-item.dragging {{
-            opacity: 0.4;
+            opacity: 0.3;
         }}
 
         .magma-tab-item.drop-target {{
-            background: alpha({text_primary}, 0.05);
-            border-bottom-color: {accent};
+            background: alpha({accent}, 0.08);
+            border-color: alpha({accent}, 0.2);
         }}
 
         button.magma-add-tab-button {{
@@ -912,17 +918,18 @@ pub(super) fn install_css(settings: &Settings) {
             color: {text_primary};
             border: none;
             padding: 6px;
-            min-height: 28px;
-            min-width: 28px;
+            min-height: 26px;
+            min-width: 26px;
             opacity: 0.5;
-            margin: 0 8px;
-            border-radius: 50%;
-            transition: opacity 140ms ease, background 140ms ease;
+            margin: 0 4px;
+            border-radius: 6px;
+            transition: all 180ms ease;
         }}
 
         button.magma-add-tab-button:hover {{
             opacity: 1.0;
             background: alpha({text_primary}, 0.05);
+            transform: scale(1.05);
         }}
 
         notebook.magma-notebook > stack {{
