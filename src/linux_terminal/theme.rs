@@ -75,6 +75,7 @@ pub(crate) struct Palette {
     pub(crate) sem_blue: u32,
     pub(crate) sem_magenta: u32,
     pub(crate) sem_brown: u32,
+    #[allow(dead_code)]
     pub(crate) sem_gray: u32,
 }
 

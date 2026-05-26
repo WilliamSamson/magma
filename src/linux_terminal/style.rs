@@ -15,39 +15,9 @@ pub(super) fn install_css(settings: &Settings) {
             to {{ opacity: 1; }}
         }}
 
-        @keyframes magma-float {{
-            0% {{ transform: translateY(0px); }}
-            50% {{ transform: translateY(-4px); }}
-            100% {{ transform: translateY(0px); }}
-        }}
-
-        @keyframes magma-pulse-glow {{
-            0% {{ box-shadow: 0 0 0 0 alpha(var(--accent), 0.4); }}
-            70% {{ box-shadow: 0 0 0 6px alpha(var(--accent), 0); }}
-            100% {{ box-shadow: 0 0 0 0 alpha(var(--accent), 0); }}
-        }}
-
         window.magma-window {{
-            --window-bg: {window_bg};
-            --window-edge: {window_edge};
-            --titlebar-bg: {titlebar_bg};
-            --surface-base: {surface};
-            --border-strong: {border};
-            --text-primary: {text_primary};
-            --text-secondary: {text_secondary};
-            --text-dim: {text_dim};
-            --accent: {accent};
-
-            --sem-yellow: {sem_yellow};
-            --sem-green: {sem_green};
-            --sem-orange: {sem_orange};
-            --sem-blue: {sem_blue};
-            --sem-magenta: {sem_magenta};
-            --sem-brown: {sem_brown};
-            --sem-gray: {sem_gray};
-
-            background: var(--window-bg);
-            border: 1px solid var(--window-edge);
+            background: {window_bg};
+            border: 1px solid {window_edge};
             border-radius: 12px;
             animation: magma-fade-in 400ms ease-out;
         }}
@@ -59,7 +29,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         scrollbar slider {{
-            background: alpha(var(--text-primary), 0.10);
+            background: alpha({text_primary}, 0.10);
             border-radius: 999px;
             min-width: 6px;
             min-height: 6px;
@@ -68,7 +38,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         scrollbar slider:hover {{
-            background: alpha(var(--text-primary), 0.20);
+            background: alpha({text_primary}, 0.20);
             transform: scale(1.2);
         }}
 
@@ -81,8 +51,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         headerbar.magma-header {{
-            background: var(--titlebar-bg);
-            border-bottom: 1px solid var(--border-strong);
+            background: {titlebar_bg};
+            border-bottom: 1px solid {border};
             min-height: 40px;
             padding: 4px 12px;
         }}
@@ -92,7 +62,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         headerbar.magma-header windowcontrols button {{
-            background: var(--surface-base);
+            background: {surface};
             border-radius: 50%;
             box-shadow: none;
             border: none;
@@ -121,31 +91,31 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         headerbar.magma-header windowcontrols button.close {{
-            background: var(--sem-orange);
+            background: {sem_orange};
         }}
 
         headerbar.magma-header windowcontrols button.minimize {{
-            background: var(--sem-yellow);
+            background: {sem_yellow};
         }}
 
         headerbar.magma-header windowcontrols button.maximize {{
-            background: var(--sem-green);
+            background: {sem_green};
         }}
 
         headerbar.magma-header windowcontrols button.close:hover {{
-            background: var(--sem-orange);
+            background: {sem_orange};
         }}
 
         headerbar.magma-header windowcontrols button.minimize:hover {{
-            background: var(--sem-yellow);
+            background: {sem_yellow};
         }}
 
         headerbar.magma-header windowcontrols button.maximize:hover {{
-            background: var(--sem-green);
+            background: {sem_green};
         }}
 
         headerbar.magma-header button.titlebutton {{
-            background: var(--surface-base);
+            background: {surface};
             border-radius: 50%;
             box-shadow: none;
             border: none;
@@ -170,33 +140,33 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         headerbar.magma-header button.titlebutton.close {{
-            background: var(--sem-orange);
+            background: {sem_orange};
         }}
 
         headerbar.magma-header button.titlebutton.minimize {{
-            background: var(--sem-yellow);
+            background: {sem_yellow};
         }}
 
         headerbar.magma-header button.titlebutton.maximize {{
-            background: var(--sem-green);
+            background: {sem_green};
         }}
 
         headerbar.magma-header button.titlebutton.close:hover {{
-            background: var(--sem-orange);
+            background: {sem_orange};
         }}
 
         headerbar.magma-header button.titlebutton.minimize:hover {{
-            background: var(--sem-yellow);
+            background: {sem_yellow};
         }}
 
         headerbar.magma-header button.titlebutton.maximize:hover {{
-            background: var(--sem-green);
+            background: {sem_green};
         }}
 
         button.magma-header-settings,
         menubutton.magma-header-settings {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 50%;
             min-height: 24px;
@@ -221,7 +191,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-header-close {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 4px;
             min-height: 18px;
@@ -243,21 +213,21 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-shell {{
-            background: var(--window-bg);
+            background: {window_bg};
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
         }}
 
         .magma-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-weight: 700;
             letter-spacing: 0.04em;
         }}
 
         terminal.magma-terminal {{
             background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border-strong);
+            color: {text_primary};
+            border: 1px solid {border};
             border-radius: 18px;
             padding: 10px;
         }}
@@ -270,19 +240,19 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         separator.magma-separator {{
-            background: var(--border-strong);
+            background: {border};
             min-height: 1px;
             margin: 0 0 12px 0;
         }}
 
         separator.magma-v-separator {{
-            background: var(--border-strong);
+            background: {border};
             min-width: 1px;
             margin: 0 4px;
         }}
 
         paned.magma-split-pane > separator {{
-            background: alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.04);
             min-width: 10px;
             margin: 0 4px;
             border-radius: 999px;
@@ -290,7 +260,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         paned.magma-split-pane > separator:hover {{
-            background: alpha(var(--accent), 0.18);
+            background: alpha({accent}, 0.18);
             transform: scaleX(1.4);
         }}
 
@@ -299,8 +269,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         box.magma-mux-bar {{
-            background: alpha(var(--text-primary), 0.02);
-            border: 1px solid alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.02);
+            border: 1px solid alpha({text_primary}, 0.05);
             border-radius: 999px;
             padding: 4px;
             margin: 0 0 4px 0;
@@ -309,7 +279,7 @@ pub(super) fn install_css(settings: &Settings) {
         button.magma-mux-session,
         button.magma-mux-action {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 999px;
             min-height: 22px;
@@ -323,21 +293,20 @@ pub(super) fn install_css(settings: &Settings) {
         button.magma-mux-session:hover,
         button.magma-mux-action:hover {{
             opacity: 1.0;
-            background: alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.04);
             transform: scale(1.05) translateY(-0.5px);
         }}
 
         button.magma-mux-session.active {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.1);
-            color: var(--accent);
-            animation: magma-pulse-glow 2s infinite ease-in-out;
+            background: alpha({accent}, 0.1);
+            color: {accent};
         }}
 
         .magma-right-pane {{
             background: transparent;
             padding: 14px 14px 12px 14px;
-            border: 1px solid var(--border-strong);
+            border: 1px solid {border};
             border-radius: 14px;
             margin: 0;
         }}
@@ -346,30 +315,30 @@ pub(super) fn install_css(settings: &Settings) {
             min-width: 30px;
             margin: 0 3px;
             padding: 3px;
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 12px;
-            background: alpha(var(--text-primary), 0.015);
+            background: alpha({text_primary}, 0.015);
             transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
         }}
 
         .magma-handle:hover {{
-            background: alpha(var(--text-primary), 0.025);
-            border-color: alpha(var(--text-primary), 0.08);
+            background: alpha({text_primary}, 0.025);
+            border-color: alpha({text_primary}, 0.08);
             transform: scaleX(1.05);
         }}
 
         .magma-handle.collapsed {{
-            background: alpha(var(--text-primary), 0.01);
+            background: alpha({text_primary}, 0.01);
         }}
 
         .magma-handle.collapsed:hover {{
-            background: alpha(var(--accent), 0.05);
-            border-color: alpha(var(--accent), 0.18);
+            background: alpha({accent}, 0.05);
+            border-color: alpha({accent}, 0.18);
         }}
 
         button.magma-handle-segment {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 9px;
             min-width: 24px;
@@ -382,17 +351,17 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-handle-segment:hover {{
             opacity: 0.86;
-            background: alpha(var(--text-primary), 0.035);
+            background: alpha({text_primary}, 0.035);
             transform: scale(1.05);
         }}
 
         button.magma-handle-segment.active {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.08);
+            background: alpha({accent}, 0.08);
         }}
 
         .magma-handle-icon {{
-            color: var(--text-primary);
+            color: {text_primary};
             -gtk-icon-size: 14px;
             opacity: inherit;
             transition: opacity 180ms ease, color 180ms ease;
@@ -404,15 +373,15 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-handle.collapsed:hover button.magma-handle-segment {{
             opacity: 0.72;
-            background: alpha(var(--accent), 0.035);
+            background: alpha({accent}, 0.035);
         }}
 
         .magma-handle.collapsed:hover .magma-handle-icon {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         button.magma-handle-segment.active .magma-handle-icon {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         /* ── Left handle (folder pane toggle) ── */
@@ -421,29 +390,29 @@ pub(super) fn install_css(settings: &Settings) {
             min-width: 30px;
             margin: 0 3px;
             padding: 3px;
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 12px;
-            background: alpha(var(--text-primary), 0.015);
+            background: alpha({text_primary}, 0.015);
             transition: border-color 180ms ease, background 180ms ease, opacity 180ms ease;
         }}
 
         .magma-left-handle:hover {{
-            background: alpha(var(--text-primary), 0.025);
-            border-color: alpha(var(--text-primary), 0.08);
+            background: alpha({text_primary}, 0.025);
+            border-color: alpha({text_primary}, 0.08);
         }}
 
         .magma-left-handle.collapsed {{
-            background: alpha(var(--text-primary), 0.01);
+            background: alpha({text_primary}, 0.01);
         }}
 
         .magma-left-handle.collapsed:hover {{
-            background: alpha(var(--accent), 0.05);
-            border-color: alpha(var(--accent), 0.18);
+            background: alpha({accent}, 0.05);
+            border-color: alpha({accent}, 0.18);
         }}
 
         button.magma-left-handle-segment {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 9px;
             min-width: 24px;
@@ -456,16 +425,16 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-left-handle-segment:hover {{
             opacity: 0.86;
-            background: alpha(var(--text-primary), 0.035);
+            background: alpha({text_primary}, 0.035);
         }}
 
         button.magma-left-handle-segment.active {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.08);
+            background: alpha({accent}, 0.08);
         }}
 
         .magma-left-handle-icon {{
-            color: var(--text-primary);
+            color: {text_primary};
             -gtk-icon-size: 14px;
             opacity: inherit;
             transition: opacity 180ms ease, color 180ms ease;
@@ -477,15 +446,15 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-left-handle.collapsed:hover button.magma-left-handle-segment {{
             opacity: 0.72;
-            background: alpha(var(--accent), 0.035);
+            background: alpha({accent}, 0.035);
         }}
 
         .magma-left-handle.collapsed:hover .magma-left-handle-icon {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         button.magma-left-handle-segment.active .magma-left-handle-icon {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         /* ── Left pane (folder tree) ── */
@@ -500,11 +469,11 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-folder-header {{
             padding: 4px 4px 8px 4px;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
         }}
 
         .magma-folder-title {{
-            color: var(--text-secondary);
+            color: {text_secondary};
             font-size: {folder_title_size};
             font-weight: 600;
             letter-spacing: 0.06em;
@@ -513,7 +482,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-folder-action {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 6px;
             min-width: 22px;
@@ -526,7 +495,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-folder-action:hover {{
             opacity: 1.0;
-            background: alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.04);
             transform: scale(1.1);
         }}
 
@@ -540,7 +509,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-folder-item {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 6px;
             min-height: 26px;
@@ -550,7 +519,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-folder-item:hover {{
-            background: alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.04);
             transform: translateX(4px);
         }}
 
@@ -577,40 +546,40 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-folder-empty {{
-            color: var(--text-dim);
+            color: {text_dim};
             font-size: {folder_name_size};
             padding: 16px 8px;
         }}
 
         /* ── File-type colors (muted palette) ── */
 
-        .ft-default  {{ color: var(--text-secondary); opacity: 0.78; }}
-        .ft-folder   {{ color: var(--text-primary); }}
-        .ft-source   {{ color: var(--sem-yellow); }}
-        .ft-test     {{ color: var(--sem-green); }}
-        .ft-build    {{ color: var(--sem-brown); }}
-        .ft-dep      {{ color: var(--text-dim); }}
-        .ft-doc      {{ color: var(--sem-blue); }}
-        .ft-asset    {{ color: var(--sem-magenta); }}
-        .ft-git      {{ color: var(--sem-orange); }}
-        .ft-config   {{ color: var(--sem-brown); }}
-        .ft-secret   {{ color: var(--sem-orange); opacity: 0.85; }}
-        .ft-lock     {{ color: var(--text-dim); }}
+        .ft-default  {{ color: {text_secondary}; opacity: 0.78; }}
+        .ft-folder   {{ color: {text_primary}; }}
+        .ft-source   {{ color: {sem_yellow}; }}
+        .ft-test     {{ color: {sem_green}; }}
+        .ft-build    {{ color: {sem_brown}; }}
+        .ft-dep      {{ color: {text_dim}; }}
+        .ft-doc      {{ color: {sem_blue}; }}
+        .ft-asset    {{ color: {sem_magenta}; }}
+        .ft-git      {{ color: {sem_orange}; }}
+        .ft-config   {{ color: {sem_brown}; }}
+        .ft-secret   {{ color: {sem_orange}; opacity: 0.85; }}
+        .ft-lock     {{ color: {text_dim}; }}
 
-        .ft-rust     {{ color: var(--sem-orange); }}
-        .ft-js       {{ color: var(--sem-yellow); }}
-        .ft-ts       {{ color: var(--sem-blue); }}
-        .ft-html     {{ color: var(--sem-orange); }}
-        .ft-css      {{ color: var(--sem-blue); }}
-        .ft-json     {{ color: var(--sem-brown); }}
-        .ft-python   {{ color: var(--sem-green); }}
-        .ft-go       {{ color: var(--sem-blue); }}
-        .ft-c        {{ color: var(--sem-blue); }}
-        .ft-java     {{ color: var(--sem-orange); }}
-        .ft-shell    {{ color: var(--sem-green); }}
-        .ft-image    {{ color: var(--sem-magenta); }}
-        .ft-archive  {{ color: var(--sem-brown); }}
-        .ft-binary   {{ color: var(--text-dim); }}
+        .ft-rust     {{ color: {sem_orange}; }}
+        .ft-js       {{ color: {sem_yellow}; }}
+        .ft-ts       {{ color: {sem_blue}; }}
+        .ft-html     {{ color: {sem_orange}; }}
+        .ft-css      {{ color: {sem_blue}; }}
+        .ft-json     {{ color: {sem_brown}; }}
+        .ft-python   {{ color: {sem_green}; }}
+        .ft-go       {{ color: {sem_blue}; }}
+        .ft-c        {{ color: {sem_blue}; }}
+        .ft-java     {{ color: {sem_orange}; }}
+        .ft-shell    {{ color: {sem_green}; }}
+        .ft-image    {{ color: {sem_magenta}; }}
+        .ft-archive  {{ color: {sem_brown}; }}
+        .ft-binary   {{ color: {text_dim}; }}
 
         /* ── Git status dots ── */
 
@@ -620,10 +589,10 @@ pub(super) fn install_css(settings: &Settings) {
             opacity: 0.9;
         }}
 
-        .git-modified  {{ color: var(--sem-yellow); }}
-        .git-staged    {{ color: var(--sem-green); }}
-        .git-untracked {{ color: var(--text-dim); }}
-        .git-conflict  {{ color: var(--accent); }}
+        .git-modified  {{ color: {sem_yellow}; }}
+        .git-staged    {{ color: {sem_green}; }}
+        .git-untracked {{ color: {text_dim}; }}
+        .git-conflict  {{ color: {accent}; }}
 
         /* ── Breadcrumb bar ── */
 
@@ -633,25 +602,25 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-breadcrumb-sep {{
-            color: var(--text-dim);
+            color: {text_dim};
             font-size: {folder_title_size};
             margin: 0 1px;
             opacity: 0.5;
         }}
 
         .magma-breadcrumb-segment {{
-            color: var(--text-dim);
+            color: {text_dim};
             font-size: {folder_title_size};
         }}
 
         .magma-breadcrumb-active {{
-            color: var(--text-secondary);
+            color: {text_secondary};
             font-weight: 600;
         }}
 
         box.magma-input-pill {{
             background: transparent;
-            border: 1px solid var(--border-strong);
+            border: 1px solid {border};
             border-radius: 999px;
             padding: 4px 16px;
             margin: 0 0 8px 0;
@@ -659,17 +628,17 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         box.magma-input-pill:focus-within {{
-            border-color: var(--accent);
+            border-color: {accent};
         }}
 
         box.magma-input-pill.terminal-active {{
-            border-color: var(--accent);
+            border-color: {accent};
         }}
 
         button.magma-workspace-button,
         button.magma-tool-button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border-radius: 50%;
             padding: 8px;
             min-height: 28px;
@@ -682,7 +651,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-search-toggle {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border-radius: 50%;
             padding: 2px;
             min-height: 18px;
@@ -695,7 +664,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         menubutton.magma-tool-menu > button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border-radius: 50%;
             padding: 8px;
             min-height: 28px;
@@ -712,19 +681,19 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-workspace-button:hover,
         button.magma-tool-button:hover {{
-            background: var(--surface-base);
+            background: {surface};
             opacity: 1.0;
         }}
 
         menubutton.magma-tool-menu > button:hover,
         menubutton.magma-tool-menu:checked > button {{
-            background: var(--surface-base);
+            background: {surface};
             opacity: 1.0;
         }}
 
         popover.magma-inspector-popover {{
-            background: var(--surface-base);
-            border: 1px solid var(--border-strong);
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 12px;
         }}
 
@@ -741,7 +710,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-inspector-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -751,13 +720,13 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-inspector-row {{
             background: transparent;
-            border: 1px solid var(--border-strong);
+            border: 1px solid {border};
             border-radius: 10px;
             padding: 10px;
         }}
 
         .magma-inspector-key {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 700;
@@ -765,7 +734,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-inspector-value {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.62;
@@ -790,8 +759,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-switcher-panel {{
-            background: alpha(var(--window-bg), 0.94);
-            border: 1px solid var(--border-strong);
+            background: alpha({window_bg}, 0.94);
+            border: 1px solid {border};
             border-radius: 14px;
             padding: 12px;
             min-width: 360px;
@@ -799,9 +768,9 @@ pub(super) fn install_css(settings: &Settings) {
 
         entry.magma-switcher-entry {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.08);
+            border-bottom: 1px solid alpha({text_primary}, 0.08);
             border-radius: 0;
             padding: 4px 2px 10px 2px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -811,7 +780,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         entry.magma-switcher-entry:focus {{
-            border-bottom-color: var(--accent);
+            border-bottom-color: {accent};
             box-shadow: none;
             outline: none;
         }}
@@ -830,11 +799,11 @@ pub(super) fn install_css(settings: &Settings) {
 
         row.magma-switcher-row:hover,
         row.magma-switcher-row:selected {{
-            background: alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.05);
         }}
 
         .magma-switcher-index {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -843,7 +812,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-switcher-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
@@ -851,7 +820,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-switcher-empty {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             opacity: 0.35;
@@ -874,20 +843,20 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-tab-item:hover {{
-            background: alpha(var(--text-primary), 0.03);
+            background: alpha({text_primary}, 0.03);
             opacity: 0.8;
             transform: translateY(-0.5px);
         }}
 
         .magma-tab-item.active {{
             background: transparent;
-            border-bottom-color: var(--accent);
+            border-bottom-color: {accent};
             opacity: 1.0;
         }}
 
         button.magma-tab-close-button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 50%;
             min-height: 20px;
@@ -905,7 +874,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-tab-close-button:hover {{
-            background: alpha(var(--text-primary), 0.1);
+            background: alpha({text_primary}, 0.1);
             opacity: 1.0;
         }}
 
@@ -914,13 +883,13 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-tab-item.drop-target {{
-            background: alpha(var(--text-primary), 0.05);
-            border-bottom-color: var(--accent);
+            background: alpha({text_primary}, 0.05);
+            border-bottom-color: {accent};
         }}
 
         button.magma-add-tab-button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             padding: 6px;
             min-height: 28px;
@@ -933,7 +902,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-add-tab-button:hover {{
             opacity: 1.0;
-            background: alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.05);
         }}
 
         notebook.magma-notebook > stack {{
@@ -941,7 +910,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         label.magma-tab-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
@@ -950,9 +919,9 @@ pub(super) fn install_css(settings: &Settings) {
 
         entry.magma-tab-rename-entry {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
-            border-bottom: 1px solid alpha(var(--accent), 0.35);
+            border-bottom: 1px solid alpha({accent}, 0.35);
             border-radius: 0;
             padding: 2px 0;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -963,28 +932,28 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         entry.magma-tab-rename-entry:focus {{
-            border-bottom-color: var(--accent);
+            border-bottom-color: {accent};
             box-shadow: none;
             outline: none;
         }}
 
         entry.magma-entry.search-active {{
-            color: var(--sem-yellow);
+            color: {sem_yellow};
         }}
 
         box.magma-input-pill.search-active {{
-            border-color: rgba(255, 189, 46, 0.3);
+            border-color: alpha({sem_yellow}, 0.3);
         }}
 
         label.magma-user-label {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
         }}
 
         label.magma-path-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
@@ -998,7 +967,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         label.magma-notice-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.58;
@@ -1006,30 +975,30 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         label.magma-notice-ok {{
-            color: var(--sem-green);
+            color: {sem_green};
             opacity: 0.7;
         }}
 
         label.magma-notice-error {{
-            color: var(--accent);
+            color: {accent};
             opacity: 0.9;
         }}
 
         label.magma-status-ok {{
-            color: var(--sem-green);
+            color: {sem_green};
         }}
 
         label.magma-status-error {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         label.magma-status-running {{
-            color: var(--sem-yellow);
+            color: {sem_yellow};
         }}
 
         entry.magma-entry {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             padding: 8px 0;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -1055,7 +1024,7 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-view-header {{
             padding: 4px 0 12px 0;
             margin-bottom: 2px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.035);
+            border-bottom: 1px solid alpha({text_primary}, 0.035);
         }}
 
         .magma-view-heading {{
@@ -1063,7 +1032,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
@@ -1073,7 +1042,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-count {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 500;
@@ -1083,8 +1052,8 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-view-header-action {{
             background: transparent;
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.05);
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.05);
             border-radius: 8px;
             min-height: 28px;
             min-width: 28px;
@@ -1095,16 +1064,16 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-view-header-action:hover {{
-            background: alpha(var(--text-primary), 0.025);
-            border-color: alpha(var(--text-primary), 0.09);
+            background: alpha({text_primary}, 0.025);
+            border-color: alpha({text_primary}, 0.09);
             opacity: 1.0;
         }}
 
         button.magma-view-action,
         button.magma-view-open {{
-            background: alpha(var(--text-primary), 0.02);
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.02);
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 999px;
             min-height: 24px;
             min-width: 24px;
@@ -1117,8 +1086,8 @@ pub(super) fn install_css(settings: &Settings) {
         button.magma-view-action:hover,
         button.magma-view-open:hover {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.05);
-            border-color: alpha(var(--accent), 0.12);
+            background: alpha({accent}, 0.05);
+            border-color: alpha({accent}, 0.12);
         }}
 
         .magma-view-scope {{
@@ -1126,9 +1095,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-scope-chip {{
-            background: alpha(var(--text-primary), 0.03);
-            color: alpha(var(--text-primary), 0.40);
-            border: 1px solid alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.03);
+            color: alpha({text_primary}, 0.40);
+            border: 1px solid alpha({text_primary}, 0.05);
             border-radius: 10px;
             padding: 1px 10px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -1139,26 +1108,26 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-scope-chip:hover {{
-            color: alpha(var(--text-primary), 0.65);
-            border-color: alpha(var(--text-primary), 0.10);
-            background: alpha(var(--text-primary), 0.05);
+            color: alpha({text_primary}, 0.65);
+            border-color: alpha({text_primary}, 0.10);
+            background: alpha({text_primary}, 0.05);
         }}
 
         .magma-view-scope-chip-active {{
-            background: alpha(var(--accent), 0.08);
-            color: var(--accent);
-            border-color: alpha(var(--accent), 0.16);
+            background: alpha({accent}, 0.08);
+            color: {accent};
+            border-color: alpha({accent}, 0.16);
         }}
 
         .magma-view-scope-chip-active:hover {{
-            background: alpha(var(--accent), 0.12);
-            color: var(--accent);
+            background: alpha({accent}, 0.12);
+            color: {accent};
         }}
 
         .magma-view-file-scroller {{
             margin-bottom: 8px;
-            background: alpha(var(--text-primary), 0.012);
-            border: 1px solid alpha(var(--text-primary), 0.035);
+            background: alpha({text_primary}, 0.012);
+            border: 1px solid alpha({text_primary}, 0.035);
             border-radius: 14px;
             padding: 4px;
         }}
@@ -1176,12 +1145,12 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         row.magma-view-file-row:hover {{
-            background: alpha(var(--accent), 0.03);
+            background: alpha({accent}, 0.03);
         }}
 
         row.magma-view-file-row:selected {{
-            background: alpha(var(--accent), 0.06);
-            border: 1px solid alpha(var(--accent), 0.12);
+            background: alpha({accent}, 0.06);
+            border: 1px solid alpha({accent}, 0.12);
         }}
 
         .magma-view-file-card {{
@@ -1189,13 +1158,13 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-file-icon {{
-            color: var(--text-primary);
+            color: {text_primary};
             opacity: 0.5;
             -gtk-icon-size: 16px;
         }}
 
         .magma-view-file-name {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -1203,7 +1172,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-file-meta {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.42;
@@ -1211,28 +1180,28 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-preview {{
-            background: rgba(4, 4, 5, 0.98);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({surface}, 0.98);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 16px;
             padding: 0;
         }}
 
         .magma-view-preview-chrome {{
             padding: 14px 16px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.045);
-            background: rgba(10, 10, 12, 0.98);
+            border-bottom: 1px solid alpha({text_primary}, 0.045);
+            background: alpha({surface}, 0.98);
         }}
 
         .magma-view-preview-actions {{
             margin-left: 12px;
-            background: alpha(var(--text-primary), 0.02);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.02);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 9px;
             padding: 3px;
         }}
 
         .magma-view-preview-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
@@ -1240,7 +1209,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-preview-meta {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.44;
@@ -1248,7 +1217,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-view-preview-button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: 1px solid transparent;
             border-radius: 7px;
             min-height: 26px;
@@ -1263,8 +1232,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-view-preview-button:hover {{
-            background: alpha(var(--text-primary), 0.03);
-            border-color: alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.03);
+            border-color: alpha({text_primary}, 0.05);
             opacity: 1.0;
         }}
 
@@ -1279,14 +1248,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-view-preview-button-primary {{
-            background: alpha(var(--text-primary), 0.035);
-            border-color: alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.035);
+            border-color: alpha({text_primary}, 0.06);
             opacity: 0.92;
         }}
 
         button.magma-view-preview-button-primary:hover {{
-            background: alpha(var(--text-primary), 0.05);
-            border-color: alpha(var(--text-primary), 0.09);
+            background: alpha({text_primary}, 0.05);
+            border-color: alpha({text_primary}, 0.09);
         }}
 
         .magma-view-preview-stack {{
@@ -1295,28 +1264,28 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-view-preview-surface,
         .magma-view-code-scroller {{
-            background: rgba(3, 3, 4, 1);
+            background: {window_bg};
             border: none;
         }}
 
         textview.magma-view-code {{
-            background: rgba(3, 3, 4, 1);
-            color: var(--text-primary);
+            background: {window_bg};
+            color: {text_primary};
         }}
 
         .magma-view-empty-state {{
             padding: 42px 24px;
-            background: rgba(3, 3, 4, 1);
+            background: {window_bg};
         }}
 
         .magma-view-empty-icon {{
-            color: var(--text-primary);
+            color: {text_primary};
             opacity: 0.08;
             margin-bottom: 12px;
         }}
 
         .magma-view-empty-text {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             opacity: 0.35;
@@ -1324,19 +1293,19 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-view-info {{
-            background: rgba(3, 3, 4, 1);
+            background: {window_bg};
             padding: 24px 18px;
         }}
 
         .magma-view-info-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 600;
         }}
 
         .magma-view-info-body {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.68;
@@ -1367,24 +1336,24 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-web-tab:hover {{
             opacity: 0.75;
-            background: alpha(var(--text-primary), 0.03);
+            background: alpha({text_primary}, 0.03);
         }}
 
         .magma-web-tab.active {{
             opacity: 1.0;
-            background: alpha(var(--text-primary), 0.04);
-            border-color: alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.04);
+            border-color: alpha({text_primary}, 0.06);
         }}
 
         .magma-web-tab-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
         }}
 
         button.magma-web-tab-close {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 50%;
             min-height: 14px;
@@ -1401,12 +1370,12 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-web-tab-close:hover {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.15);
+            background: alpha({accent}, 0.15);
         }}
 
         button.magma-web-tab-add {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 50%;
             min-height: 22px;
@@ -1433,12 +1402,12 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-web-ssl.secure {{
-            color: var(--sem-green);
+            color: {sem_green};
             opacity: 0.7;
         }}
 
         .magma-web-ssl.insecure {{
-            color: var(--sem-yellow);
+            color: {sem_yellow};
             opacity: 0.7;
         }}
 
@@ -1456,14 +1425,14 @@ pub(super) fn install_css(settings: &Settings) {
 
         progressbar.magma-web-progress progress {{
             min-height: 2px;
-            background: var(--accent);
+            background: {accent};
             border: none;
             border-radius: 1px;
         }}
 
         .magma-web-find-bar {{
-            background: alpha(var(--text-primary), 0.02);
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.02);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 8px;
             padding: 4px 6px;
             margin: 0 2px 4px 2px;
@@ -1471,7 +1440,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         entry.magma-web-find-entry {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             padding: 2px 4px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -1488,7 +1457,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-web-find-matches {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.4;
@@ -1496,30 +1465,30 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-web-bar {{
-            background: alpha(var(--text-primary), 0.02);
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.02);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 16px;
             padding: 6px;
         }}
 
         .magma-web-nav {{
-            background: alpha(var(--text-primary), 0.02);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.02);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 12px;
             padding: 2px;
             margin-right: 6px;
         }}
 
         .magma-web-address-shell {{
-            background: alpha(var(--text-primary), 0.08);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.08);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 12px;
             padding: 0 4px 0 6px;
         }}
 
         button.magma-web-button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 10px;
             min-height: 28px;
@@ -1532,7 +1501,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-web-button:hover {{
             opacity: 1.0;
-            background: alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.06);
         }}
 
         button.magma-web-button:disabled {{
@@ -1549,7 +1518,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         entry.magma-web-entry {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 0;
             padding: 7px 4px 7px 0;
@@ -1568,7 +1537,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-web-status {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.4;
@@ -1576,14 +1545,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-web-frame {{
-            background: alpha(var(--text-primary), 0.01);
-            border: 1px solid alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.01);
+            border: 1px solid alpha({text_primary}, 0.05);
             border-radius: 16px;
             padding: 0;
         }}
 
         .magma-webview {{
-            background: var(--window-bg);
+            background: {window_bg};
             border: none;
             border-radius: 16px;
             margin-top: 0;
@@ -1592,7 +1561,7 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-logr-header {{
             padding: 4px 0 12px 0;
             margin-bottom: 2px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.035);
+            border-bottom: 1px solid alpha({text_primary}, 0.035);
         }}
 
         .magma-logr-heading {{
@@ -1618,19 +1587,19 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-logr-tab:hover {{
             opacity: 0.88;
-            background: alpha(var(--text-primary), 0.02);
-            border-color: alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.02);
+            border-color: alpha({text_primary}, 0.05);
             transform: scale(1.03) translateY(-0.5px);
         }}
 
         .magma-logr-tab.active {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.035);
-            border-color: alpha(var(--accent), 0.12);
+            background: alpha({accent}, 0.035);
+            border-color: alpha({accent}, 0.12);
         }}
 
         .magma-logr-tab-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 700;
@@ -1639,14 +1608,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-logr-tab.active .magma-logr-tab-label {{
-            color: var(--accent);
+            color: {accent};
             opacity: 0.92;
         }}
 
         button.magma-logr-tab-close,
         button.magma-logr-tab-add {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 10px;
             min-height: 20px;
@@ -1660,11 +1629,11 @@ pub(super) fn install_css(settings: &Settings) {
         button.magma-logr-tab-close:hover,
         button.magma-logr-tab-add:hover {{
             opacity: 1.0;
-            background: alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.05);
         }}
 
         .magma-logr-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_13};
             font-weight: 700;
@@ -1674,7 +1643,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-logr-count {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -1682,15 +1651,15 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-logr-picker {{
-            background: alpha(var(--text-primary), 0.018);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.018);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 999px;
             padding: 4px 6px;
             margin: 0 0 6px 0;
         }}
 
         .magma-logr-inline-icon {{
-            color: var(--accent);
+            color: {accent};
             -gtk-icon-size: 12px;
             margin: 0 2px 0 2px;
             opacity: 0.7;
@@ -1702,7 +1671,7 @@ pub(super) fn install_css(settings: &Settings) {
             border-radius: 999px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            color: var(--text-primary);
+            color: {text_primary};
             min-height: 24px;
             padding: 3px 10px;
             box-shadow: none;
@@ -1712,19 +1681,19 @@ pub(super) fn install_css(settings: &Settings) {
 
         menubutton.magma-logr-select > button:hover {{
             opacity: 1.0;
-            border-color: alpha(var(--accent), 0.14);
-            background: alpha(var(--accent), 0.045);
+            border-color: alpha({accent}, 0.14);
+            background: alpha({accent}, 0.045);
         }}
 
         popover.magma-logr-popover {{
-            background: var(--window-bg);
-            border: 1px solid var(--border-strong);
+            background: {window_bg};
+            border: 1px solid {border};
             border-radius: 6px;
             padding: 4px 0;
         }}
 
         popover.magma-logr-popover > contents {{
-            background: var(--window-bg);
+            background: {window_bg};
             border-radius: 6px;
             padding: 0;
         }}
@@ -1742,15 +1711,15 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-logr-popover-row:hover {{
-            background: alpha(var(--text-primary), 0.05);
+            background: alpha({text_primary}, 0.05);
         }}
 
         row.magma-logr-popover-row:focus {{
-            background: alpha(var(--accent), 0.10);
+            background: alpha({accent}, 0.10);
         }}
 
         .magma-logr-popover-item {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             padding: 5px 8px;
@@ -1762,9 +1731,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-logr-icon-btn {{
-            background: alpha(var(--text-primary), 0.02);
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.02);
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 999px;
             min-height: 24px;
             min-width: 24px;
@@ -1776,42 +1745,42 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-logr-icon-btn:hover {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.05);
-            border-color: alpha(var(--accent), 0.12);
+            background: alpha({accent}, 0.05);
+            border-color: alpha({accent}, 0.12);
         }}
 
         .magma-logr-controls {{
-            background: alpha(var(--text-primary), 0.012);
-            border: 1px solid alpha(var(--text-primary), 0.035);
+            background: alpha({text_primary}, 0.012);
+            border: 1px solid alpha({text_primary}, 0.035);
             border-radius: 999px;
             padding: 4px 6px;
             margin-bottom: 6px;
         }}
 
         .magma-logr-stream-shell {{
-            background: alpha(var(--text-primary), 0.018);
+            background: alpha({text_primary}, 0.018);
             border-radius: 999px;
             padding: 2px 10px 2px 8px;
             margin: 0 6px;
         }}
 
         .magma-logr-stream-icon {{
-            color: var(--sem-green);
+            color: {sem_green};
             -gtk-icon-size: 10px;
             opacity: 0.72;
         }}
 
         .magma-logr-stream-label {{
-            color: #B0E4B7;
+            color: {sem_green};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.82;
         }}
 
         entry.magma-logr-filter {{
-            background: alpha(var(--text-primary), 0.018);
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.018);
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 999px;
             padding: 6px 10px;
             margin-bottom: 6px;
@@ -1825,14 +1794,14 @@ pub(super) fn install_css(settings: &Settings) {
 
         entry.magma-logr-filter:focus {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.035);
-            border-color: alpha(var(--accent), 0.15);
+            background: alpha({accent}, 0.035);
+            border-color: alpha({accent}, 0.15);
             box-shadow: none;
             outline: none;
         }}
 
         .magma-logr-status {{
-            color: var(--sem-yellow);
+            color: {sem_yellow};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.68;
@@ -1840,7 +1809,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-logr-empty {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             opacity: 0.3;
@@ -1853,25 +1822,25 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-log-entry {{
             padding: 3px 8px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.015);
+            border-bottom: 1px solid alpha({text_primary}, 0.015);
             border-radius: 8px;
             transition: background 160ms ease, padding 160ms ease, border-color 160ms ease;
         }}
 
         .magma-log-entry:hover {{
-            background: alpha(var(--accent), 0.03);
-            border-bottom-color: alpha(var(--accent), 0.08);
+            background: alpha({accent}, 0.03);
+            border-bottom-color: alpha({accent}, 0.08);
         }}
 
         .magma-log-entry.expanded {{
-            background: alpha(var(--accent), 0.04);
+            background: alpha({accent}, 0.04);
             border-bottom-color: transparent;
             padding-top: 6px;
             transition: background 240ms cubic-bezier(0.4, 0, 0.2, 1);
         }}
 
         .magma-log-line-number {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.15;
@@ -1884,13 +1853,13 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-log-details {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.6;
             line-height: 1.4;
-            background: alpha(var(--text-primary), 0.015);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.015);
+            border: 1px solid alpha({text_primary}, 0.04);
             padding: 6px 10px;
             border-radius: 10px;
         }}
@@ -1908,12 +1877,12 @@ pub(super) fn install_css(settings: &Settings) {
         .log-body {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            color: var(--text-primary);
+            color: {text_primary};
             opacity: 0.7;
         }}
 
         .magma-log-fields {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.35;
@@ -1922,7 +1891,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-log-copy-btn {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 4px;
             padding: 2px;
@@ -1939,12 +1908,12 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-log-copy-btn:hover {{
             opacity: 1.0;
-            background: alpha(var(--text-primary), 0.08);
+            background: alpha({text_primary}, 0.08);
         }}
 
         button.magma-log-delete-btn {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 4px;
             padding: 2px;
@@ -1961,21 +1930,21 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-log-delete-btn:hover {{
             opacity: 1.0;
-            background: alpha(var(--accent), 0.15);
-            color: var(--sem-orange);
+            background: alpha({accent}, 0.15);
+            color: {sem_orange};
         }}
 
         /* Log Level Colors */
-        .log-error .log-level-dot {{ color: var(--sem-orange); background: rgba(255, 95, 86, 0.12); }}
-        .log-error .log-body {{ color: #FF8079; opacity: 0.9; }}
+        .log-error .log-level-dot {{ color: {sem_orange}; background: alpha({sem_orange}, 0.12); }}
+        .log-error .log-body {{ color: {sem_orange}; opacity: 0.9; }}
 
-        .log-warn .log-level-dot {{ color: var(--sem-yellow); background: rgba(255, 189, 46, 0.12); }}
-        .log-warn .log-body {{ color: #FFD272; opacity: 0.85; }}
+        .log-warn .log-level-dot {{ color: {sem_yellow}; background: alpha({sem_yellow}, 0.12); }}
+        .log-warn .log-body {{ color: {sem_yellow}; opacity: 0.85; }}
 
-        .log-info .log-level-dot {{ color: var(--sem-green); background: rgba(39, 201, 63, 0.12); }}
-        .log-info .log-body {{ color: #B0E4B7; opacity: 0.8; }}
+        .log-info .log-level-dot {{ color: {sem_green}; background: alpha({sem_green}, 0.12); }}
+        .log-info .log-body {{ color: {sem_green}; opacity: 0.8; }}
 
-        .log-debug .log-level-dot {{ color: var(--text-primary); opacity: 0.3; background: alpha(var(--text-primary), 0.04); }}
+        .log-debug .log-level-dot {{ color: {text_primary}; opacity: 0.3; background: alpha({text_primary}, 0.04); }}
         .log-debug .log-body {{ opacity: 0.4; }}
 
         /* Settings Page */
@@ -1989,16 +1958,15 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-setup-shell {{
             min-width: 760px;
-            background: alpha(var(--window-bg), 0.94);
-            border: 1px solid alpha(var(--text-primary), 0.08);
+            background: alpha({window_bg}, 0.94);
+            border: 1px solid alpha({text_primary}, 0.08);
             border-radius: 22px;
-            box-shadow: 0 28px 72px alpha(var(--text-primary), 0.15);
         }}
 
         .magma-setup-topbar {{
             padding: 12px 16px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.06);
-            background: alpha(var(--text-primary), 0.015);
+            border-bottom: 1px solid alpha({text_primary}, 0.06);
+            background: alpha({text_primary}, 0.015);
         }}
 
         .magma-setup-dot {{
@@ -2007,19 +1975,19 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-dot.red {{
-            color: rgba(255, 95, 86, 0.9);
+            color: alpha({sem_orange}, 0.9);
         }}
 
         .magma-setup-dot.amber {{
-            color: rgba(255, 189, 46, 0.9);
+            color: alpha({sem_yellow}, 0.9);
         }}
 
         .magma-setup-dot.green {{
-            color: rgba(39, 201, 63, 0.9);
+            color: alpha({sem_green}, 0.9);
         }}
 
         .magma-setup-topbar-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 700;
@@ -2032,7 +2000,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-eyebrow {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 700;
@@ -2045,7 +2013,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_13};
             font-weight: 700;
@@ -2054,7 +2022,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-copy {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             opacity: 0.58;
@@ -2064,7 +2032,7 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-setup-progress {{
             margin-bottom: 18px;
             padding-bottom: 6px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.05);
+            border-bottom: 1px solid alpha({text_primary}, 0.05);
         }}
 
         .magma-setup-step {{
@@ -2076,11 +2044,11 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-step.active {{
-            border-bottom-color: alpha(var(--accent), 0.72);
+            border-bottom-color: alpha({accent}, 0.72);
         }}
 
         .magma-setup-step-index {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 700;
@@ -2089,7 +2057,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-step-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -2115,7 +2083,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-page-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -2124,7 +2092,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-page-copy {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.42;
@@ -2133,14 +2101,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-setting {{
-            background: alpha(var(--text-primary), 0.018);
-            border: 1px solid alpha(var(--text-primary), 0.055);
+            background: alpha({text_primary}, 0.018);
+            border: 1px solid alpha({text_primary}, 0.055);
             border-radius: 14px;
             padding: 14px 16px;
         }}
 
         .magma-setup-setting-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -2148,7 +2116,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-setting-copy {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.4;
@@ -2156,7 +2124,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-value {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.62;
@@ -2170,7 +2138,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-setup-secondary {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 0;
             padding: 4px 0;
@@ -2189,7 +2157,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-setup-action {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 0;
             padding: 4px 0;
@@ -2212,7 +2180,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-nav-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -2220,7 +2188,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-setup-nav-icon {{
-            color: var(--text-primary);
+            color: {text_primary};
             opacity: inherit;
         }}
 
@@ -2231,7 +2199,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-settings-back {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 4px;
             min-height: 20px;
@@ -2248,7 +2216,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_12};
             font-weight: 700;
@@ -2270,7 +2238,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-nav-heading {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -2289,7 +2257,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-settings-nav-button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             border-radius: 0;
             padding: 6px 0;
@@ -2305,13 +2273,13 @@ pub(super) fn install_css(settings: &Settings) {
         button.magma-settings-nav-button:hover {{
             background: transparent;
             border-color: transparent;
-            color: alpha(var(--text-primary), 0.82);
+            color: alpha({text_primary}, 0.82);
             opacity: 0.78;
             transform: translateX(4px);
         }}
 
         button.magma-settings-nav-button.active {{
-            color: var(--accent);
+            color: {accent};
             opacity: 1.0;
             transform: translateX(6px);
         }}
@@ -2331,7 +2299,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-section {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -2339,14 +2307,14 @@ pub(super) fn install_css(settings: &Settings) {
             letter-spacing: 0.14em;
             padding: 32px 0 8px 0;
             opacity: 0.82;
-            border-bottom: 1px solid alpha(var(--accent), 0.12);
+            border-bottom: 1px solid alpha({accent}, 0.12);
             margin-bottom: 12px;
         }}
 
         .magma-settings-row {{
             background: transparent;
             border: none;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.025);
+            border-bottom: 1px solid alpha({text_primary}, 0.025);
             padding: 12px 0;
             margin-bottom: 2px;
             transition: opacity 160ms ease;
@@ -2358,7 +2326,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
@@ -2366,7 +2334,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-copy {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             opacity: 0.42;
@@ -2375,14 +2343,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-value {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             opacity: 0.6;
         }}
 
         .magma-settings-about-copy {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             line-height: 1.6;
@@ -2390,9 +2358,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         entry.magma-settings-entry {{
-            background: alpha(var(--text-primary), 0.015);
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.015);
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 8px;
             padding: 6px 10px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -2403,14 +2371,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         entry.magma-settings-entry:focus {{
-            background: alpha(var(--text-primary), 0.025);
-            border-color: var(--accent);
+            background: alpha({text_primary}, 0.025);
+            border-color: {accent};
         }}
 
         spinbutton.magma-settings-spin {{
-            background: alpha(var(--text-primary), 0.015);
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.015);
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 8px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
@@ -2424,7 +2392,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         spinbutton.magma-settings-spin > button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             opacity: 0.4;
             transition: opacity 140ms ease;
@@ -2436,14 +2404,14 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-settings-dropdown {{
             background: transparent;
-            border: 1px solid var(--border-strong);
+            border: 1px solid {border};
             border-radius: 8px;
             min-width: 140px;
         }}
 
         .magma-settings-dropdown > button {{
             background: transparent;
-            color: var(--text-primary);
+            color: {text_primary};
             border: none;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
@@ -2453,8 +2421,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         popover > contents {{
-            background: var(--surface-base);
-            border: 1px solid var(--border-strong);
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 12px;
             padding: 8px;
             box-shadow: none;
@@ -2471,18 +2439,18 @@ pub(super) fn install_css(settings: &Settings) {
         popover listview > row:selected,
         popover list > row:hover,
         popover list > row:selected {{
-            background: var(--window-bg);
+            background: {window_bg};
         }}
 
         popover label {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            color: var(--text-primary);
+            color: {text_primary};
         }}
 
         switch.magma-settings-switch {{
-            background: alpha(var(--text-primary), 0.03);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.03);
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 12px;
             min-width: 42px;
             min-height: 22px;
@@ -2491,8 +2459,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         switch.magma-settings-switch:checked {{
-            background: alpha(var(--accent), 0.08);
-            border-color: alpha(var(--accent), 0.18);
+            background: alpha({accent}, 0.08);
+            border-color: alpha({accent}, 0.18);
         }}
 
         switch.magma-settings-switch > image {{
@@ -2500,7 +2468,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         switch.magma-settings-switch slider {{
-            background: alpha(var(--text-primary), 0.22);
+            background: alpha({text_primary}, 0.22);
             border: none;
             border-radius: 50%;
             min-width: 14px;
@@ -2510,14 +2478,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         switch.magma-settings-switch:checked slider {{
-            background: var(--accent);
+            background: {accent};
             box-shadow: none;
         }}
 
         button.magma-settings-link {{
             background: transparent;
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.04);
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.04);
             border-radius: 10px;
             padding: 6px 14px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -2528,9 +2496,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-settings-link:hover {{
-            background: alpha(var(--text-primary), 0.02);
+            background: alpha({text_primary}, 0.02);
             opacity: 1.0;
-            border-color: alpha(var(--text-primary), 0.1);
+            border-color: alpha({text_primary}, 0.1);
         }}
 
         .magma-settings-about-page {{
@@ -2541,7 +2509,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-about-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_22};
             font-weight: 700;
@@ -2551,7 +2519,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-about-name {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_12};
             font-weight: 700;
@@ -2561,7 +2529,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-settings-about-meta {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             opacity: 0.38;
@@ -2569,7 +2537,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-about-section-header {{
-            color: var(--accent);
+            color: {accent};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 700;
@@ -2583,7 +2551,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-about-category-label {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
@@ -2592,7 +2560,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-about-license-text {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             opacity: 0.35;
@@ -2601,8 +2569,8 @@ pub(super) fn install_css(settings: &Settings) {
 
         button.magma-settings-save {{
             background: transparent;
-            color: var(--accent);
-            border: 1px solid var(--accent);
+            color: {accent};
+            border: 1px solid {accent};
             border-radius: 4px;
             padding: 6px 24px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -2613,7 +2581,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         button.magma-settings-save:hover {{
-            background: alpha(var(--accent), 0.10);
+            background: alpha({accent}, 0.10);
         }}
 
         /* ─── Git Pane ─────────────────────────────────────────── */
@@ -2630,32 +2598,32 @@ pub(super) fn install_css(settings: &Settings) {
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_13};
             font-weight: 700;
-            color: var(--text-primary);
+            color: {text_primary};
         }}
 
         .magma-git-branch-label {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
-            color: var(--accent);
+            color: {accent};
             padding: 0 8px;
         }}
 
         .magma-git-ahead-behind {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            color: alpha(var(--text-primary), 0.5);
+            color: alpha({text_primary}, 0.5);
         }}
 
         .magma-git-remote-bar {{
             padding: 4px 0;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
             margin-bottom: 4px;
         }}
 
         .magma-git-remote-button {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.6);
-            border: 1px solid alpha(var(--text-primary), 0.08);
+            color: alpha({text_primary}, 0.6);
+            border: 1px solid alpha({text_primary}, 0.08);
             border-radius: 4px;
             padding: 2px 10px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -2665,13 +2633,13 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-remote-button:hover {{
-            color: var(--text-primary);
-            border-color: alpha(var(--text-primary), 0.15);
+            color: {text_primary};
+            border-color: alpha({text_primary}, 0.15);
         }}
 
         .magma-git-icon-btn {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.5);
+            color: alpha({text_primary}, 0.5);
             border: none;
             border-radius: 4px;
             padding: 2px 6px;
@@ -2681,19 +2649,19 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-icon-btn:hover {{
-            color: var(--text-primary);
-            background: alpha(var(--text-primary), 0.06);
+            color: {text_primary};
+            background: alpha({text_primary}, 0.06);
         }}
 
         .magma-git-nav {{
             padding: 4px 0;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
             margin-bottom: 4px;
         }}
 
         .magma-git-nav-button {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.4);
+            color: alpha({text_primary}, 0.4);
             border: none;
             border-radius: 4px;
             padding: 3px 8px;
@@ -2705,34 +2673,34 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-nav-button:hover {{
-            color: alpha(var(--text-primary), 0.7);
+            color: alpha({text_primary}, 0.7);
         }}
 
         .magma-git-nav-button.active {{
-            color: var(--accent);
-            background: alpha(var(--accent), 0.08);
+            color: {accent};
+            background: alpha({accent}, 0.08);
         }}
 
         .magma-git-status {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
             padding: 4px 0;
-            border-top: 1px solid var(--border-strong);
+            border-top: 1px solid {border};
             margin-top: 4px;
             transition: color 200ms ease;
         }}
 
         .magma-git-status-ok {{
-            color: #388C50;
+            color: {sem_green};
         }}
 
         .magma-git-status-err {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         .magma-git-status-busy {{
-            color: #C89A1E;
+            color: {sem_yellow};
         }}
 
         /* ─── Staging ──────────────────────────────────────────── */
@@ -2743,16 +2711,16 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-commit-box {{
             padding: 0 0 8px 0;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
             margin-bottom: 4px;
         }}
 
         .magma-git-commit-entry {{
-            background: alpha(var(--text-primary), 0.03);
-            color: var(--text-primary);
+            background: alpha({text_primary}, 0.03);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
         }}
 
@@ -2761,8 +2729,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-commit-button {{
-            background: var(--accent);
-            color: #0b0b0b;
+            background: {accent};
+            color: {text_dim};
             border: none;
             border-radius: 4px;
             padding: 3px 14px;
@@ -2774,18 +2742,18 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-commit-button:hover {{
-            background: #ff6666;
+            background: {sem_orange};
         }}
 
         .magma-git-commit-button:disabled {{
-            background: alpha(var(--accent), 0.3);
-            color: rgba(11, 11, 11, 0.5);
+            background: alpha({accent}, 0.3);
+            color: alpha({window_bg}, 0.5);
         }}
 
         .magma-git-action-btn {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.5);
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            color: alpha({text_primary}, 0.5);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
             padding: 2px 8px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -2795,8 +2763,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-action-btn:hover {{
-            color: var(--text-primary);
-            border-color: alpha(var(--text-primary), 0.12);
+            color: {text_primary};
+            border-color: alpha({text_primary}, 0.12);
         }}
 
         .magma-git-file-section {{
@@ -2809,7 +2777,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-section-arrow {{
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.3);
+            color: alpha({text_primary}, 0.3);
             min-width: 12px;
         }}
 
@@ -2817,14 +2785,14 @@ pub(super) fn install_css(settings: &Settings) {
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 600;
-            color: alpha(var(--text-primary), 0.5);
+            color: alpha({text_primary}, 0.5);
             text-transform: uppercase;
         }}
 
         .magma-git-section-count {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.3);
+            color: alpha({text_primary}, 0.3);
         }}
 
         .magma-git-file-list {{
@@ -2837,11 +2805,11 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-file-row {{
             padding: 3px 4px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.02);
+            border-bottom: 1px solid alpha({text_primary}, 0.02);
         }}
 
         .magma-git-file-row:hover {{
-            background: alpha(var(--text-primary), 0.03);
+            background: alpha({text_primary}, 0.03);
         }}
 
         .magma-git-file-status {{
@@ -2853,49 +2821,49 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-file-status.status-added {{
-            color: #388C50;
+            color: {sem_green};
         }}
 
         .magma-git-file-status.status-modified {{
-            color: #C89A1E;
+            color: {sem_yellow};
         }}
 
         .magma-git-file-status.status-deleted {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         .magma-git-file-status.status-other {{
-            color: alpha(var(--text-primary), 0.4);
+            color: alpha({text_primary}, 0.4);
         }}
 
         .magma-git-file-status.status-renamed {{
-            color: #7AA2F7;
+            color: {sem_blue};
         }}
 
         .magma-git-file-status.status-conflict {{
-            color: var(--accent);
+            color: {accent};
             font-weight: bold;
         }}
 
         .magma-git-conflict-row {{
-            background: alpha(var(--accent), 0.08);
+            background: alpha({accent}, 0.08);
         }}
 
         .magma-git-conflict-hint {{
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
             font-style: italic;
         }}
 
         .magma-git-file-name {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: var(--text-primary);
+            color: {text_primary};
         }}
 
         .magma-git-file-action {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.4);
+            color: alpha({text_primary}, 0.4);
             border: none;
             border-radius: 3px;
             padding: 1px 6px;
@@ -2907,13 +2875,13 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-file-action:hover {{
-            color: var(--text-primary);
-            background: alpha(var(--text-primary), 0.06);
+            color: {text_primary};
+            background: alpha({text_primary}, 0.06);
         }}
 
         .magma-git-file-discard {{
             background: transparent;
-            color: alpha(var(--accent), 0.5);
+            color: alpha({accent}, 0.5);
             border: none;
             border-radius: 3px;
             padding: 1px 4px;
@@ -2924,8 +2892,8 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-file-discard:hover {{
-            color: var(--accent);
-            background: alpha(var(--accent), 0.1);
+            color: {accent};
+            background: alpha({accent}, 0.1);
         }}
 
         /* ─── Diff ─────────────────────────────────────────────── */
@@ -2936,13 +2904,13 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-hunk-header {{
             padding: 2px 4px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.04);
+            border-bottom: 1px solid alpha({text_primary}, 0.04);
         }}
 
         .magma-git-hunk-header-text {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
         }}
 
         .magma-git-diff-line {{
@@ -2952,21 +2920,21 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-line-added {{
-            color: #388C50;
-            background: rgba(56, 140, 80, 0.08);
+            color: {sem_green};
+            background: alpha({sem_green}, 0.08);
         }}
 
         .magma-git-line-removed {{
-            color: var(--accent);
-            background: alpha(var(--accent), 0.08);
+            color: {accent};
+            background: alpha({accent}, 0.08);
         }}
 
         .magma-git-line-context {{
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
         }}
 
         .magma-git-line-header {{
-            color: alpha(var(--text-primary), 0.25);
+            color: alpha({text_primary}, 0.25);
         }}
 
         .magma-git-diff-stat {{
@@ -2976,12 +2944,12 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-git-diff-stat-line {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.45);
+            color: alpha({text_primary}, 0.45);
         }}
 
         .magma-git-stage-hunk-btn {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.4);
+            color: alpha({text_primary}, 0.4);
             border: none;
             padding: 0 4px;
             font-size: 8px;
@@ -3006,73 +2974,73 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-commit-row {{
             padding: 4px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.02);
+            border-bottom: 1px solid alpha({text_primary}, 0.02);
         }}
 
         .magma-git-commit-row:hover {{
-            background: alpha(var(--text-primary), 0.03);
+            background: alpha({text_primary}, 0.03);
         }}
 
         .magma-git-graph-art {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: var(--accent);
+            color: {accent};
             min-width: 20px;
         }}
 
         .magma-git-commit-hash {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #C89A1E;
+            color: {sem_yellow};
             min-width: 50px;
         }}
 
         .magma-git-commit-msg {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: var(--text-primary);
+            color: {text_primary};
         }}
 
         .magma-git-commit-author {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: 8px;
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
         }}
 
         .magma-git-commit-date {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: 8px;
-            color: alpha(var(--text-primary), 0.25);
+            color: alpha({text_primary}, 0.25);
         }}
 
         .magma-git-ref-badge {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: 8px;
-            color: alpha(var(--text-primary), 0.6);
-            background: alpha(var(--text-primary), 0.06);
+            color: alpha({text_primary}, 0.6);
+            background: alpha({text_primary}, 0.06);
             border-radius: 3px;
             padding: 0 4px;
         }}
 
         .magma-git-ref-badge.ref-head {{
-            color: var(--accent);
-            background: alpha(var(--accent), 0.1);
+            color: {accent};
+            background: alpha({accent}, 0.1);
         }}
 
         .magma-git-ref-badge.ref-tag {{
-            color: #C89A1E;
-            background: rgba(200, 154, 30, 0.1);
+            color: {sem_yellow};
+            background: alpha({sem_yellow}, 0.1);
         }}
 
         .magma-git-commit-detail {{
             padding: 4px 0 4px 16px;
-            border-top: 1px solid alpha(var(--text-primary), 0.04);
+            border-top: 1px solid alpha({text_primary}, 0.04);
         }}
 
         .magma-git-load-more {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.4);
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            color: alpha({text_primary}, 0.4);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
             padding: 4px;
             margin: 4px;
@@ -3082,7 +3050,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-load-more:hover {{
-            color: var(--text-primary);
+            color: {text_primary};
         }}
 
         /* ─── Branches ─────────────────────────────────────────── */
@@ -3093,16 +3061,16 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-branch-create {{
             padding: 4px 0;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
             margin-bottom: 4px;
         }}
 
         .magma-git-branch-entry {{
-            background: alpha(var(--text-primary), 0.03);
-            color: var(--text-primary);
+            background: alpha({text_primary}, 0.03);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
             padding: 3px 8px;
         }}
@@ -3113,37 +3081,37 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-branch-row {{
             padding: 4px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.02);
+            border-bottom: 1px solid alpha({text_primary}, 0.02);
         }}
 
         .magma-git-branch-row:hover {{
-            background: alpha(var(--text-primary), 0.03);
+            background: alpha({text_primary}, 0.03);
         }}
 
         .magma-git-branch-current {{
-            background: alpha(var(--accent), 0.04);
+            background: alpha({accent}, 0.04);
         }}
 
         .magma-git-branch-indicator {{
             font-size: {font_9};
-            color: var(--accent);
+            color: {accent};
             min-width: 12px;
         }}
 
         .magma-git-branch-name {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            color: var(--text-primary);
+            color: {text_primary};
         }}
 
         .magma-git-branch-commit {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: 8px;
-            color: alpha(var(--text-primary), 0.3);
+            color: alpha({text_primary}, 0.3);
         }}
 
         .magma-git-branch-remote .magma-git-branch-name {{
-            color: alpha(var(--text-primary), 0.45);
+            color: alpha({text_primary}, 0.45);
         }}
 
         /* ─── Stash ────────────────────────────────────────────── */
@@ -3154,16 +3122,16 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-stash-push {{
             padding: 4px 0;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
             margin-bottom: 4px;
         }}
 
         .magma-git-stash-entry {{
-            background: alpha(var(--text-primary), 0.03);
-            color: var(--text-primary);
+            background: alpha({text_primary}, 0.03);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
             padding: 3px 8px;
         }}
@@ -3178,24 +3146,24 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-stash-row {{
             padding: 4px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.02);
+            border-bottom: 1px solid alpha({text_primary}, 0.02);
         }}
 
         .magma-git-stash-row:hover {{
-            background: alpha(var(--text-primary), 0.03);
+            background: alpha({text_primary}, 0.03);
         }}
 
         .magma-git-stash-index {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #C89A1E;
+            color: {sem_yellow};
             min-width: 24px;
         }}
 
         .magma-git-stash-msg {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: var(--text-primary);
+            color: {text_primary};
         }}
 
         /* ─── Search ───────────────────────────────────────────── */
@@ -3206,7 +3174,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-git-search-bar {{
             padding: 4px 0;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
             margin-bottom: 4px;
         }}
 
@@ -3215,11 +3183,11 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-search-entry {{
-            background: alpha(var(--text-primary), 0.03);
-            color: var(--text-primary);
+            background: alpha({text_primary}, 0.03);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
             padding: 3px 8px;
         }}
@@ -3227,7 +3195,7 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-git-search-count {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
             padding: 2px 0;
         }}
 
@@ -3243,12 +3211,12 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-agent-header {{
             padding: 4px 0 8px 0;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
             margin-bottom: 4px;
         }}
 
         .magma-agent-title {{
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_13};
             font-weight: 700;
@@ -3257,17 +3225,17 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-badge {{
-            color: alpha(var(--text-primary), 0.45);
+            color: alpha({text_primary}, 0.45);
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            background: alpha(var(--text-primary), 0.04);
+            background: alpha({text_primary}, 0.04);
             border-radius: 3px;
             padding: 0 4px;
         }}
 
         .magma-agent-badge.is-live {{
-            color: var(--accent);
-            background: alpha(var(--accent), 0.08);
+            color: {accent};
+            background: alpha({accent}, 0.08);
         }}
 
         .magma-agent-canvas {{
@@ -3284,30 +3252,30 @@ pub(super) fn install_css(settings: &Settings) {
             min-height: 38px;
             margin-top: 8px;
             padding: 6px 8px;
-            border-top: 1px solid var(--border-strong);
-            background: alpha(var(--text-primary), 0.02);
+            border-top: 1px solid {border};
+            background: alpha({text_primary}, 0.02);
         }}
 
         .magma-agent-strip-status {{
             min-width: 72px;
-            color: var(--text-primary);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
         }}
 
         .magma-agent-strip-message {{
-            color: alpha(var(--text-primary), 0.58);
+            color: alpha({text_primary}, 0.58);
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
         }}
 
         .magma-agent-strip-toggle,
         .magma-agent-strip-action {{
-            background: alpha(var(--text-primary), 0.03);
-            border: 1px solid var(--border-strong);
+            background: alpha({text_primary}, 0.03);
+            border: 1px solid {border};
             border-radius: 6px;
-            color: alpha(var(--text-primary), 0.78);
+            color: alpha({text_primary}, 0.78);
             padding: 4px 9px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
@@ -3315,21 +3283,21 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-agent-strip-toggle:hover,
         .magma-agent-strip-action:hover {{
-            background: alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.06);
         }}
 
         .magma-agent-prompt {{
             margin-top: 10px;
             padding-top: 8px;
-            border-top: 1px solid var(--border-strong);
+            border-top: 1px solid {border};
         }}
 
         .magma-agent-prompt-input {{
             min-height: 34px;
-            background: alpha(var(--text-primary), 0.03);
-            border: 1px solid var(--border-strong);
+            background: alpha({text_primary}, 0.03);
+            border: 1px solid {border};
             border-radius: 6px;
-            color: var(--text-primary);
+            color: {text_primary};
             padding: 5px 9px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
@@ -3337,17 +3305,17 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-agent-prompt-send {{
             min-height: 34px;
-            background: alpha(var(--text-primary), 0.03);
-            border: 1px solid var(--border-strong);
+            background: alpha({text_primary}, 0.03);
+            border: 1px solid {border};
             border-radius: 6px;
-            color: alpha(var(--text-primary), 0.78);
+            color: alpha({text_primary}, 0.78);
             padding: 5px 11px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
         }}
 
         .magma-agent-prompt-send:hover {{
-            background: alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.06);
         }}
 
         /* ─── Patch ───────────────────────────────────────────── */
@@ -3361,7 +3329,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-patch-queue {{
-            border-right: 1px solid var(--border-strong);
+            border-right: 1px solid {border};
         }}
 
         .magma-git-patch-list {{
@@ -3372,22 +3340,22 @@ pub(super) fn install_css(settings: &Settings) {
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 700;
-            color: alpha(var(--text-primary), 0.5);
+            color: alpha({text_primary}, 0.5);
             padding: 6px 4px 2px 4px;
-            background: alpha(var(--text-primary), 0.02);
+            background: alpha({text_primary}, 0.02);
         }}
 
         .magma-git-patch-hunk-row {{
             padding: 3px 4px 3px 12px;
-            border-bottom: 1px solid alpha(var(--text-primary), 0.02);
+            border-bottom: 1px solid alpha({text_primary}, 0.02);
         }}
 
         .magma-git-patch-hunk-row:hover {{
-            background: alpha(var(--text-primary), 0.03);
+            background: alpha({text_primary}, 0.03);
         }}
 
         .magma-git-patch-hunk-row.selected {{
-            background: alpha(var(--accent), 0.08);
+            background: alpha({accent}, 0.08);
         }}
 
         .magma-git-patch-hunk-status {{
@@ -3397,25 +3365,25 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-patch-hunk-status.status-unreviewed {{
-            color: alpha(var(--text-primary), 0.2);
+            color: alpha({text_primary}, 0.2);
         }}
 
         .magma-git-patch-hunk-status.status-reviewed {{
-            color: #388C50;
+            color: {sem_green};
         }}
 
         .magma-git-patch-hunk-status.status-risky {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         .magma-git-patch-hunk-status.status-followup {{
-            color: #C89A1E;
+            color: {sem_yellow};
         }}
 
         .magma-git-patch-hunk-label {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.5);
+            color: alpha({text_primary}, 0.5);
         }}
 
         .magma-git-patch-detail-root {{
@@ -3430,7 +3398,7 @@ pub(super) fn install_css(settings: &Settings) {
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
-            color: var(--text-primary);
+            color: {text_primary};
             padding: 4px 0;
         }}
 
@@ -3438,35 +3406,35 @@ pub(super) fn install_css(settings: &Settings) {
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 600;
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
             padding: 4px 4px 2px 4px;
             text-transform: uppercase;
-            border-top: 1px solid var(--border-strong);
+            border-top: 1px solid {border};
         }}
 
         .magma-git-patch-annotation-frame {{
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
             margin: 0 4px 4px 4px;
             min-height: 48px;
         }}
 
         .magma-git-patch-annotation {{
-            background: alpha(var(--text-primary), 0.03);
-            color: var(--text-primary);
+            background: alpha({text_primary}, 0.03);
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
         }}
 
         .magma-git-patch-status-row {{
             padding: 4px;
-            border-top: 1px solid var(--border-strong);
+            border-top: 1px solid {border};
         }}
 
         .magma-git-patch-mark-btn {{
             background: transparent;
-            color: alpha(var(--text-primary), 0.4);
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            color: alpha({text_primary}, 0.4);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 4px;
             padding: 2px 8px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3476,34 +3444,34 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-git-patch-mark-btn:hover {{
-            color: var(--text-primary);
-            border-color: alpha(var(--text-primary), 0.12);
+            color: {text_primary};
+            border-color: alpha({text_primary}, 0.12);
         }}
 
         .magma-git-patch-mark-btn.mark-reviewed:hover {{
-            color: #388C50;
-            border-color: rgba(56, 140, 80, 0.3);
+            color: {sem_green};
+            border-color: alpha({sem_green}, 0.3);
         }}
 
         .magma-git-patch-mark-btn.mark-risky:hover {{
-            color: var(--accent);
-            border-color: alpha(var(--accent), 0.3);
+            color: {accent};
+            border-color: alpha({accent}, 0.3);
         }}
 
         .magma-git-patch-mark-btn.mark-followup:hover {{
-            color: #C89A1E;
-            border-color: rgba(200, 154, 30, 0.3);
+            color: {sem_yellow};
+            border-color: alpha({sem_yellow}, 0.3);
         }}
 
         .magma-git-patch-actions {{
             padding: 4px;
-            border-top: 1px solid var(--border-strong);
+            border-top: 1px solid {border};
         }}
 
         .magma-git-patch-draft-label {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
         }}
 
         /* ─── Shared ───────────────────────────────────────────── */
@@ -3511,14 +3479,14 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-git-empty {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            color: alpha(var(--text-primary), 0.25);
+            color: alpha({text_primary}, 0.25);
             padding: 16px 8px;
         }}
 
         .magma-git-error {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
-            color: var(--accent);
+            color: {accent};
             padding: 8px;
         }}
 
@@ -3531,14 +3499,14 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-agent-header {{
             padding: 10px 10px 8px 10px;
-            border-bottom: 1px solid var(--border-strong);
+            border-bottom: 1px solid {border};
         }}
 
         .magma-agent-title {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
-            color: var(--text-primary);
+            color: {text_primary};
             text-transform: uppercase;
             letter-spacing: 1.2px;
         }}
@@ -3546,13 +3514,13 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-agent-status {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.38);
+            color: alpha({text_primary}, 0.38);
         }}
 
         .magma-agent-log-scroll {{
             background: transparent;
-            border-top: 1px solid alpha(var(--text-primary), 0.05);
-            border-bottom: 1px solid alpha(var(--text-primary), 0.05);
+            border-top: 1px solid alpha({text_primary}, 0.05);
+            border-bottom: 1px solid alpha({text_primary}, 0.05);
         }}
 
         .magma-agent-log {{
@@ -3574,19 +3542,19 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-role-user {{
-            color: var(--accent);
+            color: {accent};
         }}
 
         .magma-agent-role-agent {{
-            color: #CEB8EF;
+            color: {sem_magenta};
         }}
 
         .magma-agent-role-system {{
-            color: alpha(var(--text-primary), 0.3);
+            color: alpha({text_primary}, 0.3);
         }}
 
         .magma-agent-role-action {{
-            color: #81C784;
+            color: {sem_green};
         }}
 
         .magma-agent-log-text {{
@@ -3596,34 +3564,34 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-text-user {{
-            color: alpha(var(--text-primary), 0.86);
+            color: alpha({text_primary}, 0.86);
         }}
 
         .magma-agent-text-agent {{
-            color: #CEB8EF;
+            color: {sem_magenta};
         }}
 
         .magma-agent-text-system {{
-            color: alpha(var(--text-primary), 0.35);
+            color: alpha({text_primary}, 0.35);
         }}
 
         .magma-agent-text-action {{
-            color: #A5D6A7;
+            color: {sem_green};
         }}
 
         .magma-agent-console {{
             margin: 10px;
             padding: 10px;
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 8px;
-            background: alpha(var(--text-primary), 0.02);
+            background: alpha({text_primary}, 0.02);
         }}
 
         .magma-agent-console-title {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
-            color: var(--text-primary);
+            color: {text_primary};
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
@@ -3631,30 +3599,30 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-agent-console-body {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.5);
+            color: alpha({text_primary}, 0.5);
             line-height: 1.45;
         }}
 
         .magma-agent-pending {{
             padding: 10px;
             margin: 10px 10px 0 10px;
-            border: 1px solid alpha(var(--accent), 0.14);
+            border: 1px solid alpha({accent}, 0.14);
             border-radius: 8px;
-            background: alpha(var(--accent), 0.04);
+            background: alpha({accent}, 0.04);
         }}
 
         .magma-agent-pending-label {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
             font-weight: 600;
-            color: var(--accent);
+            color: {accent};
             margin-bottom: 4px;
         }}
 
         .magma-agent-pending-text {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: alpha(var(--text-primary), 0.65);
+            color: alpha({text_primary}, 0.65);
             margin-bottom: 6px;
         }}
 
@@ -3663,9 +3631,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-confirm {{
-            background: alpha(var(--accent), 0.1);
-            color: var(--accent);
-            border: 1px solid alpha(var(--accent), 0.16);
+            background: alpha({accent}, 0.1);
+            color: {accent};
+            border: 1px solid alpha({accent}, 0.16);
             border-radius: 6px;
             padding: 4px 16px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3676,14 +3644,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-confirm:hover {{
-            background: alpha(var(--accent), 0.16);
-            color: #FF8D8D;
+            background: alpha({accent}, 0.16);
+            color: {sem_orange};
         }}
 
         .magma-agent-reject {{
-            background: alpha(var(--text-primary), 0.03);
-            color: alpha(var(--text-primary), 0.40);
-            border: 1px solid alpha(var(--text-primary), 0.06);
+            background: alpha({text_primary}, 0.03);
+            color: alpha({text_primary}, 0.40);
+            border: 1px solid alpha({text_primary}, 0.06);
             border-radius: 6px;
             padding: 4px 16px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3693,29 +3661,29 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-reject:hover {{
-            background: alpha(var(--accent), 0.06);
-            color: rgba(255, 130, 130, 0.70);
-            border-color: alpha(var(--accent), 0.12);
+            background: alpha({accent}, 0.06);
+            color: alpha({sem_orange}, 0.70);
+            border-color: alpha({accent}, 0.12);
         }}
 
         .magma-agent-prompt {{
             padding: 10px;
-            border-top: 1px solid alpha(var(--text-primary), 0.04);
-            background: alpha(var(--text-primary), 0.04);
+            border-top: 1px solid alpha({text_primary}, 0.04);
+            background: alpha({text_primary}, 0.04);
         }}
 
         .magma-agent-prompt-glyph {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
-            color: var(--accent);
+            color: {accent};
             padding: 0 2px 0 0;
         }}
 
         .magma-agent-prompt-input {{
-            background: var(--surface-base);
-            color: var(--text-primary);
-            border: 1px solid alpha(var(--text-primary), 0.07);
+            background: {surface};
+            color: {text_primary};
+            border: 1px solid alpha({text_primary}, 0.07);
             border-radius: 6px;
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
@@ -3725,14 +3693,14 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-prompt-input:focus {{
-            border-color: alpha(var(--accent), 0.25);
-            background: alpha(var(--window-bg), 0.88);
+            border-color: alpha({accent}, 0.25);
+            background: alpha({window_bg}, 0.88);
         }}
 
         .magma-agent-prompt-send {{
-            background: alpha(var(--text-primary), 0.04);
-            color: alpha(var(--text-primary), 0.72);
-            border: 1px solid alpha(var(--text-primary), 0.08);
+            background: alpha({text_primary}, 0.04);
+            color: alpha({text_primary}, 0.72);
+            border: 1px solid alpha({text_primary}, 0.08);
             border-radius: 6px;
             padding: 4px 14px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3743,22 +3711,22 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-agent-prompt-send:hover {{
-            background: alpha(var(--text-primary), 0.08);
-            color: var(--text-primary);
+            background: alpha({text_primary}, 0.08);
+            color: {text_primary};
         }}
 
         /* ─── Notes pane ─────────────────────────────────────── */
 
         .magma-notes-pane {{
-            background: #000000;
-            border-left: 1px solid #1A1A1A;
+            background: {window_bg};
+            border-left: 1px solid {border};
             min-width: 392px;
         }}
 
         .magma-notes-header {{
             padding: 16px 14px;
-            border-bottom: 1px solid #1A1A1A;
-            background: #000000;
+            border-bottom: 1px solid {border};
+            background: {window_bg};
         }}
 
         .magma-notes-title-stack {{
@@ -3769,7 +3737,7 @@ pub(super) fn install_css(settings: &Settings) {
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_11};
             font-weight: 800;
-            color: #F3F3EF;
+            color: {text_primary};
             text-transform: uppercase;
             letter-spacing: 1.2px;
         }}
@@ -3777,24 +3745,24 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-notes-subtitle {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #6B6B66;
+            color: {text_dim};
             margin-top: 2px;
         }}
 
         .magma-notes-count {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #BABAB3;
-            background: #0A0A0A;
-            border: 1px solid #1A1A1A;
+            color: {text_secondary};
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 999px;
             padding: 4px 10px;
         }}
 
         .magma-notes-new {{
-            background: #0A0A0A;
-            color: #F3F3EF;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            color: {text_primary};
+            border: 1px solid {border};
             border-radius: 6px;
             padding: 6px 12px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3808,15 +3776,15 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-new:hover {{
-            background: #151515;
-            border-color: #252525;
-            color: #FFFFFF;
+            background: alpha({text_primary}, 0.07);
+            border-color: alpha({text_primary}, 0.15);
+            color: {text_primary};
         }}
 
         .magma-notes-board {{
-            background: #0A0A0A;
-            color: #F3F3EF;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            color: {text_primary};
+            border: 1px solid {border};
             border-radius: 6px;
             padding: 6px 12px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3830,28 +3798,28 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-board:hover {{
-            background: #151515;
-            border-color: #252525;
-            color: #FFFFFF;
+            background: alpha({text_primary}, 0.07);
+            border-color: alpha({text_primary}, 0.15);
+            color: {text_primary};
         }}
 
         .magma-notes-recovery {{
-            background: #0A0A0A;
-            border-bottom: 1px solid #1A1A1A;
+            background: {surface};
+            border-bottom: 1px solid {border};
             padding: 10px 14px;
         }}
 
         .magma-notes-recovery-label {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #BABAB3;
+            color: {text_secondary};
         }}
 
         .magma-notes-recovery-continue,
         .magma-notes-recovery-discard {{
-            background: #0A0A0A;
-            color: #F3F3EF;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            color: {text_primary};
+            border: 1px solid {border};
             border-radius: 999px;
             padding: 4px 10px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -3864,15 +3832,15 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-notes-recovery-continue:hover,
         .magma-notes-recovery-discard:hover {{
-            background: #151515;
-            border-color: #252525;
-            color: #FFFFFF;
+            background: alpha({text_primary}, 0.07);
+            border-color: alpha({text_primary}, 0.15);
+            color: {text_primary};
         }}
 
         .magma-notes-search {{
-            background: #0A0A0A;
-            color: #F3F3EF;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            color: {text_primary};
+            border: 1px solid {border};
             border-radius: 8px;
             margin: 12px 14px 10px 14px;
             padding: 10px 12px;
@@ -3884,19 +3852,19 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-search:focus {{
-            border-color: #252525;
-            background: #0A0A0A;
+            border-color: alpha({text_primary}, 0.15);
+            background: {surface};
         }}
 
         .magma-notes-list-area,
         .magma-notes-editor-area {{
-            background: #000000;
+            background: {window_bg};
         }}
 
         .magma-notes-list-scroll,
         .magma-notes-editor-scroll,
         .magma-notes-media-scroll {{
-            background: #000000;
+            background: {window_bg};
             border: none;
         }}
 
@@ -3912,21 +3880,21 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-notes-list-empty {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #6B6B66;
+            color: {text_dim};
             padding: 20px 14px;
         }}
 
         .magma-notes-tile {{
-            background: #0A0A0A;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 10px;
             padding: 12px;
             transition: all 120ms ease;
         }}
 
         .magma-notes-tile:hover {{
-            background: #0F0F0F;
-            border-color: #252525;
+            background: alpha({text_primary}, 0.04);
+            border-color: alpha({text_primary}, 0.15);
         }}
 
         .magma-notes-tile-compact {{
@@ -3952,7 +3920,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-notes-tile-menu {{
             background: transparent;
-            color: #F3F3EF;
+            color: {text_primary};
             border: none;
             box-shadow: none;
             padding: 0;
@@ -3962,7 +3930,7 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-tile-menu:hover {{
-            color: #FFFFFF;
+            color: {text_primary};
         }}
 
         .magma-notes-menu-popover {{
@@ -3971,15 +3939,15 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-notes-menu-panel,
         .magma-notes-emoji-panel {{
-            background: #0A0A0A;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 8px;
             padding: 8px;
         }}
 
         .magma-notes-menu-item {{
             background: transparent;
-            color: #F3F3EF;
+            color: {text_primary};
             border: 1px solid transparent;
             border-radius: 6px;
             box-shadow: none;
@@ -3992,32 +3960,32 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-menu-item:hover {{
-            background: #151515;
-            border-color: #252525;
-            color: #FFFFFF;
+            background: alpha({text_primary}, 0.07);
+            border-color: alpha({text_primary}, 0.15);
+            color: {text_primary};
         }}
 
         .magma-notes-menu-delete {{
-            color: var(--sem-orange);
+            color: {sem_orange};
         }}
 
         .magma-notes-menu-delete:hover {{
-            color: #FF6B6B;
-            background: #1A0A0A;
-            border-color: #5A2A2A;
+            color: {sem_orange};
+            background: alpha({sem_orange}, 0.08);
+            border-color: alpha({sem_orange}, 0.28);
         }}
 
         .magma-notes-row-title {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_10};
             font-weight: 700;
-            color: #F3F3EF;
+            color: {text_primary};
         }}
 
         .magma-notes-row-preview {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #BABAB3;
+            color: {text_secondary};
             margin-top: 4px;
             line-height: 1.4;
         }}
@@ -4029,16 +3997,16 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-notes-row-time {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #6B6B66;
+            color: {text_dim};
         }}
 
         .magma-notes-row-pin {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #388C50;
+            color: {sem_green};
             font-weight: 600;
-            background: #0A0A0A;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 999px;
             padding: 2px 8px;
         }}
@@ -4046,23 +4014,23 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-notes-row-media {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #F3F3EF;
-            background: #0A0A0A;
-            border: 1px solid #1A1A1A;
+            color: {text_primary};
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 999px;
             padding: 2px 8px;
         }}
 
         .magma-notes-editor-area {{
-            border-top: 1px solid #1A1A1A;
+            border-top: 1px solid {border};
             padding: 14px 14px 16px 14px;
         }}
 
         .magma-notes-editor-title {{
-            background: #000000;
-            color: #F3F3EF;
+            background: {window_bg};
+            color: {text_primary};
             border: none;
-            border-bottom: 1px solid #1A1A1A;
+            border-bottom: 1px solid {border};
             border-radius: 0;
             padding: 0 0 12px 0;
             margin-bottom: 12px;
@@ -4075,16 +4043,16 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-editor-title:focus {{
-            background: #000000;
-            border-bottom-color: #252525;
+            background: {window_bg};
+            border-bottom-color: alpha({text_primary}, 0.15);
         }}
 
         .magma-notes-editor-body {{
-            background: #000000;
-            color: #F3F3EF;
+            background: {window_bg};
+            color: {text_primary};
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            caret-color: #FFFFFF;
+            caret-color: {text_primary};
             line-height: 1.5;
         }}
 
@@ -4094,26 +4062,26 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-media-card {{
-            background: #0A0A0A;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            border: 1px solid {border};
             border-radius: 8px;
             padding: 6px;
             transition: all 120ms ease;
         }}
 
         .magma-notes-media-card:hover {{
-            border-color: #252525;
+            border-color: alpha({text_primary}, 0.15);
         }}
 
         .magma-notes-media-picture {{
-            background: #000000;
+            background: {window_bg};
             border-radius: 6px;
         }}
 
         .magma-notes-media-remove {{
-            background: #1A0A0A;
-            color: var(--sem-orange);
-            border: 1px solid #5A2A2A;
+            background: alpha({sem_orange}, 0.08);
+            color: {sem_orange};
+            border: 1px solid alpha({sem_orange}, 0.28);
             border-radius: 999px;
             padding: 2px 8px;
             font-family: \"DejaVu Sans Mono\", monospace;
@@ -4125,9 +4093,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-media-remove:hover {{
-            background: #2A1515;
-            color: #FF6B6B;
-            border-color: #7A3A3A;
+            background: alpha({sem_orange}, 0.12);
+            color: {sem_orange};
+            border-color: alpha({sem_orange}, 0.44);
         }}
 
         .magma-notes-editor-actions {{
@@ -4137,7 +4105,7 @@ pub(super) fn install_css(settings: &Settings) {
         .magma-notes-editor-meta {{
             font-family: \"DejaVu Sans Mono\", monospace;
             font-size: {font_9};
-            color: #6B6B66;
+            color: {text_dim};
         }}
 
         .magma-notes-tool-scroll {{
@@ -4158,16 +4126,16 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-tool-scroll scrollbar slider {{
-            background: alpha(var(--accent), 0.88);
-            border: 1px solid #7A3A3A;
+            background: alpha({accent}, 0.88);
+            border: 1px solid alpha({sem_orange}, 0.44);
             border-radius: 999px;
             min-height: 3px;
             min-width: 16px;
         }}
 
         .magma-notes-tool-scroll scrollbar slider:hover {{
-            background: rgba(255, 107, 107, 0.96);
-            border-color: #A24A4A;
+            background: alpha({sem_orange}, 0.96);
+            border-color: alpha({sem_orange}, 0.6);
         }}
 
         .magma-notes-tool-strip,
@@ -4177,21 +4145,21 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-tool-pill {{
-            background: #000000;
-            border: 1px solid #5A2A2A;
+            background: {window_bg};
+            border: 1px solid alpha({sem_orange}, 0.28);
             border-radius: 999px;
             padding: 4px 0 6px 0;
             transition: all 120ms ease;
         }}
 
         .magma-notes-tool-pill:hover {{
-            background: #000000;
-            border-color: #5A2A2A;
+            background: {window_bg};
+            border-color: alpha({sem_orange}, 0.28);
         }}
 
         .magma-notes-tool {{
             background: transparent;
-            color: #F3F3EF;
+            color: {text_primary};
             border: none;
             border-radius: 999px;
             padding: 3px 6px;
@@ -4206,7 +4174,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         .magma-notes-tool:hover {{
             background: transparent;
-            color: #F3F3EF;
+            color: {text_primary};
         }}
 
         .magma-notes-tool-icon {{
@@ -4215,9 +4183,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-emoji-item {{
-            background: #0A0A0A;
-            color: #F3F3EF;
-            border: 1px solid #1A1A1A;
+            background: {surface};
+            color: {text_primary};
+            border: 1px solid {border};
             border-radius: 6px;
             box-shadow: none;
             min-height: 0;
@@ -4227,9 +4195,9 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         .magma-notes-emoji-item:hover {{
-            background: #151515;
-            border-color: #252525;
-            color: #FFFFFF;
+            background: alpha({text_primary}, 0.07);
+            border-color: alpha({text_primary}, 0.15);
+            color: {text_primary};
         }}
         ",
         window_bg = css_color(palette.bg_primary),
@@ -4239,7 +4207,6 @@ pub(super) fn install_css(settings: &Settings) {
         sem_blue = css_color(palette.sem_blue),
         sem_magenta = css_color(palette.sem_magenta),
         sem_brown = css_color(palette.sem_brown),
-        sem_gray = css_color(palette.sem_gray),
         window_edge = css_color(palette.window_edge),
         titlebar_bg = css_color(palette.bg_titlebar),
         surface = css_color(palette.surface_base),
@@ -4257,7 +4224,8 @@ pub(super) fn install_css(settings: &Settings) {
         font_13 = px(13.0, ui_scale),
         font_22 = px(22.0, ui_scale),
     );
-    
+    // Post-process alpha(#HEX, factor) -> rgba(R, G, B, factor) for GTK4 compat
+    let css = resolve_alpha(&css);
     provider.load_from_data(&css);
 
     if let Some(gtk_settings) = gtk::Settings::default() {
@@ -4283,4 +4251,45 @@ fn ui_scale(app_font_size: u32) -> f32 {
 
 fn px(base: f32, scale: f32) -> String {
     format!("{:.1}px", base * scale)
+}
+
+/// Convert every `alpha(#RRGGBB, factor)` token in the CSS string into
+/// `rgba(R, G, B, factor)` so that GTK4's CSS parser can resolve them.
+/// GTK4 does not reliably support `alpha()` with hex colors in all contexts
+/// (e.g. `box-shadow`, `border-color`), so we pre-resolve them here.
+fn resolve_alpha(css: &str) -> String {
+    let mut result = String::with_capacity(css.len());
+    let mut remaining = css;
+    while let Some(pos) = remaining.find("alpha(") {
+        result.push_str(&remaining[..pos]);
+        let after_alpha = &remaining[pos + 6..]; // skip "alpha("
+        if let Some(end) = after_alpha.find(')') {
+            let inner = &after_alpha[..end];
+            if let Some(resolved) = try_resolve_alpha_inner(inner) {
+                result.push_str(&resolved);
+                remaining = &after_alpha[end + 1..];
+                continue;
+            }
+        }
+        // Could not parse — emit verbatim and advance past "alpha("
+        result.push_str("alpha(");
+        remaining = after_alpha;
+    }
+    result.push_str(remaining);
+    result
+}
+
+/// Parse the interior of `alpha(#RRGGBB, factor)` and return `rgba(R,G,B,factor)`.
+fn try_resolve_alpha_inner(inner: &str) -> Option<String> {
+    let mut parts = inner.splitn(2, ',');
+    let color_str = parts.next()?.trim();
+    let factor_str = parts.next()?.trim();
+    if !color_str.starts_with('#') || color_str.len() < 7 {
+        return None;
+    }
+    let hex = u32::from_str_radix(&color_str[1..7], 16).ok()?;
+    let r = (hex >> 16) & 0xFF;
+    let g = (hex >> 8) & 0xFF;
+    let b = hex & 0xFF;
+    Some(format!("rgba({r}, {g}, {b}, {factor_str})"))
 }
