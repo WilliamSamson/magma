@@ -13,12 +13,13 @@ mod profile;
 mod right_pane;
 mod runtime;
 mod session;
-mod settings;
+pub(crate) mod settings;
 mod shell;
 mod setup;
 mod style;
 mod tab;
 mod terminal;
+pub(crate) mod theme;
 mod view;
 mod web;
 mod workspace;
@@ -79,6 +80,8 @@ fn should_disable_webkit_sandbox() -> bool {
         return true;
     }
 
+    // WebKit aborts the application if its bubblewrap sandbox cannot create
+    // user namespaces, so disable it only when this host cannot support it.
     !webkit_sandbox_supported()
 }
 
@@ -141,19 +144,15 @@ fn build_window(app: &Application, width: u32, height: u32) {
         0
     };
 
-    if let Some(gtk_settings) = gtk::Settings::default() {
-        gtk_settings.set_gtk_application_prefer_dark_theme(true);
-    }
-
     // Register bundled icon theme so the taskbar/desktop can find the app icon
     if let Some(display) = gdk::Display::default() {
         let icon_theme = IconTheme::for_display(&display);
         icon_theme.add_search_path(ICON_THEME_PATH);
     }
 
-    style::install_css(app_settings.borrow().app_font_size);
+    style::install_css(&app_settings.borrow());
 
-    let (header, settings_button, inspector_button) = header::build_header();
+    let header = header::build_header();
     let workspace = std::rc::Rc::new(workspace::WorkspaceView::new(app_settings.clone()));
     {
         let workspace_ref = workspace.clone();
@@ -171,7 +170,7 @@ fn build_window(app: &Application, width: u32, height: u32) {
         let workspace_ref = workspace.clone();
         Rc::new(move || workspace_ref.current_terminal())
     };
-    header::wire_inspector(&inspector_button, terminal_provider.clone(), app_settings.clone());
+    header::wire_inspector(header.inspector_button(), terminal_provider.clone(), app_settings.clone());
     let shell = shell_container(
         workspace.root(),
         app_settings.clone(),
@@ -192,11 +191,14 @@ fn build_window(app: &Application, width: u32, height: u32) {
         let setup_page = setup::build_setup_page(
             &app_settings.borrow(),
             initial_setup_step,
+            style::install_css,
             move |configured_settings| {
                 *settings_ref.borrow_mut() = configured_settings.clone();
-                style::install_css(configured_settings.app_font_size);
+                style::install_css(&configured_settings);
                 workspace_ref.apply_settings(&configured_settings);
                 shell_ref.apply_settings(&configured_settings);
+                // Synchronize the renderer theme palette when setup configuration changes
+                crate::ui::theme::set_palette(theme::palette(configured_settings.theme_mode));
                 let snapshot = settings_ref.borrow().clone();
                 settings::save_settings(&snapshot);
                 setup::clear_checkpoint();
@@ -212,12 +214,20 @@ fn build_window(app: &Application, width: u32, height: u32) {
     stack.add_named(&settings_host, Some("settings"));
     stack.set_visible_child_name(if needs_setup { "setup" } else { "workspace" });
 
-    settings_button.set_visible(!needs_setup);
     {
-        let settings_button = settings_button.clone();
+        let header_ref = header.clone();
         stack.connect_visible_child_name_notify(move |stack| {
-            settings_button.set_visible(stack.visible_child_name().as_deref() != Some("setup"));
+            match stack.visible_child_name().as_deref() {
+                Some("settings") => header_ref.show_settings_mode(),
+                Some("setup") => header_ref.show_workspace_mode(false, false),
+                _ => header_ref.show_workspace_mode(true, true),
+            }
         });
+    }
+    if needs_setup {
+        header.show_workspace_mode(false, false);
+    } else {
+        header.show_workspace_mode(true, true);
     }
 
     // Settings button toggles to settings view
@@ -227,7 +237,8 @@ fn build_window(app: &Application, width: u32, height: u32) {
         let settings_ref = app_settings.clone();
         let workspace_ref = workspace.clone();
         let shell_ref = shell.clone();
-        settings_button.connect_clicked(move |_| {
+        let header_ref = header.clone();
+        header.settings_button().connect_clicked(move |_| {
             let current = stack_ref.visible_child_name();
             if current.as_deref() == Some("settings") {
                 stack_ref.set_visible_child_name("workspace");
@@ -242,14 +253,28 @@ fn build_window(app: &Application, width: u32, height: u32) {
                         }
                     },
                     {
+                        let header_ref = header_ref.clone();
+                        move |title| {
+                            header_ref.set_settings_title(title);
+                        }
+                    },
+                    {
+                        let header_ref = header_ref.clone();
+                        move |action| {
+                            header_ref.set_settings_close_action(action);
+                        }
+                    },
+                    {
                         let settings_ref = settings_ref.clone();
                         let workspace_ref = workspace_ref.clone();
                         let shell_ref = shell_ref.clone();
                         move |new_settings| {
                             *settings_ref.borrow_mut() = new_settings.clone();
-                            style::install_css(new_settings.app_font_size);
+                            style::install_css(new_settings);
                             workspace_ref.apply_settings(new_settings);
                             shell_ref.apply_settings(new_settings);
+                            // Synchronize the renderer theme palette when workspace settings are applied
+                            crate::ui::theme::set_palette(theme::palette(new_settings.theme_mode));
                         }
                     },
                     {
@@ -273,7 +298,7 @@ fn build_window(app: &Application, width: u32, height: u32) {
         .build();
     gtk::Window::set_default_icon_name(APP_ID);
     window.add_css_class("magma-window");
-    window.set_titlebar(Some(&header));
+    window.set_titlebar(Some(header.widget()));
     window.set_child(Some(&stack));
 
     window.connect_close_request(move |window| {
@@ -378,6 +403,8 @@ fn mount_settings_page(
     host: &GtkBox,
     settings: Rc<RefCell<settings::Settings>>,
     on_back: impl Fn() + 'static,
+    on_title_change: impl Fn(&str) + 'static,
+    on_close_action_change: impl Fn(Rc<dyn Fn()>) + 'static,
     on_apply: impl Fn(&settings::Settings) + 'static,
     on_clear_browser_data: impl Fn() + 'static,
 ) {
@@ -385,6 +412,13 @@ fn mount_settings_page(
         host.remove(&child);
     }
 
-    let page = settings::build_settings_page(settings, on_back, on_apply, on_clear_browser_data);
+    let page = settings::build_settings_page(
+        settings,
+        on_back,
+        on_title_change,
+        on_close_action_change,
+        on_apply,
+        on_clear_browser_data,
+    );
     host.append(&page);
 }
