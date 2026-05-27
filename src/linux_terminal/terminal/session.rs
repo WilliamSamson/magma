@@ -4,7 +4,7 @@ use std::{
 };
 
 use gtk::{
-    gdk, gio, prelude::*, Box as GtkBox, EventControllerFocus, EventControllerKey, Orientation,
+    gdk, gio, prelude::*, Align, Box as GtkBox, EventControllerFocus, EventControllerKey, Label, Orientation,
 };
 use vte4::{prelude::*, Format, Terminal};
 
@@ -30,11 +30,11 @@ impl SessionView {
     pub(crate) fn new(
         profile_id: ProfileId,
         snapshot: &SessionSnapshot,
-        settings: Rc<RefCell<Settings>>,
+        settings: Rc<RefCell<Settings>>, // settings Rc wrapper is cloned to share settings with SessionView.
     ) -> Self {
         let settings_ref = settings.borrow();
-        let spacing = scaled_spacing(8, &settings_ref);
-        let root = GtkBox::new(Orientation::Vertical, spacing);
+        let root = GtkBox::new(Orientation::Vertical, 0);
+        root.add_css_class("magma-terminal-container");
         root.set_hexpand(true);
         root.set_vexpand(true);
 
@@ -44,6 +44,26 @@ impl SessionView {
         let _runtime = shell::spawn_shell(&terminal, &snapshot, &settings_ref.shell);
         drop(settings_ref);
 
+        // Create a compact path breadcrumb bar at the top of the terminal layout
+        let path_bar = GtkBox::new(Orientation::Horizontal, 4);
+        path_bar.add_css_class("magma-terminal-path-bar");
+
+        let path_icon = gtk::Image::from_icon_name("folder-symbolic");
+        path_icon.add_css_class("magma-terminal-path-icon");
+        path_bar.append(&path_icon);
+
+        let path_label = Label::new(Some(&format_path_display(&terminal)));
+        path_label.add_css_class("magma-terminal-path-label");
+        path_label.set_halign(Align::Start);
+        path_bar.append(&path_label);
+
+        let terminal_for_update = terminal.clone(); // terminal clone is needed inside URI update callback to fetch path.
+        let path_label_ref = path_label.clone(); // path_label clone is needed to modify label text inside URI update callback.
+        terminal.connect_current_directory_uri_changed(move |_| {
+            path_label_ref.set_text(&format_path_display(&terminal_for_update));
+        });
+
+        root.append(&path_bar);
         root.append(&terminal);
         wire_terminal_clipboard(&terminal);
 
@@ -143,4 +163,23 @@ fn wire_terminal_clipboard(terminal: &Terminal) {
 fn copy_terminal_selection(terminal: &Terminal) {
     terminal.copy_primary();
     terminal.copy_clipboard_format(Format::Text);
+}
+
+fn format_path_display(terminal: &Terminal) -> String {
+    let uri = terminal.current_directory_uri();
+    let path_str = uri.as_deref()
+        .and_then(|u| gio::File::for_uri(u).path())
+        .map(|p| p.display().to_string())
+        .unwrap_or_else(|| {
+            std::env::current_dir()
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|_| "/".to_string())
+        });
+
+    let home = std::env::var("HOME").unwrap_or_default();
+    if !home.is_empty() && path_str.starts_with(&home) {
+        format!("~{}", &path_str[home.len()..])
+    } else {
+        path_str
+    }
 }

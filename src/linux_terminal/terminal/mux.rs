@@ -3,7 +3,10 @@ use std::{
     rc::Rc,
 };
 
-use gtk::{prelude::*, Box as GtkBox, Button, Orientation, Stack, StackTransitionType};
+use gtk::{
+    prelude::*, Box as GtkBox, Button, Orientation, PolicyType, ScrolledWindow, Stack,
+    StackTransitionType,
+};
 
 use super::{
     profile::ProfileId,
@@ -37,6 +40,19 @@ struct FocusBinding {
 pub(crate) struct MuxPaneView {
     root: GtkBox,
     bar: GtkBox,
+    buttons_box: GtkBox,
+    actions_box: GtkBox,
+    stack: Stack,
+    state: Rc<MuxState>,
+    settings: Rc<RefCell<Settings>>,
+    focus: Rc<FocusBinding>,
+}
+
+#[derive(Clone)]
+struct MuxBarContext {
+    bar: GtkBox,
+    buttons_box: GtkBox,
+    actions_box: GtkBox,
     stack: Stack,
     state: Rc<MuxState>,
     settings: Rc<RefCell<Settings>>,
@@ -66,6 +82,27 @@ impl MuxPaneView {
         bar.add_css_class("magma-mux-bar");
         bar.set_hexpand(true);
 
+        let buttons_box = GtkBox::new(Orientation::Horizontal, bar_spacing);
+        buttons_box.add_css_class("magma-mux-buttons");
+
+        let session_scroll = ScrolledWindow::builder()
+            .hscrollbar_policy(PolicyType::Automatic)
+            .vscrollbar_policy(PolicyType::Never)
+            .css_classes(["magma-session-bar-scroller"])
+            .propagate_natural_width(true)
+            .max_content_width(240)
+            .build();
+        session_scroll.set_hexpand(false);
+        session_scroll.set_vexpand(false);
+        session_scroll.set_propagate_natural_height(true);
+        session_scroll.set_child(Some(&buttons_box));
+
+        let actions_box = GtkBox::new(Orientation::Horizontal, bar_spacing);
+        actions_box.add_css_class("magma-mux-actions");
+
+        bar.append(&session_scroll);
+        bar.append(&actions_box);
+
         let stack = Stack::new();
         stack.set_hexpand(true);
         stack.set_vexpand(true);
@@ -88,32 +125,33 @@ impl MuxPaneView {
         let pane_view = Self {
             root,
             bar,
+            buttons_box,
+            actions_box,
             stack,
             state,
             settings,
             focus,
         };
 
+        let ctx = pane_view.bar_context();
         let snapshot = snapshot.normalized();
         for session in &snapshot.sessions {
-            append_session(
-                &pane_view.state,
-                &pane_view.stack,
-                &pane_view.settings,
-                &pane_view.focus,
-                session,
-                &pane_view.bar,
-            );
+            append_session(&ctx, session);
         }
-        let _ = switch_to(
-            &pane_view.state,
-            &pane_view.stack,
-            &pane_view.bar,
-            &pane_view.settings,
-            &pane_view.focus,
-            snapshot.active_session,
-        );
+        let _ = switch_to(&ctx, snapshot.active_session);
         pane_view
+    }
+
+    fn bar_context(&self) -> MuxBarContext {
+        MuxBarContext {
+            bar: self.bar.clone(), // bar clone is needed to build the temporary bar context.
+            buttons_box: self.buttons_box.clone(), // buttons_box clone is needed to build the temporary bar context.
+            actions_box: self.actions_box.clone(), // actions_box clone is needed to build the temporary bar context.
+            stack: self.stack.clone(), // stack clone is needed to build the temporary bar context.
+            state: self.state.clone(), // state Rc clone is needed to build the temporary bar context.
+            settings: self.settings.clone(), // settings Rc clone is needed to build the temporary bar context.
+            focus: self.focus.clone(), // focus Rc clone is needed to build the temporary bar context.
+        }
     }
 
     pub(crate) fn root(&self) -> &GtkBox {
@@ -179,34 +217,15 @@ impl MuxPaneView {
     }
 
     pub(crate) fn new_session(&self) {
+        let ctx = self.bar_context();
         let cwd = self.current_cwd();
         let snapshot = SessionSnapshot::new(cwd);
-        let index = append_session(
-            &self.state,
-            &self.stack,
-            &self.settings,
-            &self.focus,
-            &snapshot,
-            &self.bar,
-        );
-        let _ = switch_to(
-            &self.state,
-            &self.stack,
-            &self.bar,
-            &self.settings,
-            &self.focus,
-            index,
-        );
+        let index = append_session(&ctx, &snapshot);
+        let _ = switch_to(&ctx, index);
     }
 
     pub(crate) fn close_active_session(&self) -> bool {
-        close_active_session(
-            &self.state,
-            &self.stack,
-            &self.bar,
-            &self.settings,
-            &self.focus,
-        )
+        close_active_session(&self.bar_context())
     }
 
     pub(crate) fn focus_next_session(&self) -> bool {
@@ -216,14 +235,7 @@ impl MuxPaneView {
         }
 
         let next = (self.state.active_index.get() + 1) % session_count;
-        switch_to(
-            &self.state,
-            &self.stack,
-            &self.bar,
-            &self.settings,
-            &self.focus,
-            next,
-        )
+        switch_to(&self.bar_context(), next)
     }
 
     pub(crate) fn focus_previous_session(&self) -> bool {
@@ -238,45 +250,24 @@ impl MuxPaneView {
         } else {
             current - 1
         };
-        switch_to(
-            &self.state,
-            &self.stack,
-            &self.bar,
-            &self.settings,
-            &self.focus,
-            previous,
-        )
+        switch_to(&self.bar_context(), previous)
     }
 
     pub(crate) fn focus_session(&self, index: usize) -> bool {
-        switch_to(
-            &self.state,
-            &self.stack,
-            &self.bar,
-            &self.settings,
-            &self.focus,
-            index,
-        )
+        switch_to(&self.bar_context(), index)
     }
 }
 
-fn append_session(
-    state: &Rc<MuxState>,
-    stack: &Stack,
-    settings: &Rc<RefCell<Settings>>,
-    focus: &Rc<FocusBinding>,
-    snapshot: &SessionSnapshot,
-    bar: &GtkBox,
-) -> usize {
+fn append_session(ctx: &MuxBarContext, snapshot: &SessionSnapshot) -> usize {
     let session = Rc::new(SessionView::new(
-        state.profile_id.get(),
+        ctx.state.profile_id.get(),
         snapshot,
-        settings.clone(), // settings clone is needed to share the reference to the settings RefCell with the session.
+        ctx.settings.clone(), // settings clone is needed to share RefCell settings with SessionView.
     ));
 
-    let focus_ref = focus.clone(); // focus clone is needed to propagate focus state in the focus_enter callback.
-    let host_ref = state.session_bar_host.clone(); // host clone is needed to access the session_bar_host in the focus_enter callback.
-    let bar_ref = bar.clone(); // bar clone is needed to dynamically mount the session bar in the focus_enter callback.
+    let focus_ref = ctx.focus.clone(); // focus clone is needed to pass focus status inside connect_focus_enter.
+    let host_ref = ctx.state.session_bar_host.clone(); // host clone is needed to access session_bar_host inside focus callback.
+    let bar_ref = ctx.bar.clone(); // bar clone is needed to mount GtkBox inside focus callback.
     session.connect_focus_enter(move || {
         focus_ref.active_pane.set(focus_ref.pane);
         if let Some(host) = &host_ref {
@@ -291,73 +282,55 @@ fn append_session(
         }
     });
 
-    let session_id = state.next_session_id.get();
-    state.next_session_id.set(session_id + 1);
+    let session_id = ctx.state.next_session_id.get();
+    ctx.state.next_session_id.set(session_id + 1);
     let stack_name = format!("mux-session-{session_id}");
-    stack.add_named(session.root(), Some(&stack_name));
-    state.sessions.borrow_mut().push(SessionEntry {
+    ctx.stack.add_named(session.root(), Some(&stack_name));
+    ctx.state.sessions.borrow_mut().push(SessionEntry {
         stack_name,
         view: session,
     });
 
-    state.sessions.borrow().len().saturating_sub(1)
+    ctx.state.sessions.borrow().len().saturating_sub(1)
 }
 
-fn switch_to(
-    state: &Rc<MuxState>,
-    stack: &Stack,
-    bar: &GtkBox,
-    settings: &Rc<RefCell<Settings>>,
-    focus: &Rc<FocusBinding>,
-    index: usize,
-) -> bool {
+fn switch_to(ctx: &MuxBarContext, index: usize) -> bool {
     let (stack_name, session) = {
-        let sessions = state.sessions.borrow();
+        let sessions = ctx.state.sessions.borrow();
         let Some(entry) = sessions.get(index) else {
             return false;
         };
         (entry.stack_name.clone(), entry.view.clone())
     };
 
-    state.active_index.set(index);
-    stack.set_visible_child_name(&stack_name);
-    focus.active_pane.set(focus.pane);
+    ctx.state.active_index.set(index);
+    ctx.stack.set_visible_child_name(&stack_name);
+    ctx.focus.active_pane.set(ctx.focus.pane);
     session.focus_terminal();
-    rebuild_bar(bar, stack, state, settings, focus);
+    rebuild_bar(ctx);
     true
 }
 
-fn close_active_session(
-    state: &Rc<MuxState>,
-    stack: &Stack,
-    bar: &GtkBox,
-    settings: &Rc<RefCell<Settings>>,
-    focus: &Rc<FocusBinding>,
-) -> bool {
-    let session_count = state.sessions.borrow().len();
+fn close_active_session(ctx: &MuxBarContext) -> bool {
+    let session_count = ctx.state.sessions.borrow().len();
     if session_count <= 1 {
         return false;
     }
 
-    let index = state.active_index.get().min(session_count.saturating_sub(1));
-    let removed = state.sessions.borrow_mut().remove(index);
-    stack.remove(removed.view.root());
+    let index = ctx.state.active_index.get().min(session_count.saturating_sub(1));
+    let removed = ctx.state.sessions.borrow_mut().remove(index);
+    ctx.stack.remove(removed.view.root());
 
     let next_index = index.min(session_count.saturating_sub(2));
-    switch_to(state, stack, bar, settings, focus, next_index)
+    switch_to(ctx, next_index)
 }
 
-fn rebuild_bar(
-    bar: &GtkBox,
-    stack: &Stack,
-    state: &Rc<MuxState>,
-    settings: &Rc<RefCell<Settings>>,
-    focus: &Rc<FocusBinding>,
-) {
-    clear_children(bar);
+fn rebuild_bar(ctx: &MuxBarContext) {
+    clear_children(&ctx.buttons_box);
+    clear_children(&ctx.actions_box);
 
-    let session_count = state.sessions.borrow().len();
-    let current = state.active_index.get();
+    let session_count = ctx.state.sessions.borrow().len();
+    let current = ctx.state.active_index.get();
 
     for index in 0..session_count {
         let button = Button::with_label(&format!("{:02}", index + 1));
@@ -367,20 +340,12 @@ fn rebuild_bar(
             button.add_css_class("active");
         }
 
-        let bar_ref = bar.clone();
-        let stack = stack.clone();
-        let state = state.clone();
-        let settings = settings.clone();
-        let focus = focus.clone();
+        let ctx_ref = ctx.clone(); // ctx_ref clone is needed to switch to tab index inside click handler.
         button.connect_clicked(move |_| {
-            let _ = switch_to(&state, &stack, &bar_ref, &settings, &focus, index);
+            let _ = switch_to(&ctx_ref, index);
         });
-        bar.append(&button);
+        ctx.buttons_box.append(&button);
     }
-
-    let spacer = GtkBox::new(Orientation::Horizontal, 0);
-    spacer.set_hexpand(true);
-    bar.append(&spacer);
 
     let add_button = Button::builder()
         .icon_name("list-add-symbolic")
@@ -394,36 +359,21 @@ fn rebuild_bar(
         .sensitive(session_count > 1)
         .build();
 
-    let bar_ref = bar.clone(); // bar_ref clone is needed to pass the GtkBox to rebuild callbacks.
-    let stack_ref = stack.clone(); // stack_ref clone is needed to manipulate the session stack inside callbacks.
-    let state_ref = state.clone(); // state_ref clone is needed to query and mutate session states within callbacks.
-    let settings_ref = settings.clone(); // settings_ref clone is needed to access settings inside callbacks.
-    let focus_ref = focus.clone(); // focus_ref clone is needed to manage focus within callbacks.
+    let ctx_ref = ctx.clone(); // ctx_ref clone is needed to create new session in clicked callback.
     add_button.connect_clicked(move |_| {
-        let cwd = current_session(&state_ref).and_then(|session| session.current_cwd());
+        let cwd = current_session(&ctx_ref.state).and_then(|session| session.current_cwd());
         let snapshot = SessionSnapshot::new(cwd);
-        let index = append_session(
-            &state_ref,
-            &stack_ref,
-            &settings_ref,
-            &focus_ref,
-            &snapshot,
-            &bar_ref,
-        );
-        let _ = switch_to(&state_ref, &stack_ref, &bar_ref, &settings_ref, &focus_ref, index);
+        let index = append_session(&ctx_ref, &snapshot);
+        let _ = switch_to(&ctx_ref, index);
     });
 
-    let bar_ref = bar.clone(); // bar_ref clone is needed for switch_to in the close action callback.
-    let stack_ref = stack.clone(); // stack_ref clone is needed to manipulate stack in the close action callback.
-    let state_ref = state.clone(); // state_ref clone is needed to remove session from state in the close action callback.
-    let settings_ref = settings.clone(); // settings_ref clone is needed for rebuild inside close action callback.
-    let focus_ref = focus.clone(); // focus_ref clone is needed for switch_to inside close action callback.
+    let ctx_ref = ctx.clone(); // ctx_ref clone is needed to close active session in clicked callback.
     close_button.connect_clicked(move |_| {
-        let _ = close_active_session(&state_ref, &stack_ref, &bar_ref, &settings_ref, &focus_ref);
+        let _ = close_active_session(&ctx_ref);
     });
 
-    bar.append(&add_button);
-    bar.append(&close_button);
+    ctx.actions_box.append(&add_button);
+    ctx.actions_box.append(&close_button);
 }
 
 fn current_session(state: &Rc<MuxState>) -> Option<Rc<SessionView>> {

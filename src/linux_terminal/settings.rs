@@ -1,6 +1,7 @@
 mod about;
 mod browser;
 mod page;
+mod search;
 mod sections;
 mod terminal;
 mod widgets;
@@ -13,25 +14,28 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
+use super::theme::ThemeMode;
+
 pub(super) use page::build_settings_page;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
-pub(super) struct Settings {
-    pub(super) font_family: String,
-    pub(super) font_size: u32,
-    pub(super) app_font_size: u32,
-    pub(super) default_browser: String,
-    pub(super) scrollback_lines: u32,
-    pub(super) cursor_style: String,
-    pub(super) cursor_blink: bool,
-    pub(super) image_rendering: bool,
-    pub(super) ligatures: bool,
-    pub(super) shell: String,
-    pub(super) logr_panel_open: bool,
-    pub(super) notifications: bool,
-    pub(super) agent_confidence_threshold: f32,
-    pub(super) agent_passive_mode: bool,
+pub(crate) struct Settings {
+    pub(crate) font_family: String,
+    pub(crate) font_size: u32,
+    pub(crate) app_font_size: u32,
+    pub(crate) theme_mode: ThemeMode,
+    pub(crate) default_browser: String,
+    pub(crate) scrollback_lines: u32,
+    pub(crate) cursor_style: String,
+    pub(crate) cursor_blink: bool,
+    pub(crate) image_rendering: bool,
+    pub(crate) ligatures: bool,
+    pub(crate) shell: String,
+    pub(crate) logr_panel_open: bool,
+    pub(crate) notifications: bool,
+    pub(crate) agent_confidence_threshold: f32,
+    pub(crate) agent_passive_mode: bool,
 }
 
 impl Default for Settings {
@@ -39,8 +43,9 @@ impl Default for Settings {
         let shell = env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string());
         Self {
             font_family: "DejaVu Sans Mono".to_string(),
-            font_size: 10,
-            app_font_size: 11,
+            font_size: 9,
+            app_font_size: 10,
+            theme_mode: ThemeMode::Dark,
             default_browser: "google".to_string(),
             scrollback_lines: 20_000,
             cursor_style: "ibeam".to_string(),
@@ -56,7 +61,7 @@ impl Default for Settings {
     }
 }
 
-pub(super) fn load_settings() -> Settings {
+pub(crate) fn load_settings() -> Settings {
     let path = settings_path();
     match fs::read_to_string(&path) {
         Ok(contents) => serde_json::from_str(&contents).unwrap_or_default(),
@@ -64,7 +69,7 @@ pub(super) fn load_settings() -> Settings {
     }
 }
 
-pub(super) fn save_settings(settings: &Settings) {
+pub(crate) fn save_settings(settings: &Settings) {
     let path = settings_path();
     if let Some(parent) = path.parent() {
         if let Err(error) = fs::create_dir_all(parent) {
@@ -82,7 +87,7 @@ pub(super) fn save_settings(settings: &Settings) {
     }
 }
 
-pub(super) fn settings_path() -> PathBuf {
+pub(crate) fn settings_path() -> PathBuf {
     let base = env::var_os("XDG_CONFIG_HOME")
         .map(PathBuf::from)
         .or_else(|| env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))
@@ -90,6 +95,6 @@ pub(super) fn settings_path() -> PathBuf {
     base.join("magma").join("settings.json")
 }
 
-pub(super) fn settings_exist() -> bool {
+pub(crate) fn settings_exist() -> bool {
     settings_path().is_file()
 }

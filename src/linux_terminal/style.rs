@@ -276,11 +276,39 @@ pub(super) fn install_css(settings: &Settings) {
             margin: 0;
         }}
 
-        box.magma-mux-root terminal.magma-terminal {{
-            border-radius: {terminal_radius};
+        box.magma-terminal-container {{
             border: 1px solid alpha({text_primary}, 0.06);
+            border-radius: {terminal_radius};
             background: alpha({text_primary}, 0.003);
+            margin: 0;
+            padding: 0;
+        }}
+
+        box.magma-terminal-path-bar {{
+            background: alpha({text_primary}, 0.015);
+            border-bottom: 1px solid alpha({text_primary}, 0.04);
+            border-radius: {terminal_radius} {terminal_radius} 0 0;
+            padding: 4px 8px;
+            margin: 0;
+        }}
+
+        .magma-terminal-path-icon {{
+            color: alpha({text_primary}, 0.5);
+            -gtk-icon-size: 13px;
+            margin-right: 4px;
+        }}
+
+        .magma-terminal-path-label {{
+            font-family: \"DejaVu Sans Mono\", monospace;
+            font-size: {font_8};
+            color: alpha({text_primary}, 0.6);
+        }}
+
+        box.magma-terminal-container terminal.magma-terminal {{
+            border: none;
+            border-radius: 0 0 {terminal_radius} {terminal_radius};
             padding: {terminal_padding};
+            background: transparent;
         }}
 
         button.magma-mux-session,
@@ -4247,6 +4275,7 @@ pub(super) fn install_css(settings: &Settings) {
         font_9 = px(9.0, ui_scale),
         font_10 = px(10.0, ui_scale),
         font_11 = px(11.0, ui_scale),
+        font_8 = px(8.0, ui_scale),
         font_12 = px(12.0, ui_scale),
         font_13 = px(13.0, ui_scale),
         font_22 = px(22.0, ui_scale),
