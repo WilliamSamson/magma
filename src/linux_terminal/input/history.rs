@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{gdk, gio, prelude::*, Entry};

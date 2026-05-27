@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod history;
 pub(super) mod inspector;
 mod prompt;

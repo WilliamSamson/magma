@@ -45,8 +45,12 @@ impl SessionView {
         drop(settings_ref);
 
         root.append(&terminal);
-        let _ = input::append_input_row(&root, &terminal);
         wire_terminal_clipboard(&terminal);
+
+        let terminal_ref = terminal.clone(); // terminal_ref clone is needed to grab focus on the VTE terminal widget on idle initialization.
+        gtk::glib::idle_add_local_once(move || {
+            let _ = terminal_ref.grab_focus();
+        });
 
         Self {
             root,

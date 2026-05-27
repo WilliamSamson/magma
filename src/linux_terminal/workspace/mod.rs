@@ -48,12 +48,25 @@ impl WorkspaceView {
         let session_bar_host = GtkBox::new(Orientation::Horizontal, 0);
         session_bar_host.add_css_class("magma-session-bar-host");
 
+        // Wrap session_bar_host in a ScrolledWindow to prevent window expanding
+        let session_scroll = ScrolledWindow::builder()
+            .hscrollbar_policy(PolicyType::Automatic)
+            .vscrollbar_policy(PolicyType::Never)
+            .css_classes(["magma-session-bar-scroller"])
+            .propagate_natural_width(true)
+            .max_content_width(240)
+            .build();
+        session_scroll.set_hexpand(false);
+        session_scroll.set_vexpand(false);
+        session_scroll.set_propagate_natural_height(true);
+        session_scroll.set_child(Some(&session_bar_host));
+
         // Create vertical separator between workspace tabs and sessions
         let separator = gtk::Separator::new(Orientation::Vertical);
         separator.add_css_class("magma-v-separator");
 
         tab_bar_row.append(&separator);
-        tab_bar_row.append(&session_bar_host);
+        tab_bar_row.append(&session_scroll);
 
         let notebook = notebook();
         let overlay = Overlay::new();

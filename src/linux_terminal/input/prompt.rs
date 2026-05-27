@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::path::{Path, PathBuf};
 
 use gtk::{gio, pango, prelude::*, Box as GtkBox, Label, Orientation};
