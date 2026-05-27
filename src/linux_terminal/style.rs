@@ -227,8 +227,8 @@ pub(super) fn install_css(settings: &Settings) {
         terminal.magma-terminal {{
             background: transparent;
             color: {text_primary};
-            border: 1px solid alpha({text_primary}, 0.06);
-            border-radius: {terminal_radius};
+            border: none;
+            border-radius: 0;
             padding: {terminal_padding};
         }}
 
@@ -277,19 +277,19 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         box.magma-terminal-container {{
-            border: 1px solid alpha({text_primary}, 0.06);
-            border-radius: {terminal_radius};
-            background: alpha({text_primary}, 0.003);
+            border: none;
+            border-radius: 0;
+            background: transparent;
             margin: 0;
             padding: 0;
         }}
 
         box.magma-terminal-path-bar {{
-            background: alpha({text_primary}, 0.015);
+            background: transparent;
             border-bottom: 1px solid alpha({text_primary}, 0.04);
-            border-radius: {terminal_radius} {terminal_radius} 0 0;
-            padding: 4px 8px;
-            margin: 0;
+            border-radius: 0;
+            padding: 2px 0 6px 0;
+            margin: 0 0 6px 0;
         }}
 
         .magma-terminal-path-icon {{
@@ -306,7 +306,7 @@ pub(super) fn install_css(settings: &Settings) {
 
         box.magma-terminal-container terminal.magma-terminal {{
             border: none;
-            border-radius: 0 0 {terminal_radius} {terminal_radius};
+            border-radius: 0;
             padding: {terminal_padding};
             background: transparent;
         }}
@@ -359,25 +359,26 @@ pub(super) fn install_css(settings: &Settings) {
             min-width: 30px;
             margin: 0 3px;
             padding: 3px;
-            border: 1px solid alpha({text_primary}, 0.04);
+            border: none;
             border-radius: 12px;
-            background: alpha({text_primary}, 0.015);
+            background: transparent;
             transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
         }}
 
         .magma-handle:hover {{
-            background: alpha({text_primary}, 0.025);
-            border-color: alpha({text_primary}, 0.08);
+            background: transparent;
+            border: none;
             transform: scaleX(1.05);
         }}
 
         .magma-handle.collapsed {{
-            background: alpha({text_primary}, 0.01);
+            background: transparent;
+            border: none;
         }}
 
         .magma-handle.collapsed:hover {{
-            background: alpha({accent}, 0.05);
-            border-color: alpha({accent}, 0.18);
+            background: transparent;
+            border: none;
         }}
 
         button.magma-handle-segment {{
@@ -434,24 +435,25 @@ pub(super) fn install_css(settings: &Settings) {
             min-width: 30px;
             margin: 0 3px;
             padding: 3px;
-            border: 1px solid alpha({text_primary}, 0.04);
+            border: none;
             border-radius: 12px;
-            background: alpha({text_primary}, 0.015);
+            background: transparent;
             transition: border-color 180ms ease, background 180ms ease, opacity 180ms ease;
         }}
 
         .magma-left-handle:hover {{
-            background: alpha({text_primary}, 0.025);
-            border-color: alpha({text_primary}, 0.08);
+            background: transparent;
+            border: none;
         }}
 
         .magma-left-handle.collapsed {{
-            background: alpha({text_primary}, 0.01);
+            background: transparent;
+            border: none;
         }}
 
         .magma-left-handle.collapsed:hover {{
-            background: alpha({accent}, 0.05);
-            border-color: alpha({accent}, 0.18);
+            background: transparent;
+            border: none;
         }}
 
         button.magma-left-handle-segment {{
@@ -4279,7 +4281,6 @@ pub(super) fn install_css(settings: &Settings) {
         font_12 = px(12.0, ui_scale),
         font_13 = px(13.0, ui_scale),
         font_22 = px(22.0, ui_scale),
-        terminal_radius = px(10.0, ui_scale),
         terminal_padding = px(6.0, ui_scale),
         mux_btn_size = px(18.0, ui_scale),
         mux_btn_padding = px(6.0, ui_scale),
