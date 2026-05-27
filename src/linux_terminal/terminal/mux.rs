@@ -26,6 +26,7 @@ struct MuxState {
     active_index: Cell<usize>,
     next_session_id: Cell<u32>,
     profile_id: Cell<ProfileId>,
+    session_bar_host: Option<GtkBox>, // Option<GtkBox> clone is cheap (GObject reference count) and lets callbacks access the top bar host.
 }
 
 struct FocusBinding {
@@ -49,6 +50,7 @@ impl MuxPaneView {
         settings: Rc<RefCell<Settings>>,
         active_pane: Rc<Cell<PaneFocus>>,
         pane: PaneFocus,
+        session_bar_host: Option<GtkBox>,
     ) -> Self {
         let settings_ref = settings.borrow();
         let root_spacing = scaled_spacing(8, &settings_ref);
@@ -70,7 +72,7 @@ impl MuxPaneView {
         stack.set_transition_type(StackTransitionType::Crossfade);
         stack.set_transition_duration(120);
 
-        root.append(&bar);
+        // We do NOT append bar locally, as it is dynamically mounted in the top tab bar row.
         root.append(&stack);
 
         // Rc<MuxState> keeps pane-local multiplexer state shared across GTK callbacks on the main thread.
@@ -79,6 +81,7 @@ impl MuxPaneView {
             active_index: Cell::new(0),
             next_session_id: Cell::new(0),
             profile_id: Cell::new(profile_id),
+            session_bar_host, // Store the top-level session bar host GtkBox option in shared state.
         });
         let focus = Rc::new(FocusBinding { active_pane, pane });
 
@@ -99,6 +102,7 @@ impl MuxPaneView {
                 &pane_view.settings,
                 &pane_view.focus,
                 session,
+                &pane_view.bar,
             );
         }
         let _ = switch_to(
@@ -142,8 +146,22 @@ impl MuxPaneView {
     pub(crate) fn focus_terminal(&self) {
         if let Some(session) = current_session(&self.state) {
             self.focus.active_pane.set(self.focus.pane);
+            if let Some(host) = &self.state.session_bar_host {
+                self.mount_session_bar(host);
+            }
             session.focus_terminal();
         }
+    }
+
+    pub(crate) fn mount_session_bar(&self, host: &GtkBox) {
+        // Remove the bar GtkBox from its previous parent container
+        self.bar.unparent();
+        // Clear all existing child widgets from the session bar host
+        while let Some(child) = host.first_child() {
+            child.unparent();
+        }
+        // Append the pane's session bar to the host GtkBox
+        host.append(&self.bar);
     }
 
     pub(crate) fn apply_profile(&self, profile_id: ProfileId) {
@@ -169,6 +187,7 @@ impl MuxPaneView {
             &self.settings,
             &self.focus,
             &snapshot,
+            &self.bar,
         );
         let _ = switch_to(
             &self.state,
@@ -247,16 +266,29 @@ fn append_session(
     settings: &Rc<RefCell<Settings>>,
     focus: &Rc<FocusBinding>,
     snapshot: &SessionSnapshot,
+    bar: &GtkBox,
 ) -> usize {
     let session = Rc::new(SessionView::new(
         state.profile_id.get(),
         snapshot,
-        settings.clone(),
+        settings.clone(), // settings clone is needed to share the reference to the settings RefCell with the session.
     ));
 
-    let focus_ref = focus.clone();
+    let focus_ref = focus.clone(); // focus clone is needed to propagate focus state in the focus_enter callback.
+    let host_ref = state.session_bar_host.clone(); // host clone is needed to access the session_bar_host in the focus_enter callback.
+    let bar_ref = bar.clone(); // bar clone is needed to dynamically mount the session bar in the focus_enter callback.
     session.connect_focus_enter(move || {
         focus_ref.active_pane.set(focus_ref.pane);
+        if let Some(host) = &host_ref {
+            // Widget unparent removes the bar GtkBox from its current parent
+            bar_ref.unparent();
+            // Clear current top session bar host children
+            while let Some(child) = host.first_child() {
+                child.unparent();
+            }
+            // Mount this active pane's session bar GtkBox to the top host
+            host.append(&bar_ref);
+        }
     });
 
     let session_id = state.next_session_id.get();
@@ -362,11 +394,11 @@ fn rebuild_bar(
         .sensitive(session_count > 1)
         .build();
 
-    let bar_ref = bar.clone();
-    let stack_ref = stack.clone();
-    let state_ref = state.clone();
-    let settings_ref = settings.clone();
-    let focus_ref = focus.clone();
+    let bar_ref = bar.clone(); // bar_ref clone is needed to pass the GtkBox to rebuild callbacks.
+    let stack_ref = stack.clone(); // stack_ref clone is needed to manipulate the session stack inside callbacks.
+    let state_ref = state.clone(); // state_ref clone is needed to query and mutate session states within callbacks.
+    let settings_ref = settings.clone(); // settings_ref clone is needed to access settings inside callbacks.
+    let focus_ref = focus.clone(); // focus_ref clone is needed to manage focus within callbacks.
     add_button.connect_clicked(move |_| {
         let cwd = current_session(&state_ref).and_then(|session| session.current_cwd());
         let snapshot = SessionSnapshot::new(cwd);
@@ -376,15 +408,16 @@ fn rebuild_bar(
             &settings_ref,
             &focus_ref,
             &snapshot,
+            &bar_ref,
         );
         let _ = switch_to(&state_ref, &stack_ref, &bar_ref, &settings_ref, &focus_ref, index);
     });
 
-    let bar_ref = bar.clone();
-    let stack_ref = stack.clone();
-    let state_ref = state.clone();
-    let settings_ref = settings.clone();
-    let focus_ref = focus.clone();
+    let bar_ref = bar.clone(); // bar_ref clone is needed for switch_to in the close action callback.
+    let stack_ref = stack.clone(); // stack_ref clone is needed to manipulate stack in the close action callback.
+    let state_ref = state.clone(); // state_ref clone is needed to remove session from state in the close action callback.
+    let settings_ref = settings.clone(); // settings_ref clone is needed for rebuild inside close action callback.
+    let focus_ref = focus.clone(); // focus_ref clone is needed for switch_to inside close action callback.
     close_button.connect_clicked(move |_| {
         let _ = close_active_session(&state_ref, &stack_ref, &bar_ref, &settings_ref, &focus_ref);
     });

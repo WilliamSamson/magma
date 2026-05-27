@@ -25,10 +25,15 @@ pub(crate) struct TabView {
     active_pane: Rc<Cell<PaneFocus>>,
     profile_id: ProfileId,
     settings: Rc<RefCell<Settings>>,
+    session_bar_host: GtkBox, // Stored to dynamically mount terminal session tabs into the top workspace bar.
 }
 
 impl TabView {
-    pub(crate) fn new(snapshot: TabSnapshot, settings: Rc<RefCell<Settings>>) -> Self {
+    pub(crate) fn new(
+        snapshot: TabSnapshot,
+        settings: Rc<RefCell<Settings>>, // settings Rc wrapper is cloned to share settings across components.
+        session_bar_host: GtkBox, // session_bar_host GtkBox is passed to dynamically mount session tabs at the top.
+    ) -> Self {
         let settings_ref = settings.borrow();
         let spacing = scaled_spacing(12, &settings_ref);
         drop(settings_ref);
@@ -43,9 +48,10 @@ impl TabView {
         let left = MuxPaneView::new(
             left_snapshot,
             snapshot.profile,
-            settings.clone(),
-            active_pane.clone(),
+            settings.clone(), // settings clone is needed to share RefCell ownership with MuxPaneView.
+            active_pane.clone(), // active_pane clone is needed to share the pane focus Cell with the left pane.
             PaneFocus::Left,
+            Some(session_bar_host.clone()), // session_bar_host clone is needed to pass a GObject reference to the left pane.
         );
         root.append(left.root());
 
@@ -55,9 +61,10 @@ impl TabView {
             let right_pane = MuxPaneView::new(
                 right_snapshot,
                 snapshot.profile,
-                settings.clone(),
-                active_pane.clone(),
+                settings.clone(), // settings clone is needed to share RefCell ownership with right pane.
+                active_pane.clone(), // active_pane clone is needed to share the pane focus Cell with the right pane.
                 PaneFocus::Right,
+                Some(session_bar_host.clone()), // session_bar_host clone is needed to pass a GObject reference to the right pane.
             );
             let paned = build_split_view(left.root(), right_pane.root(), snapshot.split_position);
             root.remove(left.root());
@@ -80,6 +87,7 @@ impl TabView {
             active_pane,
             profile_id: snapshot.profile,
             settings,
+            session_bar_host,
         }
     }
 
@@ -144,9 +152,10 @@ impl TabView {
         let right = MuxPaneView::new(
             PaneSnapshot::from_cwd(self.left.current_cwd()),
             self.profile_id,
-            self.settings.clone(),
-            self.active_pane.clone(),
+            self.settings.clone(), // settings clone is needed to share the RefCell reference with the newly split right pane.
+            self.active_pane.clone(), // active_pane clone is needed to share the pane focus Cell with the new right pane.
             PaneFocus::Right,
+            Some(self.session_bar_host.clone()), // session_bar_host clone is needed to pass a GObject reference to the new split pane.
         );
         let split_view = build_split_view(self.left.root(), right.root(), None);
         self.root.remove(self.left.root());
@@ -229,6 +238,10 @@ impl TabView {
             }
         }
         &self.left
+    }
+
+    pub(crate) fn mount_active_session_bar(&self) {
+        self.active_mux_pane().mount_session_bar(&self.session_bar_host);
     }
 
     fn sync_title_label(&self) {

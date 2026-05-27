@@ -248,7 +248,7 @@ pub(super) fn install_css(settings: &Settings) {
         separator.magma-v-separator {{
             background: {border};
             min-width: 1px;
-            margin: 0 4px;
+            margin: 0 12px;
         }}
 
         paned.magma-split-pane > separator {{
@@ -269,18 +269,16 @@ pub(super) fn install_css(settings: &Settings) {
         }}
 
         box.magma-mux-bar {{
-            background: alpha({text_primary}, 0.015);
-            border: 1px solid alpha({text_primary}, 0.06);
-            border-bottom: 1px solid alpha({text_primary}, 0.04);
-            border-radius: {bar_radius} {bar_radius} 0 0;
-            padding: {bar_padding} calc({bar_padding} * 2);
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
             margin: 0;
         }}
 
         box.magma-mux-root terminal.magma-terminal {{
-            border-radius: 0 0 {terminal_radius} {terminal_radius};
+            border-radius: {terminal_radius};
             border: 1px solid alpha({text_primary}, 0.06);
-            border-top: none;
             background: alpha({text_primary}, 0.003);
             padding: {terminal_padding};
         }}
@@ -4254,8 +4252,6 @@ pub(super) fn install_css(settings: &Settings) {
         font_22 = px(22.0, ui_scale),
         terminal_radius = px(10.0, ui_scale),
         terminal_padding = px(6.0, ui_scale),
-        bar_radius = px(8.0, ui_scale),
-        bar_padding = px(2.5, ui_scale),
         mux_btn_size = px(18.0, ui_scale),
         mux_btn_padding = px(6.0, ui_scale),
         split_width = px(8.0, ui_scale),
