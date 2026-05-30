@@ -4,20 +4,15 @@ use std::{
 };
 
 use gtk::{
-    gdk, gio, prelude::*, Align, Box as GtkBox, EventControllerFocus, EventControllerKey, Label, Orientation,
+    Align, Box as GtkBox, EventControllerFocus, EventControllerKey, Label, Orientation, gdk, gio,
+    prelude::*,
 };
-use vte4::{prelude::*, Format, Terminal};
+use vte4::{Format, Terminal, prelude::*};
 
+use super::super::{input, persist::SessionSnapshot, settings::Settings};
 use super::{
-    profile::{profile, ProfileId},
-    scaled_spacing,
-    shell,
-    widget as terminal,
-};
-use super::super::{
-    input,
-    persist::SessionSnapshot,
-    settings::Settings,
+    profile::{ProfileId, profile},
+    scaled_spacing, shell, widget as terminal,
 };
 
 pub(crate) struct SessionView {
@@ -167,7 +162,8 @@ fn copy_terminal_selection(terminal: &Terminal) {
 
 fn format_path_display(terminal: &Terminal) -> String {
     let uri = terminal.current_directory_uri();
-    let path_str = uri.as_deref()
+    let path_str = uri
+        .as_deref()
         .and_then(|u| gio::File::for_uri(u).path())
         .map(|p| p.display().to_string())
         .unwrap_or_else(|| {

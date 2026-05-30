@@ -1,13 +1,13 @@
 use std::rc::Rc;
 
 use gtk::{
-    pango, prelude::*, Box as GtkBox, Button, Entry, Label, ListBox, Orientation, PolicyType,
-    ScrolledWindow, SelectionMode,
+    Box as GtkBox, Button, Entry, Label, ListBox, Orientation, PolicyType, ScrolledWindow,
+    SelectionMode, pango, prelude::*,
 };
 
 use super::{
-    ops::{self, BranchInfo},
     GitPaneView,
+    ops::{self, BranchInfo},
 };
 
 pub(super) fn build_branches_view(view: &Rc<GitPaneView>) -> GtkBox {

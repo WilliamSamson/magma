@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     actions::AgentAction,
-    context::{token_budgeted_json, WorkspaceContext},
+    context::{WorkspaceContext, token_budgeted_json},
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -106,8 +106,7 @@ impl OpenRouterModel {
         }
 
         if state.requests_in_window >= MAX_REQUESTS_PER_WINDOW {
-            state.backoff_until =
-                Some(Instant::now() + Duration::from_secs(LOCAL_BACKOFF_SECS));
+            state.backoff_until = Some(Instant::now() + Duration::from_secs(LOCAL_BACKOFF_SECS));
             return Err(format!(
                 "local rate limit ({MAX_REQUESTS_PER_WINDOW}/min); backing off {LOCAL_BACKOFF_SECS}s"
             ));
@@ -139,12 +138,20 @@ impl OpenRouterModel {
         }
     }
 
-    fn call_model(&self, model: &str, payload: &serde_json::Value) -> Result<String, (u16, String)> {
+    fn call_model(
+        &self,
+        model: &str,
+        payload: &serde_json::Value,
+    ) -> Result<String, (u16, String)> {
         let output = Command::new(&self.curl_bin)
             .args([
-                "-sS", "--max-time", "20",
-                "-X", "POST",
-                "-H", "Content-Type: application/json",
+                "-sS",
+                "--max-time",
+                "20",
+                "-X",
+                "POST",
+                "-H",
+                "Content-Type: application/json",
                 "-H",
             ])
             .arg(format!("Authorization: Bearer {}", self.api_key))
@@ -172,7 +179,10 @@ impl OpenRouterModel {
             } else {
                 stderr
             };
-            return Err((http_code, format!("{model} error (HTTP {http_code}): {detail}")));
+            return Err((
+                http_code,
+                format!("{model} error (HTTP {http_code}): {detail}"),
+            ));
         }
 
         Ok(body)
@@ -226,7 +236,13 @@ fn parse_env_value(raw: &str, key: &str) -> Option<String> {
             return None;
         }
         let (name, value) = trimmed.split_once('=')?;
-        (name.trim() == key).then(|| value.trim().trim_matches('"').trim_matches('\'').to_string())
+        (name.trim() == key).then(|| {
+            value
+                .trim()
+                .trim_matches('"')
+                .trim_matches('\'')
+                .to_string()
+        })
     })
 }
 
@@ -279,8 +295,8 @@ impl AgentModel for NoopModel {
 }
 
 fn parse_actions(raw: &str) -> Result<Vec<AgentAction>, String> {
-    let value: serde_json::Value =
-        serde_json::from_str(raw).map_err(|error| format!("failed to parse API response: {error}"))?;
+    let value: serde_json::Value = serde_json::from_str(raw)
+        .map_err(|error| format!("failed to parse API response: {error}"))?;
 
     let text = value
         .pointer("/choices/0/message/content")

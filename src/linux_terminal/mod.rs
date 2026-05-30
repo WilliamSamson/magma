@@ -25,8 +25,8 @@ use std::{
 };
 
 use gtk::{
-    gdk, gio, glib, prelude::*, Application, ApplicationWindow, Box as GtkBox, IconTheme,
-    Orientation, Stack, StackTransitionType,
+    Application, ApplicationWindow, Box as GtkBox, IconTheme, Orientation, Stack,
+    StackTransitionType, gdk, gio, glib, prelude::*,
 };
 use std::{cell::RefCell, rc::Rc};
 use winit::dpi::PhysicalSize;
@@ -164,12 +164,12 @@ fn build_window(app: &Application, width: u32, height: u32) {
         let workspace_ref = workspace.clone();
         Rc::new(move || workspace_ref.current_terminal())
     };
-    header::wire_inspector(header.inspector_button(), terminal_provider.clone(), app_settings.clone());
-    let shell = shell_container(
-        workspace.root(),
+    header::wire_inspector(
+        header.inspector_button(),
+        terminal_provider.clone(),
         app_settings.clone(),
-        cwd_provider,
     );
+    let shell = shell_container(workspace.root(), app_settings.clone(), cwd_provider);
 
     // Stack: workspace (main) <-> settings
     let stack = Stack::new();
@@ -349,8 +349,7 @@ fn shell_container(
     view_row.set_vexpand(true);
 
     // Deferred side_panes reference so the file-click callback can reach it
-    let side_panes_slot: Rc<RefCell<Option<right_pane::SidePanes>>> =
-        Rc::new(RefCell::new(None));
+    let side_panes_slot: Rc<RefCell<Option<right_pane::SidePanes>>> = Rc::new(RefCell::new(None));
 
     // Left pane: folder revealer + handle (handle sits to the right of the pane)
     let on_file_click: Rc<dyn Fn(&std::path::Path)> = {

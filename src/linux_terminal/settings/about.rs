@@ -1,4 +1,4 @@
-use gtk::{prelude::*, Align, Box as GtkBox, Label, Orientation};
+use gtk::{Align, Box as GtkBox, Label, Orientation, prelude::*};
 
 use crate::linux_terminal::meta::APP_VERSION;
 
@@ -32,7 +32,10 @@ pub(super) fn build_about_page() -> GtkBox {
     let links_header = section_header("Links");
     let links_box = GtkBox::new(Orientation::Vertical, 6);
     links_box.add_css_class("magma-about-credits-box");
-    links_box.append(&linked_label("GitHub", "https://github.com/WilliamSamson/magma"));
+    links_box.append(&linked_label(
+        "GitHub",
+        "https://github.com/WilliamSamson/magma",
+    ));
 
     // Credits Section
     let credits_header = section_header("Credits");

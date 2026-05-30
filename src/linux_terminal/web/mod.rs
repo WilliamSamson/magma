@@ -10,14 +10,14 @@ use std::{
 };
 
 use gtk::{
-    pango, prelude::*, Box as GtkBox, Button, Entry, Image, Label, Orientation, Overflow,
-    PolicyType, ProgressBar, ScrolledWindow, Stack,
+    Box as GtkBox, Button, Entry, Image, Label, Orientation, Overflow, PolicyType, ProgressBar,
+    ScrolledWindow, Stack, pango, prelude::*,
 };
 use webkit6::{NetworkSession, WebContext};
 
 use super::settings::Settings;
 pub(super) use host::WebPaneHost;
-use navigation::{bind_navigation, NavigationButtons};
+use navigation::{NavigationButtons, bind_navigation};
 
 pub(super) fn build_web_pane(
     settings: Rc<RefCell<Settings>>,
@@ -39,6 +39,7 @@ pub(super) fn build_web_pane(
     let find_bar = build_find_bar();
 
     let content_stack = Stack::new();
+    content_stack.add_css_class("magma-web-frame");
     content_stack.set_vexpand(true);
     content_stack.set_hexpand(true);
     content_stack.set_width_request(0);

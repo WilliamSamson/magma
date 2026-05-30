@@ -40,8 +40,8 @@ pub(crate) fn draw(
     hovered_action: Option<TitleBarAction>,
     is_active_window: bool,
 ) {
-    canvas.draw_rect(0, 0, width, HEIGHT, theme::BG_TITLEBAR);
-    canvas.draw_rect(0, HEIGHT as i32 - 1, width, 1, theme::BORDER_STRONG);
+    canvas.draw_rect(0, 0, width, HEIGHT, theme::bg_titlebar());
+    canvas.draw_rect(0, HEIGHT as i32 - 1, width, 1, theme::border_strong());
 
     let [close_btn, minimize_btn, maximize_btn] = button_layout(width);
     let brand_width = brand_width(canvas, brand.title, width);
@@ -51,7 +51,7 @@ pub(crate) fn draw(
         brand_width,
         BRAND_HEIGHT,
         8,
-        theme::BORDER,
+        theme::border(),
     );
     canvas.draw_rounded_rect(
         BRAND_LEFT + 1,
@@ -59,16 +59,51 @@ pub(crate) fn draw(
         brand_width.saturating_sub(2),
         BRAND_HEIGHT.saturating_sub(2),
         7,
-        theme::SURFACE_BASE,
+        theme::surface_base(),
     );
-    canvas.draw_rect(BRAND_LEFT + 35, BRAND_TOP + 4, 1, BRAND_HEIGHT.saturating_sub(8), theme::BORDER_STRONG);
+    canvas.draw_rect(
+        BRAND_LEFT + 35,
+        BRAND_TOP + 4,
+        1,
+        BRAND_HEIGHT.saturating_sub(8),
+        theme::border_strong(),
+    );
 
-    let active_color = if is_active_window { theme::TEXT_PRIMARY } else { theme::TEXT_SECONDARY };
-    let dim_color = if is_active_window { theme::TEXT_SECONDARY } else { theme::TEXT_DIM };
+    let active_color = if is_active_window {
+        theme::text_primary()
+    } else {
+        theme::text_secondary()
+    };
+    let dim_color = if is_active_window {
+        theme::text_secondary()
+    } else {
+        theme::text_dim()
+    };
 
-    draw_control_button(canvas, minimize_btn, hovered_action, ControlGlyph::Minimize, active_color, dim_color);
-    draw_control_button(canvas, maximize_btn, hovered_action, ControlGlyph::Maximize, active_color, dim_color);
-    draw_control_button(canvas, close_btn, hovered_action, ControlGlyph::Close, active_color, dim_color);
+    draw_control_button(
+        canvas,
+        minimize_btn,
+        hovered_action,
+        ControlGlyph::Minimize,
+        active_color,
+        dim_color,
+    );
+    draw_control_button(
+        canvas,
+        maximize_btn,
+        hovered_action,
+        ControlGlyph::Maximize,
+        active_color,
+        dim_color,
+    );
+    draw_control_button(
+        canvas,
+        close_btn,
+        hovered_action,
+        ControlGlyph::Close,
+        active_color,
+        dim_color,
+    );
 
     draw_icon(
         canvas,
@@ -77,8 +112,18 @@ pub(crate) fn draw(
         brand.icon_height,
         BRAND_LEFT + 10,
     );
-    let title_color = if is_active_window { theme::TEXT_PRIMARY } else { theme::TEXT_SECONDARY };
-    canvas.draw_text(BRAND_LEFT + 46, 12, brand.title, title_color, TITLE_FONT_SIZE);
+    let title_color = if is_active_window {
+        theme::text_primary()
+    } else {
+        theme::text_secondary()
+    };
+    canvas.draw_text(
+        BRAND_LEFT + 46,
+        12,
+        brand.title,
+        title_color,
+        TITLE_FONT_SIZE,
+    );
 }
 
 /// Hit test: given a click at (x, y), return what was clicked.
@@ -113,13 +158,7 @@ enum ControlGlyph {
     Maximize,
 }
 
-fn draw_icon(
-    canvas: &mut Canvas<'_>,
-    rgba: &[u8],
-    src_w: u32,
-    src_h: u32,
-    x_offset: i32,
-) {
+fn draw_icon(canvas: &mut Canvas<'_>, rgba: &[u8], src_w: u32, src_h: u32, x_offset: i32) {
     if rgba.len() < (src_w * src_h * 4) as usize {
         return;
     }
@@ -177,7 +216,7 @@ fn button_layout(width: u32) -> [ControlButton; 3] {
 }
 
 fn point_in_button(x: i32, y: i32, button: ControlButton) -> bool {
-    x >= button.x 
+    x >= button.x
         && y >= button.y
         && x < button.x + BUTTON_W as i32
         && y < button.y + BUTTON_H as i32
@@ -194,15 +233,15 @@ fn draw_control_button(
     let is_hovered = hovered_action == Some(button.action);
     if is_hovered {
         let plate_color = if glyph == ControlGlyph::Close {
-            theme::ACCENT
+            theme::accent()
         } else {
-            theme::SURFACE_RAISED
+            theme::surface_raised()
         };
         canvas.draw_rounded_rect(button.x, button.y, BUTTON_W, BUTTON_H, 8, plate_color);
     }
 
     let icon_color = if is_hovered && glyph == ControlGlyph::Close {
-        theme::BG_PRIMARY
+        theme::bg_primary()
     } else if is_hovered {
         active_color
     } else {

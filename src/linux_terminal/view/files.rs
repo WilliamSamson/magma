@@ -161,10 +161,16 @@ fn category_for_path(path: &Path, kind: FileKind) -> FileCategory {
         Some("go") => FileCategory::Go,
         Some("c" | "h" | "cpp" | "cc" | "cxx" | "hpp" | "hh" | "hxx" | "cs") => FileCategory::Cpp,
         Some("swift") => FileCategory::Swift,
-        Some("html" | "htm" | "css" | "scss" | "sass" | "less" | "xml" | "vue" | "svelte" | "astro") => FileCategory::Web,
-        Some("sh" | "bash" | "zsh" | "fish" | "ps1" | "psm1" | "bat" | "cmd") => FileCategory::Shell,
-        Some("json" | "jsonc" | "toml" | "yaml" | "yml" | "ini" | "cfg" | "conf" | "env"
-            | "nix" | "sql" | "tf" | "hcl" | "proto" | "graphql" | "gql" | "prisma" | "cmake") => FileCategory::Config,
+        Some(
+            "html" | "htm" | "css" | "scss" | "sass" | "less" | "xml" | "vue" | "svelte" | "astro",
+        ) => FileCategory::Web,
+        Some("sh" | "bash" | "zsh" | "fish" | "ps1" | "psm1" | "bat" | "cmd") => {
+            FileCategory::Shell
+        }
+        Some(
+            "json" | "jsonc" | "toml" | "yaml" | "yml" | "ini" | "cfg" | "conf" | "env" | "nix"
+            | "sql" | "tf" | "hcl" | "proto" | "graphql" | "gql" | "prisma" | "cmake",
+        ) => FileCategory::Config,
         Some("md" | "txt" | "log" | "rst") => FileCategory::Docs,
         _ => FileCategory::Other,
     }

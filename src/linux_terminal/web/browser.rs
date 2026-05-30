@@ -92,11 +92,7 @@ fn normalize_browser_id(id: &str) -> &'static str {
 }
 
 impl BrowserProfile {
-    const fn new(
-        label: &'static str,
-        home_uri: &'static str,
-        search_base: &'static str,
-    ) -> Self {
+    const fn new(label: &'static str, home_uri: &'static str, search_base: &'static str) -> Self {
         Self {
             label,
             home_uri,
@@ -116,10 +112,26 @@ mod tests {
     #[test]
     fn every_browser_has_home_and_search_behavior() {
         let cases = [
-            ("google", "https://www.google.com/", "https://www.google.com/search?q=rust%20gtk"),
-            ("duckduckgo", "https://duckduckgo.com/", "https://duckduckgo.com/?q=rust%20gtk"),
-            ("bing", "https://www.bing.com/", "https://www.bing.com/search?q=rust%20gtk"),
-            ("brave", "https://search.brave.com/", "https://search.brave.com/search?q=rust%20gtk"),
+            (
+                "google",
+                "https://www.google.com/",
+                "https://www.google.com/search?q=rust%20gtk",
+            ),
+            (
+                "duckduckgo",
+                "https://duckduckgo.com/",
+                "https://duckduckgo.com/?q=rust%20gtk",
+            ),
+            (
+                "bing",
+                "https://www.bing.com/",
+                "https://www.bing.com/search?q=rust%20gtk",
+            ),
+            (
+                "brave",
+                "https://search.brave.com/",
+                "https://search.brave.com/search?q=rust%20gtk",
+            ),
         ];
 
         for (id, home, search) in cases {

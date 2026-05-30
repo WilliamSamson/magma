@@ -1,4 +1,8 @@
-use std::{fs, fs::File, io::{self, BufRead, BufReader, IsTerminal}};
+use std::{
+    fs,
+    fs::File,
+    io::{self, BufRead, BufReader, IsTerminal},
+};
 
 use super::log_entry::LogEntry;
 
@@ -38,7 +42,10 @@ pub(crate) fn load_source(input_path: Option<String>) -> io::Result<LoadedSource
 fn load_file_source(path: String) -> io::Result<LoadedSource> {
     let reader = BufReader::new(File::open(&path)?);
     let entries = read_entries(reader)?;
-    let next_line_number = entries.last().map(|entry| entry.line_number() + 1).unwrap_or(1);
+    let next_line_number = entries
+        .last()
+        .map(|entry| entry.line_number() + 1)
+        .unwrap_or(1);
     let offset = fs::metadata(&path)?.len();
 
     Ok(LoadedSource {

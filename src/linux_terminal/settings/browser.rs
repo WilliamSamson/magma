@@ -1,11 +1,10 @@
 use std::{cell::RefCell, rc::Rc};
 
-use gtk::{prelude::*, Box as GtkBox};
+use gtk::{Box as GtkBox, prelude::*};
 
 use super::{
-    save_settings,
+    Settings, save_settings,
     widgets::{action_row, dropdown_row, section_label},
-    Settings,
 };
 
 pub(super) fn build_browser_section(

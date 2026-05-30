@@ -6,10 +6,10 @@ use std::{
 };
 
 use gtk::{gio, glib};
-use vte4::{prelude::*, PtyFlags, Terminal};
+use vte4::{PtyFlags, Terminal, prelude::*};
 
-use super::runtime;
 use super::super::persist::SessionSnapshot;
+use super::runtime;
 
 #[allow(dead_code)]
 pub(crate) struct ShellRuntime {
@@ -77,9 +77,10 @@ fn build_launch(
     let env = shell_env(status_path);
 
     if let Some(tmux) = runtime::resolve_executable("tmux") {
-        if let (Some(session_id), Some(socket_path)) =
-            (session.session_id.as_deref(), session.socket_path.as_deref())
-        {
+        if let (Some(session_id), Some(socket_path)) = (
+            session.session_id.as_deref(),
+            session.socket_path.as_deref(),
+        ) {
             return ShellLaunch {
                 args: tmux_args(&tmux, shell, status_path, session_id, socket_path, cwd),
                 env,

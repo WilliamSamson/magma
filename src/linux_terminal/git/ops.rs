@@ -244,7 +244,11 @@ fn parse_change(c: char) -> FileChange {
 
 // ─── Diff ────────────────────────────────────────────────────────────
 
-pub(super) fn git_diff_file(root: &Path, path: &str, staged: bool) -> Result<Vec<DiffHunk>, String> {
+pub(super) fn git_diff_file(
+    root: &Path,
+    path: &str,
+    staged: bool,
+) -> Result<Vec<DiffHunk>, String> {
     let mut args = vec!["diff", "--color=never", "-U3"];
     if staged {
         args.push("--cached");
@@ -256,7 +260,10 @@ pub(super) fn git_diff_file(root: &Path, path: &str, staged: bool) -> Result<Vec
 }
 
 pub(super) fn git_diff_stat(root: &Path, commit: &str) -> Result<String, String> {
-    run_git(root, &["show", "--stat", "--color=never", "--format=", commit])
+    run_git(
+        root,
+        &["show", "--stat", "--color=never", "--format=", commit],
+    )
 }
 
 pub(super) fn git_show_diff(root: &Path, commit: &str) -> Result<Vec<DiffHunk>, String> {
@@ -554,7 +561,11 @@ fn parse_graph_output(text: &str) -> Vec<CommitInfo> {
                     author: field_lines[2].clone(),
                     date: field_lines[3].clone(),
                     message: field_lines[4].clone(),
-                    refs: field_lines.get(5).map(|s| s.as_str()).unwrap_or("").to_string(),
+                    refs: field_lines
+                        .get(5)
+                        .map(|s| s.as_str())
+                        .unwrap_or("")
+                        .to_string(),
                     graph_line: Some(graph_prefix.clone()),
                 });
             }
@@ -599,7 +610,10 @@ pub(super) fn git_branches(root: &Path) -> Result<(Vec<BranchInfo>, Vec<BranchIn
         let line = line.trim_start_matches('*').trim_start_matches(' ');
         let parts: Vec<&str> = line.splitn(3, '\t').collect();
         let name = parts.first().unwrap_or(&"").to_string();
-        let upstream = parts.get(1).filter(|s| !s.is_empty()).map(|s| s.to_string());
+        let upstream = parts
+            .get(1)
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_string());
         let last_commit = parts.get(2).unwrap_or(&"").to_string();
 
         if !name.is_empty() {
@@ -615,11 +629,7 @@ pub(super) fn git_branches(root: &Path) -> Result<(Vec<BranchInfo>, Vec<BranchIn
     // Remote tracking branches (separate command)
     let remote_out = run_git(
         root,
-        &[
-            "branch",
-            "-r",
-            "--format=%(refname:short)\t%(subject)",
-        ],
+        &["branch", "-r", "--format=%(refname:short)\t%(subject)"],
     )?;
 
     let mut remote = Vec::new();
@@ -777,7 +787,11 @@ fn parse_blame_output(text: &str) -> Result<Vec<BlameLine>, String> {
 
 // ─── Search ──────────────────────────────────────────────────────────
 
-pub(super) fn git_search_commits(root: &Path, query: &str, mode: SearchMode) -> Result<Vec<CommitInfo>, String> {
+pub(super) fn git_search_commits(
+    root: &Path,
+    query: &str,
+    mode: SearchMode,
+) -> Result<Vec<CommitInfo>, String> {
     let format_arg = "--format=%H%n%h%n%an%n%ar%n%s%n%D%n---END---";
     let mut args = vec!["log", "-50", "--all", format_arg];
 
@@ -818,10 +832,7 @@ pub(super) enum SearchMode {
 pub(super) fn quick_repo_fingerprint(root: &Path) -> Option<String> {
     let head = run_git(root, &["rev-parse", "HEAD"]).ok()?;
     let index = root.join(".git/index");
-    let mtime = std::fs::metadata(&index)
-        .ok()?
-        .modified()
-        .ok()?;
+    let mtime = std::fs::metadata(&index).ok()?.modified().ok()?;
     Some(format!("{}:{:?}", head.trim(), mtime))
 }
 

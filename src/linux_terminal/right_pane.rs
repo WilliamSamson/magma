@@ -1,8 +1,8 @@
 use std::{cell::Cell, cell::RefCell, path::Path, rc::Rc};
 
 use gtk::{
-    prelude::*, Align, Box as GtkBox, Button, Image, Orientation, Overflow, PolicyType,
-    Revealer, RevealerTransitionType, ScrolledWindow,
+    Align, Box as GtkBox, Button, Image, Orientation, Overflow, PolicyType, Revealer,
+    RevealerTransitionType, ScrolledWindow, prelude::*,
 };
 use webkit6::WebContext;
 
@@ -223,6 +223,7 @@ impl SidePanes {
     }
 
     pub(super) fn apply_settings(&self, settings: &Settings) {
+        self.agent_host.apply_settings(settings);
         let next = match (settings.logr_panel_open, self.active_pane.get()) {
             (true, SidePaneKind::None) => SidePaneKind::Logr,
             (false, SidePaneKind::Logr) => SidePaneKind::None,

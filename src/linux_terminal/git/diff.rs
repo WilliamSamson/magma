@@ -1,6 +1,4 @@
-use gtk::{
-    pango, prelude::*, Box as GtkBox, Label, Orientation, Overflow,
-};
+use gtk::{Box as GtkBox, Label, Orientation, Overflow, pango, prelude::*};
 
 use super::ops::{DiffHunk, DiffLineKind};
 

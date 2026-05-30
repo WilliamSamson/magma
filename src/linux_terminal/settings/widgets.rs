@@ -1,7 +1,28 @@
 use gtk::{
-    prelude::*, Align, Box as GtkBox, Button, DropDown, Entry, Label, Orientation, SpinButton,
-    StringList, Switch,
+    Align, Box as GtkBox, Button, DropDown, Entry, EntryIconPosition, Label, Orientation,
+    SpinButton, StringList, Switch, prelude::*,
 };
+
+pub(super) fn nav_button(text: &str) -> Button {
+    let button = Button::builder()
+        .label(text)
+        .css_classes(["magma-settings-nav-button"])
+        .build();
+    button.set_halign(Align::Center);
+    button
+}
+
+pub(super) fn nav_search_entry() -> Entry {
+    let entry = Entry::new();
+    entry.add_css_class("magma-settings-entry");
+    entry.add_css_class("magma-settings-nav-search");
+    entry.set_placeholder_text(Some("search settings"));
+    entry.set_icon_from_icon_name(EntryIconPosition::Primary, Some("system-search-symbolic"));
+    entry.set_halign(Align::Start);
+    entry.set_width_chars(16);
+    entry.set_size_request(148, -1);
+    entry
+}
 
 pub(super) fn section_label(text: &str) -> Label {
     let label = Label::new(Some(text));
@@ -40,7 +61,12 @@ pub(super) fn spin_row(
     spin
 }
 
-pub(super) fn switch_row(parent: &GtkBox, label_text: &str, description: &str, active: bool) -> Switch {
+pub(super) fn switch_row(
+    parent: &GtkBox,
+    label_text: &str,
+    description: &str,
+    active: bool,
+) -> Switch {
     let switch = Switch::new();
     switch.set_active(active);
     switch.add_css_class("magma-settings-switch");
@@ -77,7 +103,12 @@ pub(super) fn info_row(parent: &GtkBox, label_text: &str, value: &str) {
     row.append(&value_label);
 }
 
-pub(super) fn action_row(parent: &GtkBox, label_text: &str, description: &str, action_text: &str) -> Button {
+pub(super) fn action_row(
+    parent: &GtkBox,
+    label_text: &str,
+    description: &str,
+    action_text: &str,
+) -> Button {
     let button = Button::builder()
         .label(action_text)
         .css_classes(["magma-settings-link"])
@@ -103,13 +134,13 @@ fn setting_row(parent: &GtkBox, label_text: &str, description: &str) -> GtkBox {
     container.add_css_class("magma-settings-row");
 
     let header = GtkBox::new(Orientation::Horizontal, 12);
-    
+
     let title = Label::new(Some(label_text));
     title.add_css_class("magma-settings-label");
     title.set_xalign(0.0);
     title.set_hexpand(true);
     header.append(&title);
-    
+
     container.append(&header);
 
     if !description.is_empty() {

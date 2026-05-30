@@ -1,18 +1,12 @@
-use std::{
-    cell::Cell,
-    fs,
-    rc::Rc,
-};
+use std::{cell::Cell, fs, rc::Rc};
 
-use gtk::{
-    prelude::*, Button, PolicyType, ScrolledWindow, TextBuffer, TextView, WrapMode,
-};
+use gtk::{Button, PolicyType, ScrolledWindow, TextBuffer, TextView, WrapMode, prelude::*};
 
 use super::{
-    code::{comment_tokens, keywords, language_for_path, language_for_text, CodeLanguage},
-    files::{format_size, kind_label, FileKind, ViewerFile},
-    preview::PreviewWidgets,
     ViewState,
+    code::{CodeLanguage, comment_tokens, keywords, language_for_path, language_for_text},
+    files::{FileKind, ViewerFile, format_size, kind_label},
+    preview::PreviewWidgets,
 };
 
 pub(super) struct EditorWidgets {
@@ -123,9 +117,11 @@ pub(super) fn show_code_preview(
     preview.editor.save_button.set_visible(true);
     preview.editor.reload_button.set_sensitive(true);
     preview.editor.save_button.set_sensitive(false);
-    preview
-        .meta
-        .set_text(&format!("{} · {}", kind_label(file.kind), format_size(file.size_bytes)));
+    preview.meta.set_text(&format!(
+        "{} · {}",
+        kind_label(file.kind),
+        format_size(file.size_bytes)
+    ));
     state.model.borrow_mut().selected_file = Some(file.path.clone());
     Ok(())
 }
@@ -224,7 +220,10 @@ fn schedule_highlight(buffer: &TextBuffer, pending: Rc<Cell<bool>>) {
 }
 
 fn install_tags(buffer: &TextBuffer) {
-    let _ = buffer.create_tag(Some("code-keyword"), &[("foreground", &"#ff6b6b"), ("weight", &700)]);
+    let _ = buffer.create_tag(
+        Some("code-keyword"),
+        &[("foreground", &"#ff6b6b"), ("weight", &700)],
+    );
     let _ = buffer.create_tag(Some("code-string"), &[("foreground", &"#8bd450")]);
     let _ = buffer.create_tag(Some("code-comment"), &[("foreground", &"#7e8294")]);
     let _ = buffer.create_tag(Some("code-number"), &[("foreground", &"#ffbd2e")]);
@@ -256,7 +255,12 @@ fn highlight_line(buffer: &TextBuffer, line: &str, line_offset: usize, language:
     highlight_keywords(buffer, code_segment, line_offset, language);
 
     if let Some(start) = comment_start {
-        apply_tag(buffer, "code-comment", line_offset + char_count(&line[..start]), line_offset + line.chars().count());
+        apply_tag(
+            buffer,
+            "code-comment",
+            line_offset + char_count(&line[..start]),
+            line_offset + line.chars().count(),
+        );
     }
 }
 
@@ -270,7 +274,12 @@ fn highlight_strings(buffer: &TextBuffer, text: &str, line_offset: usize) {
                 start_char = idx;
             }
             Some(quote) if ch == quote => {
-                apply_tag(buffer, "code-string", line_offset + start_char, line_offset + idx + 1);
+                apply_tag(
+                    buffer,
+                    "code-string",
+                    line_offset + start_char,
+                    line_offset + idx + 1,
+                );
                 in_string = None;
             }
             _ => {}
@@ -285,7 +294,12 @@ fn highlight_numbers(buffer: &TextBuffer, text: &str, line_offset: usize) {
             start = Some(idx);
         } else if !ch.is_ascii_digit() {
             if let Some(number_start) = start.take() {
-                apply_tag(buffer, "code-number", line_offset + number_start, line_offset + idx);
+                apply_tag(
+                    buffer,
+                    "code-number",
+                    line_offset + number_start,
+                    line_offset + idx,
+                );
             }
         }
     }
@@ -313,7 +327,12 @@ fn highlight_keywords(buffer: &TextBuffer, text: &str, line_offset: usize, langu
         }
 
         if keywords.contains(&word.as_str()) {
-            apply_tag(buffer, "code-keyword", line_offset + start, line_offset + idx);
+            apply_tag(
+                buffer,
+                "code-keyword",
+                line_offset + start,
+                line_offset + idx,
+            );
         }
         word.clear();
     }

@@ -7,15 +7,14 @@ use std::{
 };
 
 use gtk::{
-    gdk, glib, pango, prelude::*, Box as GtkBox, Button, Entry, EventControllerKey, Label,
-    Image, ListBox, ListBoxRow, MenuButton, Orientation, Overflow, Popover, PolicyType,
-    ScrolledWindow,
+    Box as GtkBox, Button, Entry, EventControllerKey, Image, Label, ListBox, ListBoxRow,
+    MenuButton, Orientation, Popover, ScrolledWindow, gdk, glib, pango, prelude::*,
 };
 
 use crate::{
+    agent::context::{LogRuntimeSnapshot, LogSnapshot, write_log_runtime_snapshot},
     agent::effects::take_logr_filter_request,
-    agent::context::{write_log_runtime_snapshot, LogRuntimeSnapshot, LogSnapshot},
-    features::logs::{load_source, spawn_file_follower, write_filtered, LogEntry},
+    features::logs::{LogEntry, load_source, spawn_file_follower, write_filtered},
     logger,
 };
 
@@ -30,9 +29,6 @@ pub(super) fn build_logr_pane() -> GtkBox {
     root.set_vexpand(true);
     root.add_css_class("magma-logr-root");
     root.set_focusable(true);
-
-    // Tab bar
-    let tab_row = build_tab_bar();
 
     // Header: title + stats + count
     let header = GtkBox::new(Orientation::Horizontal, 6);
@@ -146,7 +142,10 @@ pub(super) fn build_logr_pane() -> GtkBox {
     filter_entry.add_css_class("magma-logr-filter");
     filter_entry.set_placeholder_text(Some("filter... (Ctrl+L)"));
     filter_entry.set_hexpand(true);
-    filter_entry.set_icon_from_icon_name(gtk::EntryIconPosition::Primary, Some("system-search-symbolic"));
+    filter_entry.set_icon_from_icon_name(
+        gtk::EntryIconPosition::Primary,
+        Some("system-search-symbolic"),
+    );
 
     // Log list
     let list = ListBox::new();
@@ -178,7 +177,6 @@ pub(super) fn build_logr_pane() -> GtkBox {
     status_row.append(&jump_button);
 
     // Assemble layout
-    root.append(&tab_row.row);
     root.append(&header);
     root.append(&picker_row);
     root.append(&controls_row);
@@ -187,17 +185,20 @@ pub(super) fn build_logr_pane() -> GtkBox {
     root.append(&status_row);
 
     // State
-    let state = Rc::new(RefCell::new(PaneState {
-        tabs: Vec::new(),
-        active_tab: 0,
-        next_tab_id: 0,
+    // Shared because GTK callbacks and the follower timer mutate the same live session on the main thread.
+    let state = Rc::new(RefCell::new(SessionState {
+        name: "new".to_string(),
+        entries: Vec::new(),
+        follower: None,
+        selected_path: None,
+        query: String::new(),
+        level_visible: [true; 6],
+        last_status: String::new(),
     }));
     let discovered = Rc::new(RefCell::new(Vec::<PathBuf>::new()));
 
     let view = Rc::new(LogrView {
         root: root.clone(),
-        tab_bar: tab_row.tab_bar,
-        add_tab_button: tab_row.add_button,
         list: list.clone(),
         count_label,
         status,
@@ -215,9 +216,7 @@ pub(super) fn build_logr_pane() -> GtkBox {
         expanded_detail: RefCell::new(None),
     });
 
-    // Create initial tab
-    let initial_tab = create_tab(&view);
-    switch_to_tab(&view, initial_tab);
+    refresh_view(&view);
 
     // Initial scan
     populate_popover_list(&popover_list, &discovered);
@@ -228,7 +227,6 @@ pub(super) fn build_logr_pane() -> GtkBox {
     bind_play_stop(&view);
     bind_clear_export(&view);
     bind_filter(&view, &filter_entry);
-    bind_tab_add(&view);
     bind_scroll_tracking(&view, &scroller, &jump_button);
     bind_keyboard(&view);
 
@@ -241,14 +239,7 @@ pub(super) fn build_logr_pane() -> GtkBox {
 
 // ─── State ──────────────────────────────────────────────────────────
 
-struct PaneState {
-    tabs: Vec<TabState>,
-    active_tab: usize,
-    next_tab_id: u32,
-}
-
-struct TabState {
-    id: u32,
+struct SessionState {
     name: String,
     entries: Vec<LogEntry>,
     follower: Option<Receiver<LogEntry>>,
@@ -260,8 +251,6 @@ struct TabState {
 
 struct LogrView {
     root: GtkBox,
-    tab_bar: GtkBox,
-    add_tab_button: Button,
     list: ListBox,
     count_label: Label,
     status: Label,
@@ -273,7 +262,7 @@ struct LogrView {
     stream_label: Label,
     clear_button: Button,
     export_button: Button,
-    state: Rc<RefCell<PaneState>>,
+    state: Rc<RefCell<SessionState>>,
     discovered: Rc<RefCell<Vec<PathBuf>>>,
     popover_list: ListBox,
     expanded_detail: RefCell<Option<ExpandedDetail>>,
@@ -282,207 +271,6 @@ struct LogrView {
 struct ExpandedDetail {
     row: GtkBox,
     revealer: gtk::Revealer,
-}
-
-struct TabBarWidgets {
-    row: GtkBox,
-    tab_bar: GtkBox,
-    add_button: Button,
-}
-
-fn build_tab_bar() -> TabBarWidgets {
-    let row = GtkBox::new(Orientation::Horizontal, 0);
-    row.add_css_class("magma-logr-tab-row");
-    row.set_hexpand(true);
-    row.set_overflow(Overflow::Hidden);
-
-    let scroll = ScrolledWindow::new();
-    scroll.add_css_class("magma-logr-tab-scroll");
-    scroll.set_hexpand(true);
-    scroll.set_vexpand(false);
-    scroll.set_policy(PolicyType::Automatic, PolicyType::Never);
-
-    let tab_bar = GtkBox::new(Orientation::Horizontal, 2);
-    tab_bar.add_css_class("magma-logr-tabs");
-    scroll.set_child(Some(&tab_bar));
-
-    let add_button = Button::builder()
-        .icon_name("list-add-symbolic")
-        .tooltip_text("New log tab")
-        .css_classes(["magma-logr-tab-add"])
-        .build();
-
-    row.append(&scroll);
-    row.append(&add_button);
-
-    TabBarWidgets {
-        row,
-        tab_bar,
-        add_button,
-    }
-}
-
-// ─── Tab management ─────────────────────────────────────────────────
-
-fn create_tab(view: &Rc<LogrView>) -> usize {
-    let mut state = view.state.borrow_mut();
-    let id = state.next_tab_id;
-    state.next_tab_id += 1;
-
-    let tab_state = TabState {
-        id,
-        name: "new".to_string(),
-        entries: Vec::new(),
-        follower: None,
-        selected_path: None,
-        query: String::new(),
-        level_visible: [true; 6],
-        last_status: String::new(),
-    };
-
-    let label = Label::new(Some("new"));
-    label.add_css_class("magma-logr-tab-label");
-    label.set_ellipsize(pango::EllipsizeMode::End);
-    label.set_max_width_chars(14);
-
-    let close_button = Button::builder()
-        .icon_name("window-close-symbolic")
-        .css_classes(["magma-logr-tab-close"])
-        .tooltip_text("Close tab")
-        .build();
-
-    let tab_button = GtkBox::new(Orientation::Horizontal, 4);
-    tab_button.add_css_class("magma-logr-tab");
-    tab_button.append(&label);
-    tab_button.append(&close_button);
-
-    view.tab_bar.append(&tab_button);
-    state.tabs.push(tab_state);
-    let index = state.tabs.len() - 1;
-    drop(state);
-
-    // Click to switch
-    let view_ref = view.clone();
-    let gesture = gtk::GestureClick::new();
-    gesture.connect_released(move |_, _, _, _| {
-        let idx = {
-            let state = view_ref.state.borrow();
-            state.tabs.iter().position(|t| t.id == id)
-        };
-        if let Some(idx) = idx {
-            switch_to_tab(&view_ref, idx);
-        }
-    });
-    tab_button.add_controller(gesture);
-
-    // Close button
-    let view_ref = view.clone();
-    close_button.connect_clicked(move |_| {
-        close_tab(&view_ref, id);
-    });
-
-    index
-}
-
-fn switch_to_tab(view: &Rc<LogrView>, index: usize) {
-    let mut state = view.state.borrow_mut();
-    if index >= state.tabs.len() {
-        return;
-    }
-
-    // Save current tab's query
-    let old = state.active_tab;
-    if old < state.tabs.len() {
-        state.tabs[old].query = view.filter_entry.text().to_string();
-    }
-
-    // Remove old active class
-    if let Some(btn) = tab_button_at(&view.tab_bar, old) {
-        btn.remove_css_class("active");
-    }
-
-    state.active_tab = index;
-
-    // Add active class
-    if let Some(btn) = tab_button_at(&view.tab_bar, index) {
-        btn.add_css_class("active");
-    }
-
-    drop(state);
-    sync_active_tab_ui(view);
-    refresh_view(view);
-}
-
-fn close_tab(view: &Rc<LogrView>, id: u32) {
-    let index = {
-        let state = view.state.borrow();
-        match state.tabs.iter().position(|t| t.id == id) {
-            Some(i) => i,
-            None => return,
-        }
-    };
-
-    let tab_count = view.state.borrow().tabs.len();
-    if tab_count <= 1 {
-        // Last tab: clear it instead
-        {
-            let mut state = view.state.borrow_mut();
-            let tab = &mut state.tabs[0];
-            tab.entries.clear();
-            tab.follower = None;
-            tab.selected_path = None;
-            tab.query.clear();
-            tab.level_visible = [true; 6];
-            tab.last_status.clear();
-            tab.name = "new".to_string();
-        }
-        if let Some(btn) = tab_button_at(&view.tab_bar, 0) {
-            if let Some(lbl) = btn.first_child().and_then(|c| c.downcast::<Label>().ok()) {
-                lbl.set_text("new");
-            }
-        }
-        view.filter_entry.set_text("");
-        sync_controls_after_stop(view);
-        refresh_view(view);
-        return;
-    }
-
-    // Remove tab button from bar
-    if let Some(btn) = tab_button_at(&view.tab_bar, index) {
-        view.tab_bar.remove(&btn);
-    }
-
-    let active = view.state.borrow().active_tab;
-    view.state.borrow_mut().tabs.remove(index);
-
-    if index == active {
-        let new_active = index.min(view.state.borrow().tabs.len() - 1);
-        view.state.borrow_mut().active_tab = new_active;
-        switch_to_tab(view, new_active);
-    } else if index < active {
-        view.state.borrow_mut().active_tab = active - 1;
-    }
-}
-
-fn tab_button_at(tab_bar: &GtkBox, index: usize) -> Option<gtk::Widget> {
-    let mut child = tab_bar.first_child();
-    let mut i = 0;
-    while let Some(widget) = child {
-        if i == index {
-            return Some(widget);
-        }
-        child = widget.next_sibling();
-        i += 1;
-    }
-    None
-}
-
-fn set_tab_label(view: &LogrView, index: usize, text: &str) {
-    if let Some(btn) = tab_button_at(&view.tab_bar, index) {
-        if let Some(lbl) = btn.first_child().and_then(|c| c.downcast::<Label>().ok()) {
-            lbl.set_text(text);
-        }
-    }
 }
 
 // ─── Bindings ───────────────────────────────────────────────────────
@@ -508,20 +296,15 @@ fn bind_file_picker(view: &Rc<LogrView>, popover_list: &ListBox, popover: &Popov
                 .unwrap_or("unknown");
 
             let mut state = view_ref.state.borrow_mut();
-            let active = state.active_tab;
-            if active < state.tabs.len() {
-                state.tabs[active].selected_path = Some(path.clone());
-                state.tabs[active].name = name.to_string();
-            }
+            state.selected_path = Some(path.clone());
+            state.name = name.to_string();
+            state.follower = None;
+            state.entries.clear();
+            state.last_status.clear();
             drop(state);
 
-            view_ref.select_button.set_label(name);
-            view_ref
-                .stream_label
-                .set_text(&format!("ready: {name}"));
-            view_ref.play_button.set_sensitive(true);
-
-            set_tab_label(&view_ref, active_tab_index(&view_ref), name);
+            sync_session_ui(&view_ref);
+            refresh_view(&view_ref);
         }
         popover.popdown();
     });
@@ -533,11 +316,7 @@ fn bind_play_stop(view: &Rc<LogrView>) {
     view.play_button.connect_clicked(move |_| {
         let path = {
             let state = view_ref.state.borrow();
-            let active = state.active_tab;
-            state
-                .tabs
-                .get(active)
-                .and_then(|t| t.selected_path.clone())
+            state.selected_path.clone()
         };
         if let Some(path) = path {
             load_file(&path, &view_ref);
@@ -549,11 +328,8 @@ fn bind_play_stop(view: &Rc<LogrView>) {
     view.stop_button.connect_clicked(move |_| {
         {
             let mut state = view_ref.state.borrow_mut();
-            let active = state.active_tab;
-            if let Some(tab) = state.tabs.get_mut(active) {
-                tab.follower = None;
-                tab.last_status = "stopped".to_string();
-            }
+            state.follower = None;
+            state.last_status = "stopped".to_string();
         }
         sync_controls_after_stop(&view_ref);
         refresh_view(&view_ref);
@@ -566,11 +342,8 @@ fn bind_clear_export(view: &Rc<LogrView>) {
     view.clear_button.connect_clicked(move |_| {
         {
             let mut state = view_ref.state.borrow_mut();
-            let active = state.active_tab;
-            if let Some(tab) = state.tabs.get_mut(active) {
-                tab.entries.clear();
-                tab.last_status = "cleared".to_string();
-            }
+            state.entries.clear();
+            state.last_status = "cleared".to_string();
         }
         refresh_view(&view_ref);
         logger::info("logr: view cleared", &[]);
@@ -580,31 +353,26 @@ fn bind_clear_export(view: &Rc<LogrView>) {
     let view_ref = view.clone();
     view.export_button.connect_clicked(move |_| {
         let state = view_ref.state.borrow();
-        let active = state.active_tab;
-        if let Some(tab) = state.tabs.get(active) {
-            let filtered: Vec<&LogEntry> = tab
-                .entries
-                .iter()
-                .filter(|e| matches_filters(e, &tab.query, &tab.level_visible))
-                .collect();
+        let filtered: Vec<&LogEntry> = state
+            .entries
+            .iter()
+            .filter(|e| matches_filters(e, &state.query, &state.level_visible))
+            .collect();
 
-            if filtered.is_empty() {
-                view_ref.status.set_text("nothing to export");
-                return;
+        if filtered.is_empty() {
+            view_ref.status.set_text("nothing to export");
+            return;
+        }
+
+        match write_filtered("magma-export.jsonl", &filtered) {
+            Ok(count) => {
+                let msg = format!("exported {count} entries → magma-export.jsonl");
+                view_ref.status.set_text(&msg);
+                logger::info("logr: exported", &[("count", &count.to_string())]);
             }
-
-            match write_filtered("magma-export.jsonl", &filtered) {
-                Ok(count) => {
-                    let msg = format!("exported {count} entries → magma-export.jsonl");
-                    view_ref.status.set_text(&msg);
-                    logger::info("logr: exported", &[("count", &count.to_string())]);
-                }
-                Err(e) => {
-                    view_ref
-                        .status
-                        .set_text(&format!("export failed: {e}"));
-                    logger::error("logr: export failed", &[("error", &e.to_string())]);
-                }
+            Err(e) => {
+                view_ref.status.set_text(&format!("export failed: {e}"));
+                logger::error("logr: export failed", &[("error", &e.to_string())]);
             }
         }
     });
@@ -616,20 +384,9 @@ fn bind_filter(view: &Rc<LogrView>, filter_entry: &Entry) {
         let text = entry.text().to_string();
         {
             let mut state = view_ref.state.borrow_mut();
-            let active = state.active_tab;
-            if let Some(tab) = state.tabs.get_mut(active) {
-                tab.query = text;
-            }
+            state.query = text;
         }
         refresh_view(&view_ref);
-    });
-}
-
-fn bind_tab_add(view: &Rc<LogrView>) {
-    let view_ref = view.clone();
-    view.add_tab_button.connect_clicked(move |_| {
-        let idx = create_tab(&view_ref);
-        switch_to_tab(&view_ref, idx);
     });
 }
 
@@ -665,35 +422,10 @@ fn bind_keyboard(view: &Rc<LogrView>) {
         if ctrl && keyval == gdk::Key::k {
             {
                 let mut state = view_ref.state.borrow_mut();
-                let active = state.active_tab;
-                if let Some(tab) = state.tabs.get_mut(active) {
-                    tab.entries.clear();
-                    tab.last_status = "cleared".to_string();
-                }
+                state.entries.clear();
+                state.last_status = "cleared".to_string();
             }
             refresh_view(&view_ref);
-            return glib::Propagation::Stop;
-        }
-
-        // Ctrl+T → new tab
-        if ctrl && keyval == gdk::Key::t {
-            let idx = create_tab(&view_ref);
-            switch_to_tab(&view_ref, idx);
-            return glib::Propagation::Stop;
-        }
-
-        // Ctrl+W → close tab
-        if ctrl && keyval == gdk::Key::w {
-            let id = {
-                let state = view_ref.state.borrow();
-                state
-                    .tabs
-                    .get(state.active_tab)
-                    .map(|t| t.id)
-            };
-            if let Some(id) = id {
-                close_tab(&view_ref, id);
-            }
             return glib::Propagation::Stop;
         }
 
@@ -789,34 +521,28 @@ fn load_file(path: &Path, view: &Rc<LogrView>) {
             let follower = source.follow_config.map(spawn_file_follower);
             let loaded = source.entries.len();
             let mode = if follower.is_some() { "live" } else { "static" };
-            logger::info("logr: file loaded", &[
-                ("entries", &loaded.to_string()),
-                ("mode", mode),
-            ]);
+            logger::info(
+                "logr: file loaded",
+                &[("entries", &loaded.to_string()), ("mode", mode)],
+            );
             let query = view.filter_entry.text().to_string();
             {
                 let mut state = view.state.borrow_mut();
-                let active = state.active_tab;
-                if let Some(tab) = state.tabs.get_mut(active) {
-                    tab.entries = source.entries;
-                    tab.follower = follower;
-                    tab.query = query;
-                    tab.last_status = format!("{loaded} entries ({mode})");
-                }
+                state.entries = source.entries;
+                state.follower = follower;
+                state.query = query;
+                state.last_status = format!("{loaded} entries ({mode})");
             }
-            sync_active_tab_ui(view);
+            sync_session_ui(view);
             refresh_view(view);
         }
         Err(error) => {
             logger::error("logr: file load failed", &[("error", &error.to_string())]);
             {
                 let mut state = view.state.borrow_mut();
-                let active = state.active_tab;
-                if let Some(tab) = state.tabs.get_mut(active) {
-                    tab.last_status = format!("error: {error}");
-                }
+                state.last_status = format!("error: {error}");
             }
-            sync_active_tab_ui(view);
+            sync_session_ui(view);
             refresh_view(view);
         }
     }
@@ -827,9 +553,9 @@ fn load_file(path: &Path, view: &Rc<LogrView>) {
 fn watch_follower(view: &Rc<LogrView>) {
     let view = view.clone();
     glib::timeout_add_local(Duration::from_millis(250), move || {
-        let changed = drain_all_tabs(&view.state);
+        let changed = drain_session(&view.state);
         if changed {
-            sync_active_tab_ui(&view);
+            sync_session_ui(&view);
             refresh_view(&view);
             // Auto-scroll if near bottom
             if should_auto_scroll(&view.scroller) {
@@ -841,34 +567,32 @@ fn watch_follower(view: &Rc<LogrView>) {
     });
 }
 
-fn drain_all_tabs(state: &Rc<RefCell<PaneState>>) -> bool {
+fn drain_session(state: &Rc<RefCell<SessionState>>) -> bool {
     let mut changed = false;
-    let mut s = state.borrow_mut();
-    for tab in &mut s.tabs {
-        let mut new_entries = Vec::new();
-        let mut stopped = false;
+    let mut session = state.borrow_mut();
+    let mut new_entries = Vec::new();
+    let mut stopped = false;
 
-        if let Some(receiver) = tab.follower.as_mut() {
-            loop {
-                match receiver.try_recv() {
-                    Ok(entry) => new_entries.push(entry),
-                    Err(TryRecvError::Empty) => break,
-                    Err(TryRecvError::Disconnected) => {
-                        stopped = true;
-                        break;
-                    }
+    if let Some(receiver) = session.follower.as_mut() {
+        loop {
+            match receiver.try_recv() {
+                Ok(entry) => new_entries.push(entry),
+                Err(TryRecvError::Empty) => break,
+                Err(TryRecvError::Disconnected) => {
+                    stopped = true;
+                    break;
                 }
             }
         }
+    }
 
-        if !new_entries.is_empty() || stopped {
-            tab.entries.append(&mut new_entries);
-            if stopped {
-                tab.follower = None;
-                tab.last_status = "follow ended".to_string();
-            }
-            changed = true;
+    if !new_entries.is_empty() || stopped {
+        session.entries.append(&mut new_entries);
+        if stopped {
+            session.follower = None;
+            session.last_status = "follow ended".to_string();
         }
+        changed = true;
     }
     changed
 }
@@ -890,11 +614,10 @@ fn watch_agent_filters(view: &Rc<LogrView>) {
             return glib::ControlFlow::Continue;
         };
         let query = filter.query.unwrap_or_default();
-        let active_tab = view.state.borrow().active_tab;
-        if let Some(tab) = view.state.borrow_mut().tabs.get_mut(active_tab) {
-            tab.query = query.clone();
-            tab.level_visible = [filter.levels.is_empty(); 6];
-        }
+        let mut state = view.state.borrow_mut();
+        state.query = query.clone();
+        state.level_visible = [filter.levels.is_empty(); 6];
+        drop(state);
         view.filter_entry.set_text(&query);
         refresh_view(&view);
         glib::ControlFlow::Continue
@@ -908,27 +631,24 @@ fn refresh_view(view: &Rc<LogrView>) {
     clear_list(&view.list);
 
     let state = view.state.borrow();
-    let active = state.active_tab;
-    let Some(tab) = state.tabs.get(active) else {
-        return;
-    };
 
     // Cloning filtered entries releases the state borrow before GTK row construction, which avoids holding UI work against RefCell state.
-    let filtered: Vec<LogEntry> = tab
+    let filtered: Vec<LogEntry> = state
         .entries
         .iter()
-        .filter(|e| matches_filters(e, &tab.query, &tab.level_visible))
+        .filter(|e| matches_filters(e, &state.query, &state.level_visible))
         .cloned()
         .collect();
     let shown = filtered.len();
-    let total = tab.entries.len();
+    let total = state.entries.len();
     let start = shown.saturating_sub(MAX_VISIBLE_ENTRIES);
 
-    view.count_label.set_text(&format_count_summary(shown, total));
-    view.status.set_text(if tab.last_status.is_empty() {
+    view.count_label
+        .set_text(&format_count_summary(shown, total));
+    view.status.set_text(if state.last_status.is_empty() {
         "idle"
     } else {
-        &tab.last_status
+        &state.last_status
     });
 
     if shown == 0 {
@@ -944,9 +664,9 @@ fn refresh_view(view: &Rc<LogrView>) {
         return;
     }
 
-    let query = tab.query.clone();
-    let selected_path = tab.selected_path.clone();
-    let snapshot_entries: Vec<LogSnapshot> = tab
+    let query = state.query.clone();
+    let selected_path = state.selected_path.clone();
+    let snapshot_entries: Vec<LogSnapshot> = state
         .entries
         .iter()
         .rev()
@@ -957,7 +677,7 @@ fn refresh_view(view: &Rc<LogrView>) {
         })
         .collect();
     let mut distribution = std::collections::BTreeMap::new();
-    for entry in &tab.entries {
+    for entry in &state.entries {
         *distribution
             .entry(entry.level_label().to_string())
             .or_insert(0usize) += 1;
@@ -1253,10 +973,6 @@ fn highlight_text(text: &str, query: &str) -> String {
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-fn active_tab_index(view: &LogrView) -> usize {
-    view.state.borrow().active_tab
-}
-
 fn format_count_summary(shown: usize, total: usize) -> String {
     match (shown, total) {
         (0, 0) => "no entries".to_string(),
@@ -1265,24 +981,22 @@ fn format_count_summary(shown: usize, total: usize) -> String {
     }
 }
 
-fn sync_active_tab_ui(view: &Rc<LogrView>) {
+fn sync_session_ui(view: &Rc<LogrView>) {
     let (select_label, streaming, play_sensitive, query, stream_label) = {
-        let state = view.state.borrow();
-        let Some(tab) = state.tabs.get(state.active_tab) else {
-            return;
-        };
+        let session = view.state.borrow();
 
         (
-            tab.selected_path
+            session
+                .selected_path
                 .as_ref()
                 .and_then(|path| path.file_name())
                 .and_then(|name| name.to_str())
                 .unwrap_or("select log file...")
                 .to_string(),
-            tab.follower.is_some(),
-            tab.selected_path.is_some(),
-            tab.query.clone(),
-            stream_label_text(tab),
+            session.follower.is_some(),
+            session.selected_path.is_some(),
+            session.query.clone(),
+            stream_label_text(&session),
         )
     };
 
@@ -1299,23 +1013,23 @@ fn sync_active_tab_ui(view: &Rc<LogrView>) {
     view.stream_label.set_text(&stream_label);
 }
 
-fn stream_label_text(tab: &TabState) -> String {
-    if tab.follower.is_some() {
-        return format!("streaming: {}", tab.name);
+fn stream_label_text(session: &SessionState) -> String {
+    if session.follower.is_some() {
+        return format!("streaming: {}", session.name);
     }
 
-    if tab.selected_path.is_some() {
-        if tab.last_status == "stopped" {
-            return format!("stopped: {}", tab.name);
+    if session.selected_path.is_some() {
+        if session.last_status == "stopped" {
+            return format!("stopped: {}", session.name);
         }
-        return format!("ready: {}", tab.name);
+        return format!("ready: {}", session.name);
     }
 
     "select a file to stream".to_string()
 }
 
 fn sync_controls_after_stop(view: &Rc<LogrView>) {
-    sync_active_tab_ui(view);
+    sync_session_ui(view);
 }
 
 fn collapse_expanded_detail(view: &LogrView) {

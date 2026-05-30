@@ -4,19 +4,15 @@ use std::{
 };
 
 use gtk::{
-    prelude::*, Box as GtkBox, Button, Orientation, PolicyType, ScrolledWindow, Stack,
-    StackTransitionType,
+    Box as GtkBox, Button, Orientation, PolicyType, ScrolledWindow, Stack, StackTransitionType,
+    prelude::*,
 };
 
-use super::{
-    profile::ProfileId,
-    scaled_spacing,
-    session::SessionView,
-};
 use super::super::{
     persist::{PaneFocus, PaneSnapshot, SessionSnapshot},
     settings::Settings,
 };
+use super::{profile::ProfileId, scaled_spacing, session::SessionView};
 
 struct SessionEntry {
     stack_name: String,
@@ -317,7 +313,11 @@ fn close_active_session(ctx: &MuxBarContext) -> bool {
         return false;
     }
 
-    let index = ctx.state.active_index.get().min(session_count.saturating_sub(1));
+    let index = ctx
+        .state
+        .active_index
+        .get()
+        .min(session_count.saturating_sub(1));
     let removed = ctx.state.sessions.borrow_mut().remove(index);
     ctx.stack.remove(removed.view.root());
 

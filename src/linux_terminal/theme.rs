@@ -255,8 +255,8 @@ pub(crate) fn terminal_palette(mode: ThemeMode) -> TerminalPalette {
             foreground: 0x001F1D1A,
             background: 0x00FFFDF9,
             ansi: [
-                0x00C9C0B4, 0x00C54242, 0x003A7A4F, 0x00B57C12,
-                0x004F77C5, 0x007D648C, 0x004E8193, 0x001F1D1A,
+                0x00C9C0B4, 0x00C54242, 0x003A7A4F, 0x00B57C12, 0x004F77C5, 0x007D648C, 0x004E8193,
+                0x001F1D1A,
             ],
         },
         ThemeMode::AtomMaterial => TerminalPalette {
@@ -345,4 +345,3 @@ pub(crate) fn terminal_palette(mode: ThemeMode) -> TerminalPalette {
         },
     }
 }
-

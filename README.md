@@ -20,10 +20,10 @@ A GPU-accelerated GTK4/VTE terminal built in Rust for Linux. Designed for backen
 
 ## Install
 
-Download the latest `.deb` package from [GitHub Releases](https://github.com/WilliamSamson/magma/releases) and install:
+Download the latest GitHub release asset (`magma-v<version>-linux-x86_64.deb`) from [GitHub Releases](https://github.com/WilliamSamson/magma/releases) and install:
 
 ```bash
-sudo dpkg -i magma_0.1.0~beta.1_amd64.deb
+sudo dpkg -i magma-v0.1.0-linux-x86_64.deb
 sudo apt-get install -f   # pulls missing dependencies if needed
 ```
 
@@ -88,6 +88,8 @@ Build the `.deb` package:
 ```bash
 ./scripts/build-release.sh
 ```
+
+This creates both the Debian package and the GitHub-ready release asset in `dist/`.
 
 ## Usage
 

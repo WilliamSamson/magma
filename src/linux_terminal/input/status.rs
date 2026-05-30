@@ -5,7 +5,7 @@ use std::{
     rc::Rc,
 };
 
-use gtk::{gio, glib, prelude::*, Label};
+use gtk::{Label, gio, glib, prelude::*};
 
 pub(super) struct StatusWidgets {
     pub(super) status: Label,
@@ -19,7 +19,10 @@ struct StatusEvent {
     command: String,
 }
 
-pub(super) fn build_status_widgets(status_path: &Path, notifications: Rc<Cell<bool>>) -> StatusWidgets {
+pub(super) fn build_status_widgets(
+    status_path: &Path,
+    notifications: Rc<Cell<bool>>,
+) -> StatusWidgets {
     let status = Label::new(None);
     status.add_css_class("magma-status-label");
     status.add_css_class("magma-status-ok");
@@ -116,7 +119,10 @@ fn show_notice(notice: &Label, notice_version: &Cell<u64>, event: &StatusEvent) 
     notice_version.set(version);
 
     let (message, class_name) = if event.status_code == 0 {
-        (format!("done · {}", compact_command(&event.command)), "magma-notice-ok")
+        (
+            format!("done · {}", compact_command(&event.command)),
+            "magma-notice-ok",
+        )
     } else {
         (
             format!(

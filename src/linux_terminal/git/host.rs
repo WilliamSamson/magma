@@ -1,8 +1,8 @@
 use std::{cell::Cell, rc::Rc};
 
-use gtk::{prelude::*, Box as GtkBox, Orientation, Overflow};
+use gtk::{Box as GtkBox, Orientation, Overflow, prelude::*};
 
-use super::{build_git_pane, CwdProvider};
+use super::{CwdProvider, build_git_pane};
 
 #[derive(Clone)]
 pub(in crate::linux_terminal) struct GitPaneHost {

@@ -1,11 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
-use gtk::{glib, prelude::*, Box as GtkBox};
+use gtk::{Box as GtkBox, glib, prelude::*};
+
+use crate::linux_terminal::theme::ThemeMode;
 
 use super::{
-    save_settings,
+    Settings, save_settings,
     widgets::{dropdown_row, section_label, spin_row, switch_row, text_row},
-    Settings,
 };
 
 pub(super) fn build_terminal_section(
@@ -81,6 +82,20 @@ pub(super) fn build_appearance_section(
     on_apply: &Rc<dyn Fn(&Settings)>,
 ) {
     content.append(&section_label("appearance"));
+
+    let theme_dropdown = dropdown_row(
+        content,
+        "theme",
+        "switch the full workspace chrome between dark and light mode.",
+        &ThemeMode::OPTIONS,
+        settings.borrow().theme_mode.selected_index(),
+    );
+    let theme_settings = settings.clone();
+    let theme_apply = on_apply.clone();
+    theme_dropdown.connect_selected_notify(move |dropdown| {
+        theme_settings.borrow_mut().theme_mode = ThemeMode::from_index(dropdown.selected());
+        preview_settings(&theme_settings, &theme_apply);
+    });
 
     let font_entry = text_row(
         content,

@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
 use gtk::{
-    pango, prelude::*, Box as GtkBox, DropDown, Entry, Label, ListBox, Orientation,
-    PolicyType, Revealer, RevealerTransitionType, ScrolledWindow, SelectionMode, StringList,
+    Box as GtkBox, DropDown, Entry, Label, ListBox, Orientation, PolicyType, Revealer,
+    RevealerTransitionType, ScrolledWindow, SelectionMode, StringList, pango, prelude::*,
 };
 
 use super::{
+    GitPaneView,
     diff::{build_diff_stat, build_diff_widget},
     ops::{self, CommitInfo, SearchMode},
-    GitPaneView,
 };
 
 pub(super) fn build_search_view(view: &Rc<GitPaneView>) -> GtkBox {
@@ -113,9 +113,7 @@ fn perform_search(
             }
 
             for commit in &commits {
-                widgets
-                    .list
-                    .append(&build_search_result(commit, view));
+                widgets.list.append(&build_search_result(commit, view));
             }
         }
         Err(e) => {

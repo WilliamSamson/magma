@@ -1,8 +1,7 @@
 use std::path::Path;
 
 pub(super) fn supports_code_preview(path: &Path) -> bool {
-    extension(path)
-        .is_some_and(|ext| CODE_EXTENSIONS.contains(&ext.as_str()))
+    extension(path).is_some_and(|ext| CODE_EXTENSIONS.contains(&ext.as_str()))
         || path
             .file_name()
             .and_then(|name| name.to_str())
@@ -55,17 +54,60 @@ pub(super) fn comment_tokens(language: CodeLanguage) -> &'static [&'static str] 
 pub(super) fn keywords(language: CodeLanguage) -> &'static [&'static str] {
     match language {
         CodeLanguage::Hash => &[
-            "alias", "and", "as", "async", "await", "case", "class", "def", "elif", "else",
-            "esac", "except", "export", "false", "fi", "fn", "for", "from", "if", "import", "in",
-            "none", "return", "then", "true", "try", "while", "with",
+            "alias", "and", "as", "async", "await", "case", "class", "def", "elif", "else", "esac",
+            "except", "export", "false", "fi", "fn", "for", "from", "if", "import", "in", "none",
+            "return", "then", "true", "try", "while", "with",
         ],
         CodeLanguage::Slash => &[
-            "abstract", "async", "await", "break", "case", "catch", "class", "const", "continue",
-            "do", "else", "enum", "export", "extends", "false", "final", "fn", "for",
-            "function", "if", "impl", "import", "interface", "let", "match", "mod", "mut", "new",
-            "null", "override", "package", "private", "protected", "pub", "return", "sealed",
-            "static", "struct", "super", "switch", "this", "throw", "trait", "true", "type",
-            "use", "var", "void", "while",
+            "abstract",
+            "async",
+            "await",
+            "break",
+            "case",
+            "catch",
+            "class",
+            "const",
+            "continue",
+            "do",
+            "else",
+            "enum",
+            "export",
+            "extends",
+            "false",
+            "final",
+            "fn",
+            "for",
+            "function",
+            "if",
+            "impl",
+            "import",
+            "interface",
+            "let",
+            "match",
+            "mod",
+            "mut",
+            "new",
+            "null",
+            "override",
+            "package",
+            "private",
+            "protected",
+            "pub",
+            "return",
+            "sealed",
+            "static",
+            "struct",
+            "super",
+            "switch",
+            "this",
+            "throw",
+            "trait",
+            "true",
+            "type",
+            "use",
+            "var",
+            "void",
+            "while",
         ],
         CodeLanguage::Sql => &[
             "alter", "and", "as", "by", "create", "delete", "desc", "drop", "from", "group",
@@ -78,9 +120,23 @@ pub(super) fn keywords(language: CodeLanguage) -> &'static [&'static str] {
             "title",
         ],
         CodeLanguage::Css => &[
-            "align-items", "background", "border", "color", "display", "flex", "font-family",
-            "font-size", "gap", "grid", "height", "justify-content", "margin", "padding",
-            "position", "transition", "width",
+            "align-items",
+            "background",
+            "border",
+            "color",
+            "display",
+            "flex",
+            "font-family",
+            "font-size",
+            "gap",
+            "grid",
+            "height",
+            "justify-content",
+            "margin",
+            "padding",
+            "position",
+            "transition",
+            "width",
         ],
         CodeLanguage::Plain => &[],
     }
@@ -120,9 +176,9 @@ fn is_known_text_filename(name: &str) -> bool {
 
 fn language_for_extension(ext: &str) -> Option<CodeLanguage> {
     match ext {
-        "py" | "pyw" | "sh" | "bash" | "zsh" | "fish" | "toml" | "yaml" | "yml" | "rb"
-        | "pl" | "pm" | "nix" | "ini" | "cfg" | "conf" | "env" | "r" | "ex" | "exs"
-        | "nim" | "cr" | "tf" | "hcl" | "graphql" | "gql" | "cmake" => Some(CodeLanguage::Hash),
+        "py" | "pyw" | "sh" | "bash" | "zsh" | "fish" | "toml" | "yaml" | "yml" | "rb" | "pl"
+        | "pm" | "nix" | "ini" | "cfg" | "conf" | "env" | "r" | "ex" | "exs" | "nim" | "cr"
+        | "tf" | "hcl" | "graphql" | "gql" | "cmake" => Some(CodeLanguage::Hash),
         "sql" => Some(CodeLanguage::Sql),
         "html" | "htm" | "xml" | "vue" | "svelte" | "astro" => Some(CodeLanguage::Markup),
         "css" | "scss" | "sass" | "less" => Some(CodeLanguage::Css),
@@ -133,13 +189,13 @@ fn language_for_extension(ext: &str) -> Option<CodeLanguage> {
 }
 
 const CODE_EXTENSIONS: &[&str] = &[
-    "rs", "rt", "dart", "js", "mjs", "cjs", "ts", "tsx", "jsx", "py", "pyw", "sh", "bash",
-    "zsh", "fish", "json", "jsonc", "toml", "yaml", "yml", "md", "html", "htm", "css", "scss",
-    "sass", "less", "sql", "xml", "go", "java", "kt", "kts", "swift", "c", "h", "hh", "hpp",
-    "hxx", "cpp", "cc", "cxx", "cs", "php", "rb", "lua", "zig", "nix", "ini", "cfg", "conf",
-    "env", "txt", "log", "pl", "pm", "ps1", "psm1", "bat", "cmd", "r", "scala", "groovy",
-    "gradle", "ex", "exs", "erl", "hrl", "hs", "ml", "mli", "clj", "cljs", "nim", "cr", "v",
-    "vue", "svelte", "astro", "tf", "hcl", "proto", "graphql", "gql", "prisma", "cmake", "rst",
+    "rs", "rt", "dart", "js", "mjs", "cjs", "ts", "tsx", "jsx", "py", "pyw", "sh", "bash", "zsh",
+    "fish", "json", "jsonc", "toml", "yaml", "yml", "md", "html", "htm", "css", "scss", "sass",
+    "less", "sql", "xml", "go", "java", "kt", "kts", "swift", "c", "h", "hh", "hpp", "hxx", "cpp",
+    "cc", "cxx", "cs", "php", "rb", "lua", "zig", "nix", "ini", "cfg", "conf", "env", "txt", "log",
+    "pl", "pm", "ps1", "psm1", "bat", "cmd", "r", "scala", "groovy", "gradle", "ex", "exs", "erl",
+    "hrl", "hs", "ml", "mli", "clj", "cljs", "nim", "cr", "v", "vue", "svelte", "astro", "tf",
+    "hcl", "proto", "graphql", "gql", "prisma", "cmake", "rst",
 ];
 
 const HASH_FILENAMES: &[&str] = &[
@@ -168,7 +224,7 @@ const PLAIN_FILENAMES: &[&str] = &["readme", "license", "copying", "authors", "n
 
 #[cfg(test)]
 mod tests {
-    use super::{language_for_path, supports_code_preview, CodeLanguage};
+    use super::{CodeLanguage, language_for_path, supports_code_preview};
     use std::path::Path;
 
     #[test]

@@ -1,20 +1,15 @@
-use std::{
-    path::Path,
-    process::Command,
-    rc::Rc,
-};
+use std::{path::Path, process::Command, rc::Rc};
 
 use gtk::{
-    gio, prelude::*, Box as GtkBox, Button, Label, Orientation, Picture, ScrolledWindow, Stack,
+    Box as GtkBox, Button, Label, Orientation, Picture, ScrolledWindow, Stack, gio, prelude::*,
 };
-use webkit6::{prelude::*, WebContext, WebView};
+use webkit6::{WebContext, WebView, prelude::*};
 
 use super::{
-    docx,
-    editor::{build_editor, hide_code_actions, show_code_preview, EditorWidgets},
-    files::{format_size, kind_label, FileKind, ViewerFile},
+    ViewState, docx,
+    editor::{EditorWidgets, build_editor, hide_code_actions, show_code_preview},
+    files::{FileKind, ViewerFile, format_size, kind_label},
     ui::build_empty_state,
-    ViewState,
 };
 
 pub(super) struct PreviewWidgets {
@@ -155,7 +150,11 @@ pub(super) fn select_file(state: &Rc<ViewState>, file: &ViewerFile) {
                 .preview
                 .web_view
                 .load_uri(&gio::File::for_path(&file.path).uri());
-            state.widgets.preview.stack.set_visible_child_name("document");
+            state
+                .widgets
+                .preview
+                .stack
+                .set_visible_child_name("document");
         }
         FileKind::Docx => show_docx_preview(&state.widgets.preview, file),
         FileKind::Office => show_info_preview(&state.widgets.preview, file),

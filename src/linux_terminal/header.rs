@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use gtk::{glib, prelude::*, Button, HeaderBar, Image, Label, MenuButton};
+use gtk::{Button, HeaderBar, Image, Label, MenuButton, glib, prelude::*};
 
 use super::{APP_TITLE, HEADER_ICON_PATH};
 
@@ -56,8 +56,12 @@ pub(super) fn build_header() -> AppHeader {
 
     let close_action: Rc<RefCell<Option<HeaderAction>>> = Rc::new(RefCell::new(None));
     let close_slot = close_action.clone();
+    // Clone the action out of the cell before invoking it.
+    // The action may trigger show_workspace_mode() which needs borrow_mut()
+    // on the same RefCell, so the immutable borrow must be released first.
     close_button.connect_clicked(move |_| {
-        if let Some(action) = close_slot.borrow().as_ref() {
+        let action = close_slot.borrow().clone();
+        if let Some(action) = action {
             action();
         }
     });
@@ -104,12 +108,12 @@ impl AppHeader {
     }
 
     pub(super) fn show_settings_mode(&self) {
-        self.logo.set_visible(false);
+        self.logo.set_visible(true);
         self.close_button.set_visible(true);
         self.settings_button.set_visible(false);
         self.inspector_button.set_visible(false);
-        self.title.add_css_class("magma-settings-title");
-        self.header.set_show_title_buttons(false);
+        self.title.remove_css_class("magma-settings-title");
+        self.header.set_show_title_buttons(true);
     }
 
     pub(super) fn set_settings_title(&self, title: &str) {

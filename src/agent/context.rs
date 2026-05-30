@@ -167,7 +167,9 @@ fn approx_tokens(json: &str) -> usize {
 }
 
 fn load_workspace_snapshot() -> Option<WorkspaceSnapshot> {
-    crate::linux_terminal::persist::load_workspace().ok().flatten()
+    crate::linux_terminal::persist::load_workspace()
+        .ok()
+        .flatten()
 }
 
 fn active_session(workspace: &WorkspaceSnapshot) -> Option<SessionSnapshot> {
@@ -208,7 +210,12 @@ fn git_context(cwd: Option<&str>) -> GitContext {
         upstream: status.upstream,
         ahead: status.ahead,
         behind: status.behind,
-        staged_summary: status.staged.iter().map(|item| item.path.clone()).take(24).collect(),
+        staged_summary: status
+            .staged
+            .iter()
+            .map(|item| item.path.clone())
+            .take(24)
+            .collect(),
         unstaged_summary: status
             .unstaged
             .iter()
@@ -223,11 +230,17 @@ fn git_context(cwd: Option<&str>) -> GitContext {
 fn active_pane_context(workspace: &WorkspaceSnapshot) -> ActivePaneContext {
     let runtime = load_ui_runtime_state();
     ActivePaneContext {
-        tab_title: workspace.tabs.get(workspace.active_tab).map(|tab| tab.title.clone()),
-        split_focus: workspace.tabs.get(workspace.active_tab).map(|tab| match tab.active_pane {
-            PaneFocus::Left => "left".to_string(),
-            PaneFocus::Right => "right".to_string(),
-        }),
+        tab_title: workspace
+            .tabs
+            .get(workspace.active_tab)
+            .map(|tab| tab.title.clone()),
+        split_focus: workspace
+            .tabs
+            .get(workspace.active_tab)
+            .map(|tab| match tab.active_pane {
+                PaneFocus::Left => "left".to_string(),
+                PaneFocus::Right => "right".to_string(),
+            }),
         side_pane: runtime.side_pane,
         strip_mode: runtime.strip_mode,
     }
@@ -259,16 +272,25 @@ fn patch_annotations(repo_root: Option<&str>, branch: Option<&str>) -> Vec<Patch
         .and_then(serde_json::Value::as_array)
         .into_iter()
         .flatten()
-        .filter_map(|item| Some(PatchAnnotation {
-            file: item.get("file")?.as_str()?.to_string(),
-            hunk_index: item.get("hunk_index")?.as_u64()? as usize,
-            status: item.get("status").and_then(serde_json::Value::as_str).unwrap_or("unknown").to_string(),
-            annotation: item.get("annotation").and_then(serde_json::Value::as_str).unwrap_or("").to_string(),
-        }))
+        .filter_map(|item| {
+            Some(PatchAnnotation {
+                file: item.get("file")?.as_str()?.to_string(),
+                hunk_index: item.get("hunk_index")?.as_u64()? as usize,
+                status: item
+                    .get("status")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or("unknown")
+                    .to_string(),
+                annotation: item
+                    .get("annotation")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or("")
+                    .to_string(),
+            })
+        })
         .take(24)
         .collect()
 }
-
 
 fn read_status(path: Option<&str>) -> (Option<i32>, Option<String>) {
     let Some(path) = path else {
@@ -289,7 +311,16 @@ fn capture_tmux_lines(session: &SessionSnapshot, lines: usize) -> Vec<String> {
         return Vec::new();
     };
     let Ok(output) = Command::new("tmux")
-        .args(["-S", socket, "capture-pane", "-p", "-t", session_id, "-J", &format!("-S-{lines}")])
+        .args([
+            "-S",
+            socket,
+            "capture-pane",
+            "-p",
+            "-t",
+            session_id,
+            "-J",
+            &format!("-S-{lines}"),
+        ])
         .output()
     else {
         return Vec::new();

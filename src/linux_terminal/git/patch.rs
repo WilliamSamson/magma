@@ -3,18 +3,19 @@ use std::{
     collections::hash_map::DefaultHasher,
     env,
     hash::{Hash, Hasher},
+    io,
     path::{Path, PathBuf},
     rc::Rc,
 };
 
 use gtk::{
-    glib, pango, prelude::*, Box as GtkBox, Button, EventControllerKey, Label, ListBox,
-    Orientation, Paned, PolicyType, ScrolledWindow, SelectionMode, TextView, WrapMode,
+    Box as GtkBox, Button, EventControllerKey, Label, ListBox, Orientation, Paned, PolicyType,
+    ScrolledWindow, SelectionMode, TextView, WrapMode, glib, pango, prelude::*,
 };
 
 use super::{
-    ops::{self, DiffHunk},
     GitPaneView,
+    ops::{self, DiffHunk},
 };
 
 // ─── Data model ──────────────────────────────────────────────────────
@@ -31,9 +32,9 @@ enum HunkStatus {
 impl HunkStatus {
     fn icon(&self) -> &'static str {
         match self {
-            HunkStatus::Unreviewed => "\u{00B7}",   // ·
-            HunkStatus::Reviewed => "\u{2713}",      // ✓
-            HunkStatus::Risky => "\u{2691}",         // ⚑
+            HunkStatus::Unreviewed => "\u{00B7}", // ·
+            HunkStatus::Reviewed => "\u{2713}",   // ✓
+            HunkStatus::Risky => "\u{2691}",      // ⚑
             HunkStatus::FollowUp => "?",
         }
     }
@@ -95,23 +96,46 @@ fn session_path(repo_root: &Path, branch: &str) -> PathBuf {
         .join(format!("{sanitized}.json"))
 }
 
-fn load_session(repo_root: &Path, branch: &str) -> Option<PatchSession> {
-    let data = std::fs::read_to_string(session_path(repo_root, branch)).ok()?;
-    serde_json::from_str(&data).ok()
+fn load_session(repo_root: &Path, branch: &str) -> io::Result<Option<PatchSession>> {
+    let path = session_path(repo_root, branch);
+    if !path.exists() {
+        return Ok(None);
+    }
+
+    let data = std::fs::read_to_string(path)?;
+    let session = serde_json::from_str(&data).map_err(io::Error::other)?;
+    Ok(Some(session))
 }
 
-fn save_session(repo_root: &Path, session: &PatchSession) {
+fn save_session(repo_root: &Path, session: &PatchSession) -> io::Result<()> {
     let path = session_path(repo_root, &session.branch);
     if let Some(parent) = path.parent() {
-        let _ = std::fs::create_dir_all(parent);
+        std::fs::create_dir_all(parent)?;
     }
-    if let Ok(data) = serde_json::to_string_pretty(session) {
-        let _ = std::fs::write(&path, data);
-    }
+    let data = serde_json::to_string_pretty(session).map_err(io::Error::other)?;
+    std::fs::write(&path, data)
 }
 
-fn clear_session_file(repo_root: &Path, branch: &str) {
-    let _ = std::fs::remove_file(session_path(repo_root, branch));
+fn clear_session_file(repo_root: &Path, branch: &str) -> io::Result<()> {
+    let path = session_path(repo_root, branch);
+    if !path.exists() {
+        return Ok(());
+    }
+    std::fs::remove_file(path)
+}
+
+fn persist_session(view: &GitPaneView, session: &PatchSession) -> bool {
+    let Some(root) = view.repo_root.borrow().clone() else {
+        return true;
+    };
+
+    match save_session(&root, session) {
+        Ok(()) => true,
+        Err(error) => {
+            view.set_status_err(&format!("patch session save failed: {error}"));
+            false
+        }
+    }
 }
 
 // ─── Widgets ─────────────────────────────────────────────────────────
@@ -277,15 +301,15 @@ pub(super) fn build_patch_view(view: &Rc<GitPaneView>) -> GtkBox {
             if state_ref.suppress_annotation_save.get() {
                 return;
             }
-            let text = buf.text(&buf.start_iter(), &buf.end_iter(), false).to_string();
+            let text = buf
+                .text(&buf.start_iter(), &buf.end_iter(), false)
+                .to_string();
             let idx = state_ref.selected.get();
             let mut session = state_ref.session.borrow_mut();
             if let Some(hunk) = session.hunks.get_mut(idx) {
                 hunk.annotation = text;
             }
-            if let Some(root) = view_ref.repo_root.borrow().as_ref() {
-                save_session(root, &session);
-            }
+            persist_session(&view_ref, &session);
         });
     }
 
@@ -309,12 +333,14 @@ pub(super) fn build_patch_view(view: &Rc<GitPaneView>) -> GtkBox {
         let state_ref = state.clone();
         let view_ref = view.clone();
         clear_btn.connect_clicked(move |_| {
-            {
+            let clear_error = {
                 let session = state_ref.session.borrow();
                 if let Some(root) = view_ref.repo_root.borrow().as_ref() {
-                    clear_session_file(root, &session.branch);
+                    clear_session_file(root, &session.branch).err()
+                } else {
+                    None
                 }
-            }
+            };
             {
                 let mut session = state_ref.session.borrow_mut();
                 session.hunks.clear();
@@ -324,7 +350,11 @@ pub(super) fn build_patch_view(view: &Rc<GitPaneView>) -> GtkBox {
             rebuild_hunk_list(&state_ref);
             clear_detail(&state_ref);
             state_ref.commit_draft_label.set_text("");
-            view_ref.set_status_ok("patch queue cleared");
+            if let Some(error) = clear_error {
+                view_ref.set_status_err(&format!("patch session clear failed: {error}"));
+            } else {
+                view_ref.set_status_ok("patch queue cleared");
+            }
         });
     }
 
@@ -386,7 +416,13 @@ pub(super) fn refresh_patch(view: &Rc<GitPaneView>) {
     };
 
     // Load saved session and merge annotations/statuses into fresh hunks
-    let saved = load_session(&root, &branch);
+    let saved = match load_session(&root, &branch) {
+        Ok(saved) => saved,
+        Err(error) => {
+            view.set_status_err(&format!("patch session load failed: {error}"));
+            None
+        }
+    };
     let mut hunks: Vec<PatchHunk> = Vec::new();
 
     for (file, diff_hunks) in &file_hunks {
@@ -516,18 +552,18 @@ fn bind_mark_button(
 
 fn set_current_status(state: &Rc<PatchState>, view: &Rc<GitPaneView>, status: HunkStatus) {
     let idx = state.selected.get();
-    {
+    let persisted = {
         let mut session = state.session.borrow_mut();
         let Some(hunk) = session.hunks.get_mut(idx) else {
             return;
         };
         hunk.status = status;
-        if let Some(root) = view.repo_root.borrow().as_ref() {
-            save_session(root, &session);
-        }
-    }
+        persist_session(view, &session)
+    };
     update_row_status(state, idx);
-    view.set_status(&format!("marked {}", status.label()));
+    if persisted {
+        view.set_status(&format!("marked {}", status.label()));
+    }
 }
 
 fn move_selection(state: &Rc<PatchState>, delta: i32) {
@@ -640,7 +676,12 @@ fn update_row_status(state: &Rc<PatchState>, idx: usize) {
         return;
     };
     label.set_text(hunk.status.icon());
-    for class in &["status-unreviewed", "status-reviewed", "status-risky", "status-followup"] {
+    for class in &[
+        "status-unreviewed",
+        "status-reviewed",
+        "status-risky",
+        "status-followup",
+    ] {
         label.remove_css_class(class);
     }
     label.add_css_class(hunk.status.css_class());
@@ -758,10 +799,13 @@ fn draft_commit_scope(state: &Rc<PatchState>, view: &Rc<GitPaneView>) {
 
     state.session.borrow_mut().commit_scope_draft = draft;
 
-    if let Some(root) = view.repo_root.borrow().as_ref() {
-        save_session(root, &state.session.borrow());
+    let persisted = {
+        let session = state.session.borrow();
+        persist_session(view, &session)
+    };
+    if persisted {
+        view.set_status_ok(&format!("drafted scope ({count} reviewed hunks)"));
     }
-    view.set_status_ok(&format!("drafted scope ({count} reviewed hunks)"));
 }
 
 fn export_patch_brief(state: &Rc<PatchState>, view: &Rc<GitPaneView>) {
@@ -789,10 +833,7 @@ fn export_patch_brief(state: &Rc<PatchState>, view: &Rc<GitPaneView>) {
                 out.push_str(&format!("`{}`\n", hunk.header));
             }
             if !hunk.annotation.is_empty() {
-                out.push_str(&format!(
-                    "\n> {}\n",
-                    hunk.annotation.replace('\n', "\n> ")
-                ));
+                out.push_str(&format!("\n> {}\n", hunk.annotation.replace('\n', "\n> ")));
             }
             out.push('\n');
         }

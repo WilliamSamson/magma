@@ -6,7 +6,7 @@ use std::{
     time::Duration,
 };
 
-use super::{parser::FollowConfig, log_entry::LogEntry};
+use super::{log_entry::LogEntry, parser::FollowConfig};
 
 pub(crate) fn spawn_file_follower(config: FollowConfig) -> Receiver<LogEntry> {
     let (sender, receiver) = mpsc::channel();
@@ -49,7 +49,10 @@ fn follow_file(mut config: FollowConfig, sender: Sender<LogEntry>) {
     }
 }
 
-fn read_next_line(reader: &mut BufReader<File>, pending: &mut String) -> io::Result<Option<String>> {
+fn read_next_line(
+    reader: &mut BufReader<File>,
+    pending: &mut String,
+) -> io::Result<Option<String>> {
     let mut chunk = String::new();
     let bytes_read = reader.read_line(&mut chunk)?;
 

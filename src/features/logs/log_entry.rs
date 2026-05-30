@@ -130,8 +130,8 @@ impl LogEntry {
         let raw = stringify_object(&map);
         let timestamp = extract_text(&map, &["timestamp", "@timestamp", "time", "ts"]);
         let level = parse_level(&map);
-        let message = extract_text(&map, &["message", "msg", "event", "body"])
-            .unwrap_or_else(|| raw.clone());
+        let message =
+            extract_text(&map, &["message", "msg", "event", "body"]).unwrap_or_else(|| raw.clone());
         let fields = summarize_fields(&map);
 
         Self {
@@ -152,7 +152,9 @@ fn parse_level(map: &Map<String, Value>) -> LogLevel {
 }
 
 fn contains_ignore_case(haystack: &str, needle: &str) -> bool {
-    haystack.to_ascii_lowercase().contains(&needle.to_ascii_lowercase())
+    haystack
+        .to_ascii_lowercase()
+        .contains(&needle.to_ascii_lowercase())
 }
 
 fn extract_text(map: &Map<String, Value>, keys: &[&str]) -> Option<String> {

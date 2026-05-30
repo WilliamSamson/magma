@@ -3,8 +3,8 @@ use std::{
     fs::OpenOptions,
     io::Write,
     sync::{
-        mpsc::{self, RecvTimeoutError, Sender},
         Arc, Mutex, OnceLock,
+        mpsc::{self, RecvTimeoutError, Sender},
     },
     thread,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
@@ -16,7 +16,7 @@ use super::{
     actions::AgentAction,
     context::{build_workspace_context, token_budgeted_json},
     data_root,
-    effects::{execute_side_effect, UiEffect},
+    effects::{UiEffect, execute_side_effect},
     ensure_parent,
     model::{AgentModel, ModelRequest},
     observer::{self, WorkspaceEvent},
@@ -171,11 +171,7 @@ fn spawn(config: ExecutorConfig) -> AgentRuntimeHandle {
                             timestamp_ms: now_ms(),
                         },
                     );
-                    process_command(
-                        &state_ref,
-                        &mut pending_action,
-                        command,
-                    );
+                    process_command(&state_ref, &mut pending_action, command);
                 }
                 Ok(RuntimeCommand::Decision(accept)) => {
                     if let Some(action) = pending_action.take() {
@@ -227,12 +223,8 @@ fn spawn(config: ExecutorConfig) -> AgentRuntimeHandle {
             {
                 // Take the most important event (first one) and log all.
                 let events = std::mem::take(&mut event_buffer);
-                let labels: Vec<String> =
-                    events.iter().map(event_label).collect();
-                let combined_intent = format!(
-                    "Respond to workspace events: {}",
-                    labels.join(", ")
-                );
+                let labels: Vec<String> = events.iter().map(event_label).collect();
+                let combined_intent = format!("Respond to workspace events: {}", labels.join(", "));
 
                 for label in &labels {
                     push_log(
@@ -499,9 +491,7 @@ fn fallback_actions(event: &WorkspaceEvent) -> Vec<AgentAction> {
             confidence: 0.94,
         }],
         WorkspaceEvent::CommandFailed {
-            command,
-            exit_code,
-            ..
+            command, exit_code, ..
         } => vec![AgentAction::SurfaceMessage {
             message: format!("Last command failed with {exit_code}: {command}"),
             confidence: 0.91,

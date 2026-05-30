@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 use std::{cell::RefCell, rc::Rc};
 
-use gtk::{gdk, gio, prelude::*, Entry};
-use vte4::{prelude::*, Format, Terminal};
+use gtk::{Entry, gdk, gio, prelude::*};
+use vte4::{Format, Terminal, prelude::*};
 
 #[derive(Default)]
 pub(super) struct InputHistory {
@@ -104,12 +104,16 @@ fn ctrl_key_byte(key: gdk::Key) -> Option<u8> {
         Some('z') | Some('Z') => Some(0x1A), // SUB  — SIGTSTP
         Some('d') | Some('D') => Some(0x04), // EOT  — EOF
         Some('l') | Some('L') => Some(0x0C), // FF   — clear screen
-        Some('\\')             => Some(0x1C), // FS   — SIGQUIT
+        Some('\\') => Some(0x1C),            // FS   — SIGQUIT
         _ => None,
     }
 }
 
-pub(super) fn handle_history_navigation(entry: &Entry, history: &Rc<InputHistory>, key: gdk::Key) -> bool {
+pub(super) fn handle_history_navigation(
+    entry: &Entry,
+    history: &Rc<InputHistory>,
+    key: gdk::Key,
+) -> bool {
     match key {
         gdk::Key::Up => {
             show_previous_history(entry, history);

@@ -1,7 +1,5 @@
 use std::{
-    env,
-    fs,
-    io,
+    env, fs, io,
     path::{Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -178,11 +176,7 @@ fn runtime_root() -> PathBuf {
 }
 
 fn generate_session_id() -> String {
-    format!(
-        "magma-{}-{}",
-        std::process::id(),
-        timestamp_nanos()
-    )
+    format!("magma-{}-{}", std::process::id(), timestamp_nanos())
 }
 
 fn timestamp_nanos() -> u128 {

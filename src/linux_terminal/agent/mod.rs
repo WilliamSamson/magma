@@ -6,8 +6,8 @@ use std::{cell::Cell, rc::Rc};
 use std::{cell::RefCell, collections::VecDeque};
 
 use gtk::{
-    glib, prelude::*, Align, Box as GtkBox, Button, Entry, Label, Orientation, PolicyType,
-    ScrolledWindow,
+    Align, Box as GtkBox, Button, Entry, Label, Orientation, PolicyType, ScrolledWindow, glib,
+    prelude::*,
 };
 use vte4::prelude::*;
 
@@ -38,7 +38,11 @@ pub(super) fn build_agent_pane(
     root.append(&build_header(runtime));
     root.append(&build_terminal_intro());
     root.append(&build_log_area(runtime));
-    root.append(&build_agent_terminal(&settings, command_slot, terminal_slot));
+    root.append(&build_agent_terminal(
+        &settings,
+        command_slot,
+        terminal_slot,
+    ));
     root.append(&build_pending_bar(runtime));
     root.append(&build_command_bar(runtime));
     root

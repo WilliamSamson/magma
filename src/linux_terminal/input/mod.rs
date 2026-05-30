@@ -8,13 +8,13 @@ mod status;
 use std::{cell::Cell, rc::Rc};
 
 use gtk::{
-    gdk, prelude::*, Box as GtkBox, Button, Entry, EventControllerFocus, EventControllerKey,
-    Orientation, Separator,
+    Box as GtkBox, Button, Entry, EventControllerFocus, EventControllerKey, Orientation, Separator,
+    gdk, prelude::*,
 };
-use vte4::{prelude::*, Regex, Terminal};
+use vte4::{Regex, Terminal, prelude::*};
 
 use self::{
-    history::{record_history, InputHistory},
+    history::{InputHistory, record_history},
     prompt::build_prompt_box,
 };
 
@@ -26,10 +26,7 @@ struct SearchWidgets {
     next_btn: Button,
 }
 
-pub(super) fn append_input_row(
-    container: &GtkBox,
-    terminal: &Terminal,
-) -> Entry {
+pub(super) fn append_input_row(container: &GtkBox, terminal: &Terminal) -> Entry {
     let separator = Separator::new(Orientation::Horizontal);
     separator.add_css_class("magma-separator");
     container.append(&separator);

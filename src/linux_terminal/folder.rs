@@ -8,9 +8,8 @@ use std::{
 };
 
 use gtk::{
-    glib,
-    prelude::*, Align, Box as GtkBox, Image, Label, Orientation, ScrolledWindow,
-    PolicyType,
+    Align, Box as GtkBox, Button, Image, Label, Orientation, PolicyType, ScrolledWindow, glib,
+    pango, prelude::*,
 };
 
 use super::view::CwdProvider;
@@ -21,6 +20,12 @@ const CWD_POLL_MS: u64 = 800;
 /// Callback invoked when a file is clicked in the explorer.
 pub(super) type OnFileClick = Rc<dyn Fn(&Path)>;
 
+struct HeaderWidgets {
+    root: GtkBox,
+    workspace_label: Label,
+    refresh_button: Button,
+}
+
 /// Builds the folder tree pane widget.
 pub(super) fn build_folder_pane(cwd_provider: CwdProvider, on_file_click: OnFileClick) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
@@ -28,18 +33,7 @@ pub(super) fn build_folder_pane(cwd_provider: CwdProvider, on_file_click: OnFile
     root.set_vexpand(true);
 
     let header = build_header();
-    root.append(&header);
-
-    // Breadcrumb bar
-    let breadcrumb = GtkBox::new(Orientation::Horizontal, 2);
-    breadcrumb.add_css_class("magma-breadcrumb");
-    breadcrumb.set_hexpand(true);
-
-    let breadcrumb_scroll = ScrolledWindow::new();
-    breadcrumb_scroll.set_hexpand(true);
-    breadcrumb_scroll.set_policy(PolicyType::Automatic, PolicyType::Never);
-    breadcrumb_scroll.set_child(Some(&breadcrumb));
-    root.append(&breadcrumb_scroll);
+    root.append(&header.root);
 
     let tree_box = GtkBox::new(Orientation::Vertical, 0);
     tree_box.set_vexpand(true);
@@ -55,30 +49,26 @@ pub(super) fn build_folder_pane(cwd_provider: CwdProvider, on_file_click: OnFile
     let last_cwd: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
 
     // Manual refresh
-    let refresh_btn = header
-        .first_child()
-        .and_then(|w| w.next_sibling())
-        .and_then(|w| w.last_child());
-
-    if let Some(btn) = refresh_btn {
-        if let Ok(button) = btn.downcast::<gtk::Button>() {
-            let cwd_provider = cwd_provider.clone();
-            let tree_box_ref = tree_box.clone();
-            let breadcrumb_ref = breadcrumb.clone();
-            let last_cwd = last_cwd.clone();
-            let on_file_click = on_file_click.clone();
-            button.connect_clicked(move |_| {
-                *last_cwd.borrow_mut() = None;
-                populate_tree(&tree_box_ref, &breadcrumb_ref, &cwd_provider, &on_file_click);
-                *last_cwd.borrow_mut() = cwd_provider();
-            });
-        }
-    }
+    let cwd_provider_refresh = cwd_provider.clone();
+    let tree_box_refresh = tree_box.clone();
+    let workspace_label_refresh = header.workspace_label.clone();
+    let last_cwd_refresh = last_cwd.clone();
+    let on_file_click_refresh = on_file_click.clone();
+    header.refresh_button.connect_clicked(move |_| {
+        *last_cwd_refresh.borrow_mut() = None;
+        populate_tree(
+            &tree_box_refresh,
+            &workspace_label_refresh,
+            &cwd_provider_refresh,
+            &on_file_click_refresh,
+        );
+        *last_cwd_refresh.borrow_mut() = cwd_provider_refresh();
+    });
 
     // Auto-sync
     {
         let tree_box_ref = tree_box.clone();
-        let breadcrumb_ref = breadcrumb.clone();
+        let workspace_label_ref = header.workspace_label.clone();
         let cwd_provider = cwd_provider.clone();
         let last_cwd = last_cwd.clone();
         let on_file_click = on_file_click.clone();
@@ -86,7 +76,7 @@ pub(super) fn build_folder_pane(cwd_provider: CwdProvider, on_file_click: OnFile
             let current = cwd_provider();
             let prev = last_cwd.borrow().clone();
             if current != prev {
-                populate_tree(&tree_box_ref, &breadcrumb_ref, &cwd_provider, &on_file_click);
+                populate_tree(&tree_box_ref, &workspace_label_ref, &cwd_provider, &on_file_click);
                 *last_cwd.borrow_mut() = current;
             }
             glib::ControlFlow::Continue
@@ -96,20 +86,31 @@ pub(super) fn build_folder_pane(cwd_provider: CwdProvider, on_file_click: OnFile
     root
 }
 
-fn build_header() -> GtkBox {
+fn build_header() -> HeaderWidgets {
     let header = GtkBox::new(Orientation::Horizontal, 8);
     header.add_css_class("magma-folder-header");
-    header.set_margin_bottom(4);
+    header.set_hexpand(true);
+
+    let labels = GtkBox::new(Orientation::Vertical, 2);
+    labels.set_hexpand(true);
 
     let title = Label::new(Some("Explorer"));
     title.add_css_class("magma-folder-title");
     title.set_halign(Align::Start);
-    title.set_hexpand(true);
+
+    let workspace_label = Label::new(Some("No workspace"));
+    workspace_label.add_css_class("magma-folder-workspace");
+    workspace_label.set_halign(Align::Start);
+    workspace_label.set_ellipsize(pango::EllipsizeMode::End);
+
+    labels.append(&title);
+    labels.append(&workspace_label);
 
     let actions = GtkBox::new(Orientation::Horizontal, 4);
     actions.set_halign(Align::End);
+    actions.set_valign(Align::Center);
 
-    let refresh = gtk::Button::builder()
+    let refresh = Button::builder()
         .css_classes(["magma-folder-action"])
         .tooltip_text("Refresh")
         .build();
@@ -118,43 +119,30 @@ fn build_header() -> GtkBox {
     refresh.set_child(Some(&refresh_icon));
     actions.append(&refresh);
 
-    header.append(&title);
+    header.append(&labels);
     header.append(&actions);
-    header
+
+    HeaderWidgets {
+        root: header,
+        workspace_label,
+        refresh_button: refresh,
+    }
 }
 
-// ── Breadcrumb ──
-
-fn build_breadcrumbs(container: &GtkBox, cwd: &Path) {
-    while let Some(child) = container.first_child() {
-        container.remove(&child);
-    }
-
-    let home = std::env::var("HOME").unwrap_or_default();
-    let display_path = cwd.display().to_string();
-    let shortened = if !home.is_empty() && display_path.starts_with(&home) {
-        format!("~{}", &display_path[home.len()..])
-    } else {
-        display_path
+fn update_workspace_label(label: &Label, cwd: Option<&Path>) {
+    let Some(cwd) = cwd else {
+        label.set_text("No workspace");
+        label.set_tooltip_text(None);
+        return;
     };
 
-    let segments: Vec<&str> = shortened.split('/').filter(|s| !s.is_empty()).collect();
-
-    for (i, segment) in segments.iter().enumerate() {
-        if i > 0 {
-            let sep = Label::new(Some("/"));
-            sep.add_css_class("magma-breadcrumb-sep");
-            container.append(&sep);
-        }
-
-        let label = Label::new(Some(segment));
-        label.add_css_class("magma-breadcrumb-segment");
-        if i == segments.len() - 1 {
-            label.add_css_class("magma-breadcrumb-active");
-        }
-        label.set_ellipsize(gtk::pango::EllipsizeMode::None);
-        container.append(&label);
-    }
+    let name = cwd
+        .file_name()
+        .and_then(|name| name.to_str())
+        .filter(|name| !name.is_empty())
+        .unwrap_or("/");
+    label.set_text(name);
+    label.set_tooltip_text(Some(&cwd.display().to_string()));
 }
 
 // ── Git status ──
@@ -260,7 +248,7 @@ fn git_status_css(status: GitStatus) -> &'static str {
 
 fn populate_tree(
     container: &GtkBox,
-    breadcrumb: &GtkBox,
+    workspace_label: &Label,
     cwd_provider: &CwdProvider,
     on_file_click: &OnFileClick,
 ) {
@@ -274,19 +262,18 @@ fn populate_tree(
             let label = Label::new(Some("No working directory"));
             label.add_css_class("magma-folder-empty");
             container.append(&label);
-            build_breadcrumbs(breadcrumb, Path::new(""));
+            update_workspace_label(workspace_label, None);
             return;
         }
     };
 
+    update_workspace_label(workspace_label, Some(&cwd));
     if !cwd.is_dir() {
         let label = Label::new(Some("Not a directory"));
         label.add_css_class("magma-folder-empty");
         container.append(&label);
         return;
     }
-
-    build_breadcrumbs(breadcrumb, &cwd);
 
     let git_map = Rc::new(collect_git_status(&cwd));
     build_tree_level(container, &cwd, 0, &git_map, on_file_click);
@@ -449,7 +436,20 @@ fn format_timestamp(secs: u64) -> String {
         y += 1;
     }
     let mut m = 1u32;
-    let month_days = [31, if is_leap(y) { 29 } else { 28 }, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let month_days = [
+        31,
+        if is_leap(y) { 29 } else { 28 },
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31,
+    ];
     for &md in &month_days {
         if remaining < md {
             break;
@@ -469,7 +469,6 @@ fn is_leap(y: i64) -> bool {
 
 fn build_folder_row(name: &str, depth: u32, git: Option<GitStatus>) -> GtkBox {
     let row = GtkBox::new(Orientation::Horizontal, 0);
-    row.set_margin_start(depth as i32 * INDENT_PX);
 
     let button = gtk::Button::builder()
         .css_classes(["magma-folder-item", "magma-folder-dir"])
@@ -479,6 +478,7 @@ fn build_folder_row(name: &str, depth: u32, git: Option<GitStatus>) -> GtkBox {
     let content = GtkBox::new(Orientation::Horizontal, 6);
     content.set_halign(Align::Start);
     content.set_hexpand(true);
+    content.set_margin_start(depth as i32 * INDENT_PX);
 
     let chevron = Image::from_icon_name("pan-end-symbolic");
     chevron.add_css_class("magma-folder-chevron");
@@ -490,7 +490,6 @@ fn build_folder_row(name: &str, depth: u32, git: Option<GitStatus>) -> GtkBox {
 
     let label = Label::new(Some(name));
     label.add_css_class("magma-folder-name");
-    label.add_css_class(color_class);
     label.set_ellipsize(gtk::pango::EllipsizeMode::End);
     label.set_hexpand(true);
     label.set_halign(Align::Start);
@@ -514,7 +513,6 @@ fn build_folder_row(name: &str, depth: u32, git: Option<GitStatus>) -> GtkBox {
 
 fn build_file_row(name: &str, depth: u32, git: Option<GitStatus>, tooltip: &str) -> GtkBox {
     let row = GtkBox::new(Orientation::Horizontal, 0);
-    row.set_margin_start(depth as i32 * INDENT_PX + 20);
 
     let button = gtk::Button::builder()
         .css_classes(["magma-folder-item", "magma-folder-file"])
@@ -527,6 +525,7 @@ fn build_file_row(name: &str, depth: u32, git: Option<GitStatus>, tooltip: &str)
     let content = GtkBox::new(Orientation::Horizontal, 6);
     content.set_halign(Align::Start);
     content.set_hexpand(true);
+    content.set_margin_start(depth as i32 * INDENT_PX + 20);
 
     let (icon_name, color_class) = file_icon(name);
     let icon = Image::from_icon_name(icon_name);
@@ -535,7 +534,6 @@ fn build_file_row(name: &str, depth: u32, git: Option<GitStatus>, tooltip: &str)
 
     let label = Label::new(Some(name));
     label.add_css_class("magma-folder-name");
-    label.add_css_class(color_class);
     label.set_ellipsize(gtk::pango::EllipsizeMode::End);
     label.set_hexpand(true);
     label.set_halign(Align::Start);
@@ -578,24 +576,22 @@ fn file_icon(name: &str) -> (&'static str, &'static str) {
     match name.to_lowercase().as_str() {
         "cargo.toml" | "cargo.lock" => return ("application-x-executable-symbolic", "ft-rust"),
         "package.json" | "package-lock.json" | "yarn.lock" | "pnpm-lock.yaml" => {
-            return ("application-x-executable-symbolic", "ft-js")
+            return ("application-x-executable-symbolic", "ft-js");
         }
         "tsconfig.json" => return ("application-x-executable-symbolic", "ft-ts"),
         "dockerfile" | "docker-compose.yml" | "docker-compose.yaml" => {
-            return ("application-x-executable-symbolic", "ft-config")
+            return ("application-x-executable-symbolic", "ft-config");
         }
         ".gitignore" | ".gitmodules" | ".gitattributes" => {
-            return ("emblem-shared-symbolic", "ft-git")
+            return ("emblem-shared-symbolic", "ft-git");
         }
         "makefile" | "cmakelists.txt" | "justfile" => {
-            return ("application-x-executable-symbolic", "ft-build")
+            return ("application-x-executable-symbolic", "ft-build");
         }
         "readme.md" | "license" | "license.md" | "changelog.md" => {
-            return ("accessories-text-editor-symbolic", "ft-doc")
+            return ("accessories-text-editor-symbolic", "ft-doc");
         }
-        ".env" | ".env.local" | ".env.example" => {
-            return ("dialog-password-symbolic", "ft-secret")
-        }
+        ".env" | ".env.local" | ".env.example" => return ("dialog-password-symbolic", "ft-secret"),
         _ => {}
     }
 

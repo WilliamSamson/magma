@@ -1,18 +1,18 @@
-use gtk::{glib, prelude::*, Box as GtkBox, Label, Orientation, Paned};
+use gtk::{Box as GtkBox, Label, Orientation, Paned, glib, prelude::*};
 
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
 };
 
-use super::{
-    mux::MuxPaneView,
-    profile::{profile, ProfileId},
-    scaled_spacing,
-};
 use super::super::{
     persist::{PaneFocus, PaneSnapshot, TabSnapshot},
     settings::Settings,
+};
+use super::{
+    mux::MuxPaneView,
+    profile::{ProfileId, profile},
+    scaled_spacing,
 };
 
 pub(crate) struct TabView {
@@ -241,7 +241,8 @@ impl TabView {
     }
 
     pub(crate) fn mount_active_session_bar(&self) {
-        self.active_mux_pane().mount_session_bar(&self.session_bar_host);
+        self.active_mux_pane()
+            .mount_session_bar(&self.session_bar_host);
     }
 
     fn sync_title_label(&self) {
@@ -264,10 +265,7 @@ fn stored_base_title(title: &str, profile_id: ProfileId) -> String {
     }
 
     let suffix = format!(" ({})", profile(profile_id).label);
-    title
-        .strip_suffix(&suffix)
-        .unwrap_or(title)
-        .to_string()
+    title.strip_suffix(&suffix).unwrap_or(title).to_string()
 }
 
 fn build_split_view(left: &GtkBox, right: &GtkBox, split_position: Option<i32>) -> Paned {

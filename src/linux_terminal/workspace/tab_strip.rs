@@ -1,13 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
-    gdk, glib,
-    prelude::*,
     Box as GtkBox, Button, Entry, EventControllerFocus, EventControllerKey, GestureClick,
-    GestureDrag, Label, Notebook, Orientation, ScrolledWindow,
+    GestureDrag, Label, Notebook, Orientation, ScrolledWindow, gdk, glib, prelude::*,
 };
 
-use super::{ops, super::terminal::TabView};
+use super::{super::terminal::TabView, ops};
 
 const DRAG_THRESHOLD: f64 = 8.0;
 pub(super) type RenameState = Rc<RefCell<Option<usize>>>;
@@ -44,11 +42,7 @@ pub(super) fn reveal_active_tab(
     reveal_active_tab_at(container, scroller, current_index(notebook));
 }
 
-pub(super) fn reveal_active_tab_at(
-    container: &GtkBox,
-    scroller: &ScrolledWindow,
-    current: usize,
-) {
+pub(super) fn reveal_active_tab_at(container: &GtkBox, scroller: &ScrolledWindow, current: usize) {
     let container = container.clone();
     let scroller = scroller.clone();
 
@@ -105,7 +99,13 @@ pub(super) fn rebuild_tab_strip(
     tabs: &Rc<RefCell<Vec<TabView>>>,
     rename_state: &RenameState,
 ) {
-    rebuild_tab_strip_at(container, notebook, tabs, rename_state, current_index(notebook));
+    rebuild_tab_strip_at(
+        container,
+        notebook,
+        tabs,
+        rename_state,
+        current_index(notebook),
+    );
 }
 
 pub(super) fn rebuild_tab_strip_at(
@@ -120,7 +120,9 @@ pub(super) fn rebuild_tab_strip_at(
 
     for (index, tab) in tabs.borrow().iter().enumerate() {
         let is_active = index == current;
-        let is_renaming = rename_state.borrow().is_some_and(|rename_index| rename_index == index);
+        let is_renaming = rename_state
+            .borrow()
+            .is_some_and(|rename_index| rename_index == index);
 
         let tab_root = GtkBox::new(Orientation::Horizontal, 8);
         tab_root.add_css_class("magma-tab-item");
@@ -129,7 +131,14 @@ pub(super) fn rebuild_tab_strip_at(
         }
 
         if is_renaming {
-            let entry = rename_entry(tab.base_title(), index, tabs, notebook, container, rename_state);
+            let entry = rename_entry(
+                tab.base_title(),
+                index,
+                tabs,
+                notebook,
+                container,
+                rename_state,
+            );
             tab_root.append(&entry);
         } else {
             let title = tab.title_label().text();
@@ -163,7 +172,12 @@ pub(super) fn rebuild_tab_strip_at(
                 if let Some(page) = notebook_close.page_num(&tab_root_widget) {
                     let index = page as usize;
                     let _ = ops::close_tab_at(&tabs_close, &notebook_close, index);
-                    rebuild_tab_strip(&container_close, &notebook_close, &tabs_close, &rename_state_close);
+                    rebuild_tab_strip(
+                        &container_close,
+                        &notebook_close,
+                        &tabs_close,
+                        &rename_state_close,
+                    );
                 }
             });
             tab_root.append(&close_button);
@@ -512,5 +526,8 @@ fn nth_child(container: &GtkBox, index: usize) -> Option<gtk::Widget> {
 }
 
 fn current_index(notebook: &Notebook) -> usize {
-    notebook.current_page().map(|index| index as usize).unwrap_or(0)
+    notebook
+        .current_page()
+        .map(|index| index as usize)
+        .unwrap_or(0)
 }

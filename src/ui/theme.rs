@@ -1,37 +1,117 @@
-// Magma desktop palette.
-// Constraint: black, white, red, with restrained green/yellow accents only.
+use std::sync::RwLock;
 
-pub(crate) const BG_PRIMARY: u32 = 0x00000000;
-pub(crate) const BG_SECONDARY: u32 = 0x00040404;
-pub(crate) const BG_SIDEBAR: u32 = 0x00070707;
-pub(crate) const BG_TITLEBAR: u32 = 0x00000000;
-pub(crate) const SURFACE_BASE: u32 = 0x000B0B0B;
-pub(crate) const SURFACE_RAISED: u32 = 0x00111111;
-pub(crate) const SURFACE_ELEVATED: u32 = 0x00181818;
+// Instead of hardcoded constants, we query the currently active palette
+// managed by the settings. This bridges the GTK theme state to the custom
+// winit/ratatui renderer.
+use crate::linux_terminal::theme::{self as gtk_theme, Palette};
 
-pub(crate) const ACCENT: u32 = 0x00FF4D4D;
-pub(crate) const ACCENT_MUTED: u32 = 0x007A2A2A;
-pub(crate) const SUCCESS: u32 = 0x00388C50;
-pub(crate) const WARNING: u32 = 0x00C89A1E;
+static ACTIVE_PALETTE: RwLock<Option<Palette>> = RwLock::new(None);
 
-pub(crate) const TEXT_PRIMARY: u32 = 0x00F3F3EF;
-pub(crate) const TEXT_SECONDARY: u32 = 0x00BABAB3;
-pub(crate) const TEXT_DIM: u32 = 0x006B6B66;
-pub(crate) const WINDOW_EDGE: u32 = 0x00E8E8E8;
+pub(crate) fn set_palette(palette: Palette) {
+    if let Ok(mut w) = ACTIVE_PALETTE.write() {
+        *w = Some(palette);
+    }
+}
 
-pub(crate) const BORDER: u32 = 0x00151515;
-pub(crate) const BORDER_STRONG: u32 = 0x00242424;
+fn get_color(selector: impl FnOnce(&Palette) -> u32) -> u32 {
+    if let Ok(r) = ACTIVE_PALETTE.read() {
+        if let Some(palette) = &*r {
+            return selector(palette);
+        }
+    }
+    // Fallback to dark theme default if not yet initialized
+    selector(&gtk_theme::palette(gtk_theme::ThemeMode::Dark))
+}
 
-pub(crate) const TERM_BLACK: u32 = BG_PRIMARY;
-pub(crate) const TERM_RED: u32 = ACCENT;
-pub(crate) const TERM_GREEN: u32 = SUCCESS;
-pub(crate) const TERM_YELLOW: u32 = WARNING;
-pub(crate) const TERM_BLUE: u32 = TEXT_PRIMARY;
-pub(crate) const TERM_MAGENTA: u32 = TEXT_SECONDARY;
-pub(crate) const TERM_CYAN: u32 = TEXT_SECONDARY;
-pub(crate) const TERM_WHITE: u32 = TEXT_PRIMARY;
-pub(crate) const TERM_GRAY: u32 = TEXT_SECONDARY;
-pub(crate) const TERM_DARK_GRAY: u32 = TEXT_DIM;
+// ── Basic UI Colors ──
+
+pub(crate) fn bg_primary() -> u32 {
+    get_color(|p| p.bg_primary)
+}
+pub(crate) fn bg_secondary() -> u32 {
+    get_color(|p| p.surface_base)
+} // Mapping desktop's secondary to surface
+pub(crate) fn bg_sidebar() -> u32 {
+    get_color(|p| p.bg_titlebar)
+} // Sidebar uses titlebar color in new standard
+pub(crate) fn bg_titlebar() -> u32 {
+    get_color(|p| p.bg_titlebar)
+}
+pub(crate) fn surface_base() -> u32 {
+    get_color(|p| p.surface_base)
+}
+pub(crate) fn surface_raised() -> u32 {
+    get_color(|p| p.surface_base)
+} // Unified
+pub(crate) fn surface_elevated() -> u32 {
+    get_color(|p| p.surface_base)
+}
+
+pub(crate) fn accent() -> u32 {
+    get_color(|p| p.accent)
+}
+pub(crate) fn accent_muted() -> u32 {
+    get_color(|p| p.accent) & 0xFFFFFF | 0x33000000
+} // Crude alpha down
+pub(crate) fn success() -> u32 {
+    0x00388C50
+} // Can leave these semantic colors static or get from terminal palette
+pub(crate) fn warning() -> u32 {
+    0x00C89A1E
+}
+
+pub(crate) fn text_primary() -> u32 {
+    get_color(|p| p.text_primary)
+}
+pub(crate) fn text_secondary() -> u32 {
+    get_color(|p| p.text_secondary)
+}
+pub(crate) fn text_dim() -> u32 {
+    get_color(|p| p.text_dim)
+}
+pub(crate) fn window_edge() -> u32 {
+    get_color(|p| p.window_edge)
+}
+
+pub(crate) fn border() -> u32 {
+    get_color(|p| p.border_strong)
+} // Unified
+pub(crate) fn border_strong() -> u32 {
+    get_color(|p| p.border_strong)
+}
+
+// ── Terminal Semantics ──
+
+pub(crate) fn term_black() -> u32 {
+    bg_primary()
+}
+pub(crate) fn term_red() -> u32 {
+    accent()
+}
+pub(crate) fn term_green() -> u32 {
+    success()
+}
+pub(crate) fn term_yellow() -> u32 {
+    warning()
+}
+pub(crate) fn term_blue() -> u32 {
+    text_primary()
+}
+pub(crate) fn term_magenta() -> u32 {
+    text_secondary()
+}
+pub(crate) fn term_cyan() -> u32 {
+    text_secondary()
+}
+pub(crate) fn term_white() -> u32 {
+    text_primary()
+}
+pub(crate) fn term_gray() -> u32 {
+    text_secondary()
+}
+pub(crate) fn term_dark_gray() -> u32 {
+    text_dim()
+}
 
 /// Convert a theme hex color to ratatui `Color::Rgb`.
 pub(crate) fn to_ratatui(color: u32) -> ratatui::style::Color {

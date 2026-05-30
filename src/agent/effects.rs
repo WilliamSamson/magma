@@ -35,9 +35,9 @@ pub(crate) fn execute_side_effect(action: &AgentAction) -> Result<Option<UiEffec
                 hunk.file, hunk.hunk_index
             ))))
         }
-        AgentAction::RunCommand { command, .. } => Ok(Some(UiEffect::DispatchTerminalCommand(
-            command.clone(),
-        ))),
+        AgentAction::RunCommand { command, .. } => {
+            Ok(Some(UiEffect::DispatchTerminalCommand(command.clone())))
+        }
     }
 }
 
@@ -74,8 +74,10 @@ fn write_annotation(hunk: &HunkRef, note: &str) -> Result<(), String> {
         .repo_root
         .ok_or_else(|| "no active git repository".to_string())?;
     let path = patch_session_path(Path::new(&repo_root), &hunk.branch);
-    let raw = fs::read_to_string(&path).map_err(|error| format!("patch session read failed: {error}"))?;
-    let mut json: Value = serde_json::from_str(&raw).map_err(|error| format!("patch session parse failed: {error}"))?;
+    let raw =
+        fs::read_to_string(&path).map_err(|error| format!("patch session read failed: {error}"))?;
+    let mut json: Value = serde_json::from_str(&raw)
+        .map_err(|error| format!("patch session parse failed: {error}"))?;
     let hunks = json
         .get_mut("hunks")
         .and_then(Value::as_array_mut)
@@ -85,13 +87,19 @@ fn write_annotation(hunk: &HunkRef, note: &str) -> Result<(), String> {
             && item.get("hunk_index").and_then(Value::as_u64) == Some(hunk.hunk_index as u64)
     });
     let Some(target) = target else {
-        return Err(format!("patch hunk not found: {}#{}", hunk.file, hunk.hunk_index));
+        return Err(format!(
+            "patch hunk not found: {}#{}",
+            hunk.file, hunk.hunk_index
+        ));
     };
     if let Some(object) = target.as_object_mut() {
         object.insert("annotation".to_string(), Value::String(note.to_string()));
     }
-    fs::write(path, serde_json::to_string_pretty(&json).map_err(|error| error.to_string())?)
-        .map_err(|error| format!("patch session write failed: {error}"))
+    fs::write(
+        path,
+        serde_json::to_string_pretty(&json).map_err(|error| error.to_string())?,
+    )
+    .map_err(|error| format!("patch session write failed: {error}"))
 }
 
 fn stage_hunk(hunk: &HunkRef) -> Result<(), String> {

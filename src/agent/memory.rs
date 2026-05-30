@@ -34,11 +34,20 @@ pub(crate) fn load_recent_summaries(repo_root: &Path, branch: &str, count: usize
         return Vec::new();
     };
     items.sort_by_key(|item| item.timestamp_ms);
-    items.into_iter().rev().take(count).map(|item| item.summary).collect()
+    items
+        .into_iter()
+        .rev()
+        .take(count)
+        .map(|item| item.summary)
+        .collect()
 }
 
 #[allow(dead_code)]
-pub(crate) fn store_summary(repo_root: &Path, branch: &str, summary: String) -> std::io::Result<()> {
+pub(crate) fn store_summary(
+    repo_root: &Path,
+    branch: &str,
+    summary: String,
+) -> std::io::Result<()> {
     let path = repo_memory_dir(repo_root).join(format!("{}.json", sanitize(branch)));
     ensure_parent(&path);
     let mut entries = fs::read_to_string(&path)

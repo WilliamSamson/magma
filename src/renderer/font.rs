@@ -20,7 +20,8 @@ pub(crate) struct FontAtlas {
 
 impl FontAtlas {
     pub(crate) fn new(bytes: &[u8]) -> Result<Self, String> {
-        let font = Font::from_bytes(bytes, FontSettings::default()).map_err(|error| error.to_string())?;
+        let font =
+            Font::from_bytes(bytes, FontSettings::default()).map_err(|error| error.to_string())?;
         Ok(Self {
             font,
             glyphs: HashMap::new(),

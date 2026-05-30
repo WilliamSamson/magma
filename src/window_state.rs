@@ -1,9 +1,4 @@
-use std::{
-    env,
-    fs,
-    io,
-    path::PathBuf,
-};
+use std::{env, fs, io, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use winit::dpi::PhysicalSize;
@@ -23,8 +18,7 @@ pub(crate) fn load_window_size() -> io::Result<Option<PhysicalSize<u32>>> {
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
         Err(error) => return Err(error),
     };
-    let state: StoredWindowState =
-        serde_json::from_str(&contents).map_err(io::Error::other)?;
+    let state: StoredWindowState = serde_json::from_str(&contents).map_err(io::Error::other)?;
     if state.width == 0 || state.height == 0 {
         return Ok(None);
     }

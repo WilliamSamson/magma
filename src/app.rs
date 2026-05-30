@@ -1,12 +1,12 @@
 use crossterm::event::Event;
 use ratatui::{
+    Frame, Terminal,
     backend::TestBackend,
     buffer::Buffer,
     layout::Margin,
     layout::Rect,
     style::Style,
     widgets::{Block, Borders, Paragraph},
-    Frame, Terminal,
 };
 
 use crate::features::logs::LogsFeature;
@@ -68,18 +68,21 @@ impl App {
     fn draw(&mut self, frame: &mut Frame, shell: ShellContext) {
         let root = Block::new().style(
             Style::default()
-                .bg(theme::to_ratatui(theme::BG_PRIMARY))
-                .fg(theme::to_ratatui(theme::TEXT_PRIMARY)),
+                .bg(theme::to_ratatui(theme::bg_primary()))
+                .fg(theme::to_ratatui(theme::text_primary())),
         );
         frame.render_widget(root, frame.area());
 
         let [header, body] = layout::workspace_sections(frame.area());
         let header_block = Block::new()
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(theme::to_ratatui(theme::BORDER_STRONG)))
-            .style(Style::default().bg(theme::to_ratatui(theme::SURFACE_BASE)));
-        let header_panel = Paragraph::new(layout::shell_header_lines(shell.app_name(), shell.feature_name()))
-            .block(header_block);
+            .border_style(Style::default().fg(theme::to_ratatui(theme::border_strong())))
+            .style(Style::default().bg(theme::to_ratatui(theme::surface_base())));
+        let header_panel = Paragraph::new(layout::shell_header_lines(
+            shell.app_name(),
+            shell.feature_name(),
+        ))
+        .block(header_block);
         frame.render_widget(header_panel, header);
 
         let [sidebar, content] = layout::workspace_columns(body);
@@ -87,21 +90,34 @@ impl App {
         let sidebar_block = Block::new()
             .borders(Borders::RIGHT)
             .title(" navigator ")
-            .title_style(Style::default().fg(theme::to_ratatui(theme::ACCENT)))
-            .border_style(Style::default().fg(theme::to_ratatui(theme::BORDER_STRONG)))
-            .style(Style::default()
-                .bg(theme::to_ratatui(theme::BG_SIDEBAR))
-                .fg(theme::to_ratatui(theme::TEXT_PRIMARY)));
-        let sidebar_panel = Paragraph::new(layout::sidebar_lines(shell.app_name(), shell.feature_name()))
-            .block(sidebar_block);
+            .title_style(Style::default().fg(theme::to_ratatui(theme::accent())))
+            .border_style(Style::default().fg(theme::to_ratatui(theme::border_strong())))
+            .style(
+                Style::default()
+                    .bg(theme::to_ratatui(theme::bg_sidebar()))
+                    .fg(theme::to_ratatui(theme::text_primary())),
+            );
+        let sidebar_panel = Paragraph::new(layout::sidebar_lines(
+            shell.app_name(),
+            shell.feature_name(),
+        ))
+        .block(sidebar_block);
         frame.render_widget(sidebar_panel, sidebar);
 
-        let content_block = Block::new()
-            .style(Style::default()
-                .bg(theme::to_ratatui(theme::BG_SECONDARY))
-                .fg(theme::to_ratatui(theme::TEXT_PRIMARY)));
+        let content_block = Block::new().style(
+            Style::default()
+                .bg(theme::to_ratatui(theme::bg_secondary()))
+                .fg(theme::to_ratatui(theme::text_primary())),
+        );
         frame.render_widget(content_block, content);
-        self.logs.draw(frame, content.inner(Margin { vertical: 0, horizontal: 1 }), shell);
+        self.logs.draw(
+            frame,
+            content.inner(Margin {
+                vertical: 0,
+                horizontal: 1,
+            }),
+            shell,
+        );
     }
 }
 

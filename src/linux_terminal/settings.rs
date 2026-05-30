@@ -6,11 +6,7 @@ mod sections;
 mod terminal;
 mod widgets;
 
-use std::{
-    env,
-    fs,
-    path::PathBuf,
-};
+use std::{env, fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 

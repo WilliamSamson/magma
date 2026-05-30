@@ -1,14 +1,14 @@
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
-    pango, prelude::*, Box as GtkBox, Button, Label, ListBox, Orientation,
-    PolicyType, Revealer, RevealerTransitionType, ScrolledWindow, SelectionMode,
+    Box as GtkBox, Button, Label, ListBox, Orientation, PolicyType, Revealer,
+    RevealerTransitionType, ScrolledWindow, SelectionMode, pango, prelude::*,
 };
 
 use super::{
+    GitPaneView,
     diff::{build_diff_stat, build_diff_widget},
     ops::{self, CommitInfo},
-    GitPaneView,
 };
 
 const INITIAL_LOAD: usize = 100;

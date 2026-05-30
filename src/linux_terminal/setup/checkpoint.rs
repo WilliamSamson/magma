@@ -2,7 +2,7 @@ use std::fs;
 
 use serde::{Deserialize, Serialize};
 
-use crate::linux_terminal::settings::{settings_path, Settings};
+use crate::linux_terminal::settings::{Settings, settings_path};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct SetupCheckpoint {

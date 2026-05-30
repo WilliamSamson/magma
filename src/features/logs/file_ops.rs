@@ -8,7 +8,10 @@ use std::{
 /// This is a destructive operation that overwrites the file.
 pub(crate) fn remove_line_at(path: &Path, line_num: usize) -> io::Result<()> {
     if line_num == 0 {
-        return Err(io::Error::new(io::ErrorKind::InvalidInput, "Line number must be 1-indexed"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Line number must be 1-indexed",
+        ));
     }
 
     let file = File::open(path)?;

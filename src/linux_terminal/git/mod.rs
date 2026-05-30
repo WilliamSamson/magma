@@ -20,13 +20,13 @@ use std::{
     cell::RefCell,
     path::PathBuf,
     rc::Rc,
-    sync::mpsc::{channel, TryRecvError},
+    sync::mpsc::{TryRecvError, channel},
     time::Duration,
 };
 
 use gtk::{
-    gdk, glib, prelude::*, Box as GtkBox, Button, EventControllerKey, Label, Orientation,
-    Overflow, Stack, StackTransitionType,
+    Box as GtkBox, Button, EventControllerKey, Label, Orientation, Overflow, Stack,
+    StackTransitionType, gdk, glib, prelude::*,
 };
 
 pub(super) use host::GitPaneHost;
@@ -157,7 +157,8 @@ impl GitPaneView {
 
 // Free function so closures can capture Rc<GitPaneView> and call it.
 fn refresh(view: &Rc<GitPaneView>) {
-    let cwd = (view.cwd_provider)().map(PathBuf::from)
+    let cwd = (view.cwd_provider)()
+        .map(PathBuf::from)
         .or_else(|| std::env::current_dir().ok());
 
     let Some(cwd) = cwd else {
@@ -173,7 +174,8 @@ fn refresh(view: &Rc<GitPaneView>) {
                 Ok(status) => {
                     // Show detached HEAD or branch name
                     if status.is_detached {
-                        view.branch_label.set_text(&format!("detached: {}", status.branch));
+                        view.branch_label
+                            .set_text(&format!("detached: {}", status.branch));
                     } else {
                         view.branch_label.set_text(&status.branch);
                     }
@@ -185,9 +187,12 @@ fn refresh(view: &Rc<GitPaneView>) {
                     // Disable remote buttons when no remotes configured
                     if !status.has_remotes {
                         view.set_remote_buttons_sensitive(false);
-                        view.fetch_btn.set_tooltip_text(Some("No remotes configured"));
-                        view.pull_btn.set_tooltip_text(Some("No remotes configured"));
-                        view.push_btn.set_tooltip_text(Some("No remotes configured"));
+                        view.fetch_btn
+                            .set_tooltip_text(Some("No remotes configured"));
+                        view.pull_btn
+                            .set_tooltip_text(Some("No remotes configured"));
+                        view.push_btn
+                            .set_tooltip_text(Some("No remotes configured"));
                     } else {
                         view.set_remote_buttons_sensitive(true);
                         view.fetch_btn.set_tooltip_text(Some("Fetch all remotes"));
@@ -427,9 +432,7 @@ pub(super) fn build_git_pane(cwd_provider: CwdProvider) -> GtkBox {
         ops::git_fetch(&repo).map(|_| "fetch complete".to_string())
     });
     bind_remote_op(&view, &pull_btn, "pulling...", |repo| {
-        ops::git_pull(&repo).map(|out| {
-            out.lines().next().unwrap_or("pull complete").to_string()
-        })
+        ops::git_pull(&repo).map(|out| out.lines().next().unwrap_or("pull complete").to_string())
     });
     bind_remote_op(&view, &push_btn, "pushing...", |repo| {
         ops::git_push(&repo).map(|_| "push complete".to_string())

@@ -1,10 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
-    gdk, glib,
-    prelude::*,
     Box as GtkBox, Entry, EventControllerKey, Label, ListBox, ListBoxRow, Notebook, Orientation,
-    ScrolledWindow,
+    ScrolledWindow, gdk, glib, prelude::*,
 };
 
 use super::super::terminal::TabView;
@@ -236,5 +234,8 @@ fn clear_rows(list: &ListBox) {
 }
 
 fn current_index(notebook: &Notebook) -> usize {
-    notebook.current_page().map(|index| index as usize).unwrap_or(0)
+    notebook
+        .current_page()
+        .map(|index| index as usize)
+        .unwrap_or(0)
 }

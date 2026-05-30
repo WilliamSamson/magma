@@ -5,14 +5,14 @@ mod tab_strip;
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
-    gdk, prelude::*, Align, Box as GtkBox, Button, EventControllerKey, Notebook, Orientation,
-    Overlay, PackType, PolicyType, ScrolledWindow,
+    Align, Box as GtkBox, Button, EventControllerKey, Notebook, Orientation, Overlay, PackType,
+    PolicyType, ScrolledWindow, gdk, prelude::*,
 };
 
 use super::{
     persist::{self, PaneSnapshot, TabSnapshot, WorkspaceSnapshot},
     settings::Settings,
-    terminal::{next_profile, ProfileId, TabView},
+    terminal::{ProfileId, TabView, next_profile},
 };
 
 pub(super) struct WorkspaceView {
@@ -87,7 +87,11 @@ impl WorkspaceView {
         workspace.rebuild_tab_strip();
 
         // Handle initial mounting of the active tab's session bar
-        let active_tab = workspace.notebook.current_page().map(|i| i as usize).unwrap_or(0);
+        let active_tab = workspace
+            .notebook
+            .current_page()
+            .map(|i| i as usize)
+            .unwrap_or(0);
         if let Some(tab) = workspace.tabs.borrow().get(active_tab) {
             tab.mount_active_session_bar();
         }
@@ -123,7 +127,12 @@ impl WorkspaceView {
     pub(crate) fn snapshot(&self) -> WorkspaceSnapshot {
         WorkspaceSnapshot {
             active_tab: current_index(&self.notebook),
-            tabs: self.tabs.borrow().iter().map(TabView::to_snapshot).collect(),
+            tabs: self
+                .tabs
+                .borrow()
+                .iter()
+                .map(TabView::to_snapshot)
+                .collect(),
         }
     }
 
@@ -135,7 +144,10 @@ impl WorkspaceView {
     }
 
     fn restore(&self) {
-        let snapshot = persist::load_workspace().ok().flatten().unwrap_or_else(default_snapshot);
+        let snapshot = persist::load_workspace()
+            .ok()
+            .flatten()
+            .unwrap_or_else(default_snapshot);
         for tab in snapshot.tabs {
             self.append_tab(tab);
         }
@@ -152,7 +164,13 @@ impl WorkspaceView {
         });
     }
 
-    fn bind_actions(&self, new_tab: Button, split_tab: Button, close_tab: Button, profile_tab: Button) {
+    fn bind_actions(
+        &self,
+        new_tab: Button,
+        split_tab: Button,
+        close_tab: Button,
+        profile_tab: Button,
+    ) {
         let creation_ctx = TabCreationContext {
             tabs: self.tabs.clone(), // tabs Rc clone is needed to share the reference to the list of tabs.
             notebook: self.notebook.clone(), // notebook clone is needed to refer to the notebook widget.
@@ -172,7 +190,10 @@ impl WorkspaceView {
         let notebook_split = self.notebook.clone(); // notebook clone is needed inside split callback.
         let tabs_split = self.tabs.clone(); // tabs clone is needed inside split callback to toggle split pane.
         split_tab.connect_clicked(move |_| {
-            if let Some(tab) = tabs_split.borrow_mut().get_mut(current_index(&notebook_split)) {
+            if let Some(tab) = tabs_split
+                .borrow_mut()
+                .get_mut(current_index(&notebook_split))
+            {
                 tab.toggle_split();
             }
         });
@@ -184,7 +205,12 @@ impl WorkspaceView {
         let quick_switcher_close = self.quick_switcher.clone(); // quick_switcher clone is needed to refresh active items.
         close_tab.connect_clicked(move |_| {
             let _ = ops::close_tab_at(&tabs_close, &notebook_close, current_index(&notebook_close));
-            tab_strip::rebuild_tab_strip(&tab_container_close, &notebook_close, &tabs_close, &rename_state_close);
+            tab_strip::rebuild_tab_strip(
+                &tab_container_close,
+                &notebook_close,
+                &tabs_close,
+                &rename_state_close,
+            );
             quick_switcher_close.refresh();
         });
 
@@ -194,11 +220,19 @@ impl WorkspaceView {
         let rename_state_prof = self.rename_state.clone(); // rename_state clone is needed to preserve renaming on profile shift.
         let quick_switcher_prof = self.quick_switcher.clone(); // quick_switcher clone is needed to update profile labels in switcher.
         profile_tab.connect_clicked(move |_| {
-            if let Some(tab) = tabs_prof.borrow_mut().get_mut(current_index(&notebook_prof)) {
+            if let Some(tab) = tabs_prof
+                .borrow_mut()
+                .get_mut(current_index(&notebook_prof))
+            {
                 let next = next_profile(tab.profile_id());
                 tab.cycle_profile(next);
             }
-            tab_strip::rebuild_tab_strip(&tab_container_prof, &notebook_prof, &tabs_prof, &rename_state_prof);
+            tab_strip::rebuild_tab_strip(
+                &tab_container_prof,
+                &notebook_prof,
+                &tabs_prof,
+                &rename_state_prof,
+            );
             quick_switcher_prof.refresh();
         });
 
@@ -208,17 +242,28 @@ impl WorkspaceView {
         let tab_scroller_switch = self.tab_scroller.clone(); // tab_scroller clone is needed to focus visual tab container.
         let rename_state_switch = self.rename_state.clone(); // rename_state clone is needed to update rename state on switch.
         let quick_switcher_switch = self.quick_switcher.clone(); // quick_switcher clone is needed to sync switcher selection.
-        self.notebook.connect_switch_page(move |notebook, _, page_num| {
-            let active = page_num as usize;
-            tab_strip::rebuild_tab_strip_at(&tab_container_switch, notebook, &tabs_switch, &rename_state_switch, active);
-            tab_strip::reveal_active_tab_at(&tab_container_switch, &tab_scroller_switch, active);
-            quick_switcher_switch.refresh();
+        self.notebook
+            .connect_switch_page(move |notebook, _, page_num| {
+                let active = page_num as usize;
+                tab_strip::rebuild_tab_strip_at(
+                    &tab_container_switch,
+                    notebook,
+                    &tabs_switch,
+                    &rename_state_switch,
+                    active,
+                );
+                tab_strip::reveal_active_tab_at(
+                    &tab_container_switch,
+                    &tab_scroller_switch,
+                    active,
+                );
+                quick_switcher_switch.refresh();
 
-            // Mount the session bar of the newly active workspace tab:
-            if let Some(tab) = tabs_switch.borrow().get(active) {
-                tab.mount_active_session_bar();
-            }
-        });
+                // Mount the session bar of the newly active workspace tab:
+                if let Some(tab) = tabs_switch.borrow().get(active) {
+                    tab.mount_active_session_bar();
+                }
+            });
 
         // On tab removal: full rebuild needed since widget count changed
         let tabs_rem = self.tabs.clone(); // tabs clone is needed inside page removal handler to rebuild.
@@ -227,7 +272,12 @@ impl WorkspaceView {
         let rename_state_rem = self.rename_state.clone(); // rename_state clone is needed to sync active tab labels.
         let quick_switcher_rem = self.quick_switcher.clone(); // quick_switcher clone is needed to update switcher list.
         self.notebook.connect_page_removed(move |notebook, _, _| {
-            tab_strip::rebuild_tab_strip(&tab_container_rem, notebook, &tabs_rem, &rename_state_rem);
+            tab_strip::rebuild_tab_strip(
+                &tab_container_rem,
+                notebook,
+                &tabs_rem,
+                &rename_state_rem,
+            );
             tab_strip::update_active_tab(&tab_container_rem, notebook);
             tab_strip::reveal_active_tab(&tab_container_rem, &tab_scroller_rem, notebook);
             quick_switcher_rem.refresh();
@@ -275,7 +325,8 @@ impl WorkspaceView {
                 }
                 // Ctrl+W: Close current tab
                 gdk::Key::w if alt && !shift => {
-                    let handled = ctx.tabs
+                    let handled = ctx
+                        .tabs
                         .borrow()
                         .get(current_index(&ctx.notebook))
                         .is_some_and(TabView::close_active_session);
@@ -287,8 +338,14 @@ impl WorkspaceView {
                 }
                 // Ctrl+W: Close current tab
                 gdk::Key::w if !shift && !alt => {
-                    let _ = ops::close_tab_at(&ctx.tabs, &ctx.notebook, current_index(&ctx.notebook));
-                    tab_strip::rebuild_tab_strip(&ctx.tab_container, &ctx.notebook, &ctx.tabs, &ctx.rename_state);
+                    let _ =
+                        ops::close_tab_at(&ctx.tabs, &ctx.notebook, current_index(&ctx.notebook));
+                    tab_strip::rebuild_tab_strip(
+                        &ctx.tab_container,
+                        &ctx.notebook,
+                        &ctx.tabs,
+                        &ctx.rename_state,
+                    );
                     ctx.quick_switcher.refresh();
                     gtk::glib::Propagation::Stop
                 }
@@ -324,7 +381,12 @@ impl WorkspaceView {
                     let current = current_index(&ctx.notebook);
                     if count > 1 && current > 0 {
                         ops::reorder_tab(&ctx.tabs, &ctx.notebook, current, current - 1);
-                        tab_strip::rebuild_tab_strip(&ctx.tab_container, &ctx.notebook, &ctx.tabs, &ctx.rename_state);
+                        tab_strip::rebuild_tab_strip(
+                            &ctx.tab_container,
+                            &ctx.notebook,
+                            &ctx.tabs,
+                            &ctx.rename_state,
+                        );
                         ctx.notebook.set_current_page(Some((current - 1) as u32));
                     }
                     gtk::glib::Propagation::Stop
@@ -335,7 +397,12 @@ impl WorkspaceView {
                     let current = current_index(&ctx.notebook);
                     if count > 1 && current + 1 < count {
                         ops::reorder_tab(&ctx.tabs, &ctx.notebook, current, current + 1);
-                        tab_strip::rebuild_tab_strip(&ctx.tab_container, &ctx.notebook, &ctx.tabs, &ctx.rename_state);
+                        tab_strip::rebuild_tab_strip(
+                            &ctx.tab_container,
+                            &ctx.notebook,
+                            &ctx.tabs,
+                            &ctx.rename_state,
+                        );
                         ctx.notebook.set_current_page(Some((current + 1) as u32));
                     }
                     gtk::glib::Propagation::Stop
@@ -358,7 +425,8 @@ impl WorkspaceView {
                 }
                 // Ctrl+Alt+Left: Focus left split pane
                 gdk::Key::Left if alt => {
-                    let handled = ctx.tabs
+                    let handled = ctx
+                        .tabs
                         .borrow()
                         .get(current_index(&ctx.notebook))
                         .is_some_and(TabView::focus_left_pane);
@@ -370,7 +438,8 @@ impl WorkspaceView {
                 }
                 // Ctrl+Alt+Right: Focus right split pane
                 gdk::Key::Right if alt => {
-                    let handled = ctx.tabs
+                    let handled = ctx
+                        .tabs
                         .borrow()
                         .get(current_index(&ctx.notebook))
                         .is_some_and(TabView::focus_right_pane);
@@ -382,7 +451,8 @@ impl WorkspaceView {
                 }
                 // Ctrl+Alt+PageDown: Next multiplexer session
                 gdk::Key::Page_Down if alt => {
-                    let handled = ctx.tabs
+                    let handled = ctx
+                        .tabs
                         .borrow()
                         .get(current_index(&ctx.notebook))
                         .is_some_and(TabView::focus_next_session);
@@ -394,7 +464,8 @@ impl WorkspaceView {
                 }
                 // Ctrl+Alt+PageUp: Previous multiplexer session
                 gdk::Key::Page_Up if alt => {
-                    let handled = ctx.tabs
+                    let handled = ctx
+                        .tabs
                         .borrow()
                         .get(current_index(&ctx.notebook))
                         .is_some_and(TabView::focus_previous_session);
@@ -407,7 +478,8 @@ impl WorkspaceView {
                 // Ctrl+Alt+1-9: Jump to multiplexer session by number in the active pane
                 _ if alt && key.to_unicode().is_some_and(|c| ('1'..='9').contains(&c)) => {
                     let target = (key.to_unicode().unwrap_or('1') as usize) - ('1' as usize);
-                    let handled = ctx.tabs
+                    let handled = ctx
+                        .tabs
                         .borrow()
                         .get(current_index(&ctx.notebook))
                         .is_some_and(|tab| tab.focus_session(target));
@@ -476,9 +548,21 @@ fn create_new_tab(ctx: &TabCreationContext) {
         split_position: None,
         active_pane: persist::PaneFocus::Left,
     };
-    append_tab(&ctx.tabs, &ctx.notebook, snapshot, &ctx.settings, &ctx.session_bar_host);
-    ctx.notebook.set_current_page(Some((ctx.tabs.borrow().len().saturating_sub(1)) as u32));
-    tab_strip::rebuild_tab_strip(&ctx.tab_container, &ctx.notebook, &ctx.tabs, &ctx.rename_state);
+    append_tab(
+        &ctx.tabs,
+        &ctx.notebook,
+        snapshot,
+        &ctx.settings,
+        &ctx.session_bar_host,
+    );
+    ctx.notebook
+        .set_current_page(Some((ctx.tabs.borrow().len().saturating_sub(1)) as u32));
+    tab_strip::rebuild_tab_strip(
+        &ctx.tab_container,
+        &ctx.notebook,
+        &ctx.tabs,
+        &ctx.rename_state,
+    );
     tab_strip::update_active_tab(&ctx.tab_container, &ctx.notebook);
     tab_strip::reveal_active_tab(&ctx.tab_container, &ctx.tab_scroller, &ctx.notebook);
     ctx.quick_switcher.refresh();
@@ -530,7 +614,7 @@ fn append_tab(
     notebook: &Notebook,
     snapshot: TabSnapshot,
     settings: &Rc<RefCell<Settings>>, // settings Rc wrapper is cloned inside TabView::new.
-    session_bar_host: &GtkBox, // session_bar_host is passed to TabView::new.
+    session_bar_host: &GtkBox,        // session_bar_host is passed to TabView::new.
 ) {
     let tab = TabView::new(snapshot, settings.clone(), session_bar_host.clone());
     notebook.append_page(tab.root(), Some(tab.title_label()));
@@ -545,7 +629,10 @@ fn action_button(icon_name: &str) -> Button {
 }
 
 fn current_index(notebook: &Notebook) -> usize {
-    notebook.current_page().map(|index| index as usize).unwrap_or(0)
+    notebook
+        .current_page()
+        .map(|index| index as usize)
+        .unwrap_or(0)
 }
 
 fn default_snapshot() -> WorkspaceSnapshot {

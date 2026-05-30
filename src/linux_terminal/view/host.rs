@@ -4,10 +4,10 @@ use std::{
     rc::Rc,
 };
 
-use gtk::{prelude::*, Box as GtkBox, Orientation, Overflow};
+use gtk::{Box as GtkBox, Orientation, Overflow, prelude::*};
 use webkit6::WebContext;
 
-use super::{build_view_pane, CwdProvider};
+use super::{CwdProvider, build_view_pane};
 
 /// Shared slot for requesting the view pane to open a specific file.
 pub(super) type OpenFileSlot = Rc<RefCell<Option<PathBuf>>>;

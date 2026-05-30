@@ -1,14 +1,14 @@
 use std::{cell::Cell, rc::Rc};
 
 use gtk::{
-    pango, prelude::*, Box as GtkBox, Button, Label, ListBox, Orientation,
-    PolicyType, Revealer, RevealerTransitionType, ScrolledWindow, SelectionMode, TextView,
+    Box as GtkBox, Button, Label, ListBox, Orientation, PolicyType, Revealer,
+    RevealerTransitionType, ScrolledWindow, SelectionMode, TextView, pango, prelude::*,
 };
 
 use super::{
+    GitPaneView,
     diff::build_diff_widget,
     ops::{self, FileChange, FileStatus, RepoStatus},
-    GitPaneView,
 };
 
 pub(super) struct StagingWidgets {
@@ -158,7 +158,9 @@ pub(super) fn build_staging_view(view: &Rc<GitPaneView>) -> GtkBox {
         buffer.connect_changed(move |buf| {
             let text = buf.text(&buf.start_iter(), &buf.end_iter(), false);
             let has_text = !text.trim().is_empty();
-            widgets_ref.commit_button.set_sensitive(has_text && widgets_ref.can_commit.get());
+            widgets_ref
+                .commit_button
+                .set_sensitive(has_text && widgets_ref.can_commit.get());
         });
     }
 
@@ -209,30 +211,44 @@ pub(super) fn refresh_staging(view: &Rc<GitPaneView>, status: &RepoStatus) {
     clear_list(&widgets.conflicted_list);
     let has_conflicts = !status.conflicted.is_empty();
     widgets.conflicted_section.set_visible(has_conflicts);
-    widgets.conflicted_count.set_text(&status.conflicted.len().to_string());
+    widgets
+        .conflicted_count
+        .set_text(&status.conflicted.len().to_string());
     for path in &status.conflicted {
         widgets.conflicted_list.append(&build_conflict_row(path));
     }
 
     // Staged files
     clear_list(&widgets.staged_list);
-    widgets.staged_count.set_text(&status.staged.len().to_string());
+    widgets
+        .staged_count
+        .set_text(&status.staged.len().to_string());
     for file in &status.staged {
-        widgets.staged_list.append(&build_file_row(file, true, view));
+        widgets
+            .staged_list
+            .append(&build_file_row(file, true, view));
     }
 
     // Unstaged files
     clear_list(&widgets.unstaged_list);
-    widgets.unstaged_count.set_text(&status.unstaged.len().to_string());
+    widgets
+        .unstaged_count
+        .set_text(&status.unstaged.len().to_string());
     for file in &status.unstaged {
-        widgets.unstaged_list.append(&build_file_row(file, false, view));
+        widgets
+            .unstaged_list
+            .append(&build_file_row(file, false, view));
     }
 
     // Untracked files
     clear_list(&widgets.untracked_list);
-    widgets.untracked_count.set_text(&status.untracked.len().to_string());
+    widgets
+        .untracked_count
+        .set_text(&status.untracked.len().to_string());
     for path in &status.untracked {
-        widgets.untracked_list.append(&build_untracked_row(path, view));
+        widgets
+            .untracked_list
+            .append(&build_untracked_row(path, view));
     }
 
     // Track whether commit is possible (staged + no conflicts)
@@ -241,7 +257,9 @@ pub(super) fn refresh_staging(view: &Rc<GitPaneView>, status: &RepoStatus) {
 
     let buf = widgets.commit_entry.buffer();
     let text = buf.text(&buf.start_iter(), &buf.end_iter(), false);
-    widgets.commit_button.set_sensitive(can_commit && !text.trim().is_empty());
+    widgets
+        .commit_button
+        .set_sensitive(can_commit && !text.trim().is_empty());
 }
 
 // ─── File section builder ────────────────────────────────────────────

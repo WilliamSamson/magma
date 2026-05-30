@@ -1,15 +1,14 @@
 use std::rc::Rc;
 
-use gtk::{gio, pango, prelude::*, Box as GtkBox, Button, Label, Orientation, Overflow};
+use gtk::{Box as GtkBox, Button, Label, Orientation, Overflow, gio, pango, prelude::*};
 use webkit6::{
-    prelude::*, ContextMenuItem, LoadEvent, Settings as WebSettings, UserContentInjectedFrames,
-    UserContentManager, UserStyleLevel, UserStyleSheet, WebView,
+    ContextMenuItem, LoadEvent, Settings as WebSettings, UserContentInjectedFrames,
+    UserContentManager, UserStyleLevel, UserStyleSheet, WebView, prelude::*,
 };
 
 use super::{
-    browser,
+    WebPaneState, browser,
     persist::{self, WebSnapshot, WebTabSnapshot},
-    WebPaneState,
 };
 
 pub(in crate::linux_terminal) struct TabInfo {
@@ -27,7 +26,7 @@ pub(super) fn create_tab(state: &Rc<WebPaneState>) -> usize {
     let web_settings = WebSettings::new();
     web_settings.set_enable_developer_extras(cfg!(debug_assertions));
     web_settings.set_enable_back_forward_navigation_gestures(true);
-    web_settings.set_enable_smooth_scrolling(true);
+    web_settings.set_enable_smooth_scrolling(false);
 
     let web_view = WebView::builder()
         .web_context(&state.context)
@@ -218,11 +217,15 @@ fn update_ssl_icon(state: &WebPaneState, uri: &str) {
     state.ssl_icon.remove_css_class("insecure");
 
     if uri.starts_with("https://") {
-        state.ssl_icon.set_icon_name(Some("channel-secure-symbolic"));
+        state
+            .ssl_icon
+            .set_icon_name(Some("channel-secure-symbolic"));
         state.ssl_icon.add_css_class("secure");
         state.ssl_icon.set_visible(true);
     } else if uri.starts_with("http://") {
-        state.ssl_icon.set_icon_name(Some("channel-insecure-symbolic"));
+        state
+            .ssl_icon
+            .set_icon_name(Some("channel-insecure-symbolic"));
         state.ssl_icon.add_css_class("insecure");
         state.ssl_icon.set_visible(true);
     } else {
@@ -262,10 +265,7 @@ fn bind_tab_signals(state: &Rc<WebPaneState>, web_view: &WebView, id: u32) {
     // Load changed
     let load_state = state.clone();
     web_view.connect_load_changed(move |web_view, event| {
-        let uri = web_view
-            .uri()
-            .map(|u| u.to_string())
-            .unwrap_or_default();
+        let uri = web_view.uri().map(|u| u.to_string()).unwrap_or_default();
 
         if is_active_tab(&load_state, id) {
             if !uri.is_empty() {
@@ -288,9 +288,7 @@ fn bind_tab_signals(state: &Rc<WebPaneState>, web_view: &WebView, id: u32) {
                 _ => load_state.status.text().to_string(),
             };
             load_state.status.set_text(&status_text);
-            load_state
-                .back_button
-                .set_sensitive(web_view.can_go_back());
+            load_state.back_button.set_sensitive(web_view.can_go_back());
             load_state
                 .forward_button
                 .set_sensitive(web_view.can_go_forward());
@@ -319,9 +317,11 @@ fn bind_tab_signals(state: &Rc<WebPaneState>, web_view: &WebView, id: u32) {
     let fail_state = state.clone();
     web_view.connect_load_failed(move |_web_view, _event, uri, error| {
         if is_active_tab(&fail_state, id) {
-            fail_state
-                .status
-                .set_text(&format!("failed {} · {}", compact_uri(uri), error.message()));
+            fail_state.status.set_text(&format!(
+                "failed {} · {}",
+                compact_uri(uri),
+                error.message()
+            ));
             fail_state.reload_button.set_visible(true);
             fail_state.stop_button.set_visible(false);
             fail_state.progress_bar.set_visible(false);
@@ -370,9 +370,7 @@ fn bind_tab_signals(state: &Rc<WebPaneState>, web_view: &WebView, id: u32) {
                     update_ssl_icon(&uri_state, &uri_str);
                 }
             }
-            uri_state
-                .back_button
-                .set_sensitive(web_view.can_go_back());
+            uri_state.back_button.set_sensitive(web_view.can_go_back());
             uri_state
                 .forward_button
                 .set_sensitive(web_view.can_go_forward());

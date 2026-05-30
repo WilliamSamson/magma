@@ -1,5 +1,5 @@
-mod app;
 mod agent;
+mod app;
 mod features;
 mod linux_terminal;
 mod logger;
@@ -7,11 +7,15 @@ mod renderer;
 mod ui;
 mod window_state;
 
-use std::{io, rc::Rc, time::{Duration, Instant}};
+use std::{
+    io,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 use app::App;
 use crossterm::event::{Event as CrosstermEvent, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
-use features::logs::{load_source, parse_args, spawn_file_follower, LogsFeature};
+use features::logs::{LogsFeature, load_source, parse_args, spawn_file_follower};
 use renderer::Renderer;
 use ui::titlebar::{self, TitleBarAction};
 use winit::{
@@ -49,14 +53,20 @@ fn main() -> io::Result<()> {
     }
 
     let source = load_source(args.input_path)?;
-    logger::info("log source loaded", &[
-        ("source", &source.source_name),
-        ("entries", &source.entries.len().to_string()),
-    ]);
+    logger::info(
+        "log source loaded",
+        &[
+            ("source", &source.source_name),
+            ("entries", &source.entries.len().to_string()),
+        ],
+    );
     let follower = source.follow_config.map(spawn_file_follower);
     let mut logs = LogsFeature::new(source.source_name, source.entries, follower);
     logs.apply_startup_filters(args.startup_filter.query, &args.startup_filter.levels);
     let mut app = App::new_logs(logs);
+
+    let settings = linux_terminal::settings::load_settings();
+    ui::theme::set_palette(linux_terminal::theme::palette(settings.theme_mode));
 
     let event_loop = EventLoop::new().map_err(to_io_error)?;
     let (icon, icon_rgba, icon_w, icon_h) = build_icon()?;
@@ -78,8 +88,8 @@ fn main() -> io::Result<()> {
             .map_err(to_io_error)?,
     );
     let _ = window.request_inner_size(Size::Physical(initial_size));
-    let mut renderer = Renderer::new(window.clone(), icon_rgba, icon_w, icon_h)
-        .map_err(to_io_error)?;
+    let mut renderer =
+        Renderer::new(window.clone(), icon_rgba, icon_w, icon_h).map_err(to_io_error)?;
     let mut next_tick = Instant::now();
     let mut chrome = WindowChrome::default();
 
@@ -90,14 +100,7 @@ fn main() -> io::Result<()> {
             match event {
                 Event::AboutToWait => handle_tick(&window, &mut app, &mut next_tick, elwt),
                 Event::WindowEvent { window_id, event } if window_id == window.id() => {
-                    handle_window_event(
-                        event,
-                        &window,
-                        &mut renderer,
-                        &mut app,
-                        elwt,
-                        &mut chrome,
-                    );
+                    handle_window_event(event, &window, &mut renderer, &mut app, elwt, &mut chrome);
                 }
                 _ => {}
             }
@@ -167,20 +170,21 @@ fn handle_window_event(
             );
             window.set_cursor_icon(cursor_icon_for_resize(chrome.resize_direction));
             renderer.update_dock_hover(position.x as i32, position.y as i32);
-            
+
             let new_hover = titlebar::hit_test(position.x, position.y, window.inner_size().width);
-            let hover_action = if new_hover != TitleBarAction::Drag && new_hover != TitleBarAction::None {
-                Some(new_hover)
-            } else {
-                None
-            };
-            
+            let hover_action =
+                if new_hover != TitleBarAction::Drag && new_hover != TitleBarAction::None {
+                    Some(new_hover)
+                } else {
+                    None
+                };
+
             if chrome.titlebar_hover != hover_action {
                 chrome.titlebar_hover = hover_action;
                 window.request_redraw();
             } else {
                 // Dock might need redraw if it handles its own hover
-                window.request_redraw(); 
+                window.request_redraw();
             }
         }
         WindowEvent::CursorLeft { .. } => {
@@ -205,7 +209,7 @@ fn handle_window_event(
             }
 
             let (x, y) = chrome.cursor_position;
-            
+
             // Handle bottom pill clicks first
             if let Some(tab_idx) = renderer.dock_hit_test(x as i32, y as i32) {
                 renderer.set_active_dock_item(tab_idx);
@@ -253,7 +257,9 @@ fn redraw(renderer: &mut Renderer, app: &mut App, chrome: &WindowChrome) -> io::
     let (columns, rows) = renderer.grid_size();
     let buffer = app.render(columns, rows);
     let is_focused = chrome.is_focused;
-    renderer.render(&buffer, app.show_dock(), chrome.titlebar_hover, is_focused).map_err(to_io_error)
+    renderer
+        .render(&buffer, app.show_dock(), chrome.titlebar_hover, is_focused)
+        .map_err(to_io_error)
 }
 
 fn translate_key_event(
@@ -321,7 +327,9 @@ fn translate_modifiers(modifiers: ModifiersState) -> KeyModifiers {
 }
 
 fn first_printable_char(text: Option<&str>) -> Option<char> {
-    text?.chars().find(|character| *character == ' ' || !character.is_control())
+    text?
+        .chars()
+        .find(|character| *character == ' ' || !character.is_control())
 }
 
 fn to_io_error(error: impl ToString) -> io::Error {
@@ -375,8 +383,12 @@ fn cursor_icon_for_resize(direction: Option<ResizeDirection>) -> CursorIcon {
     match direction {
         Some(ResizeDirection::North) | Some(ResizeDirection::South) => CursorIcon::NsResize,
         Some(ResizeDirection::East) | Some(ResizeDirection::West) => CursorIcon::EwResize,
-        Some(ResizeDirection::NorthWest) | Some(ResizeDirection::SouthEast) => CursorIcon::NwseResize,
-        Some(ResizeDirection::NorthEast) | Some(ResizeDirection::SouthWest) => CursorIcon::NeswResize,
+        Some(ResizeDirection::NorthWest) | Some(ResizeDirection::SouthEast) => {
+            CursorIcon::NwseResize
+        }
+        Some(ResizeDirection::NorthEast) | Some(ResizeDirection::SouthWest) => {
+            CursorIcon::NeswResize
+        }
         None => CursorIcon::Default,
     }
 }

@@ -12,15 +12,39 @@ use super::context::build_workspace_context;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub(crate) enum WorkspaceEvent {
-    ErrorRateSpike { count: usize },
-    RepeatedError { message: String, count: usize },
-    NewErrorPattern { message: String },
-    CommandFailed { branch: String, command: String, exit_code: i32 },
-    CommandPreviouslyFailed { branch: String, command: String },
-    MergeConflict { files: Vec<String> },
-    BranchDiverged { ahead: u32, behind: u32 },
-    UncommittedIdle { minutes: u64, changed_files: usize },
-    RiskyHunksUnmarked { count: usize },
+    ErrorRateSpike {
+        count: usize,
+    },
+    RepeatedError {
+        message: String,
+        count: usize,
+    },
+    NewErrorPattern {
+        message: String,
+    },
+    CommandFailed {
+        branch: String,
+        command: String,
+        exit_code: i32,
+    },
+    CommandPreviouslyFailed {
+        branch: String,
+        command: String,
+    },
+    MergeConflict {
+        files: Vec<String>,
+    },
+    BranchDiverged {
+        ahead: u32,
+        behind: u32,
+    },
+    UncommittedIdle {
+        minutes: u64,
+        changed_files: usize,
+    },
+    RiskyHunksUnmarked {
+        count: usize,
+    },
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -72,7 +96,9 @@ pub(crate) fn spawn(config: ObserverConfig) -> Receiver<WorkspaceEvent> {
             if errors.len() >= 8 {
                 candidates.push((
                     "error_rate_spike",
-                    WorkspaceEvent::ErrorRateSpike { count: errors.len() },
+                    WorkspaceEvent::ErrorRateSpike {
+                        count: errors.len(),
+                    },
                 ));
             }
             if let Some((message, count)) = repeated_error(&errors) {

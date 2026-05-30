@@ -1,9 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
 use gtk::{
-    prelude::*,
     Align, Box as GtkBox, Button, DropDown, Entry, Image, Label, Orientation, SpinButton,
-    StringList, Switch,
+    StringList, Switch, prelude::*,
 };
 
 use super::setup_label;
@@ -94,7 +93,10 @@ pub(super) fn build_nav_button(
     (button, label)
 }
 
-pub(super) fn build_runtime_step(draft: &Rc<RefCell<Settings>>, on_checkpoint: &Rc<dyn Fn()>) -> GtkBox {
+pub(super) fn build_runtime_step(
+    draft: &Rc<RefCell<Settings>>,
+    on_checkpoint: &Rc<dyn Fn()>,
+) -> GtkBox {
     let page = step_page(
         "runtime",
         "choose the shell command and confirm where magma will write its local configuration.",
@@ -117,7 +119,11 @@ pub(super) fn build_runtime_step(draft: &Rc<RefCell<Settings>>, on_checkpoint: &
         });
     }
 
-    page.append(&setting_row("shell command", "the shell magma should launch", &shell_entry));
+    page.append(&setting_row(
+        "shell command",
+        "the shell magma should launch",
+        &shell_entry,
+    ));
     page.append(&display_row("resolved shell", &resolved_value));
     page.append(&display_row("config path", &config_value));
     page
@@ -164,8 +170,16 @@ pub(super) fn build_workspace_step(
         });
     }
 
-    page.append(&setting_row("default browser", "used by the web viewer pane", &browser_dropdown));
-    page.append(&setting_row("open side pane", "start with logr and web pane available", &logr_switch));
+    page.append(&setting_row(
+        "default browser",
+        "used by the web viewer pane",
+        &browser_dropdown,
+    ));
+    page.append(&setting_row(
+        "open side pane",
+        "start with logr and web pane available",
+        &logr_switch,
+    ));
     page
 }
 
@@ -180,7 +194,10 @@ pub(super) fn build_appearance_step(
     );
     let terminal_font = spin_field(draft.borrow().font_size as f64, 6.0, 32.0);
     let app_font = spin_field(draft.borrow().app_font_size as f64, 8.0, 20.0);
-    let theme_dropdown = dropdown_field(&ThemeMode::OPTIONS, draft.borrow().theme_mode.selected_index());
+    let theme_dropdown = dropdown_field(
+        &ThemeMode::OPTIONS,
+        draft.borrow().theme_mode.selected_index(),
+    );
     let cursor_styles = ["ibeam", "block", "underline"];
     let selected_cursor = cursor_styles
         .iter()
@@ -246,11 +263,31 @@ pub(super) fn build_appearance_step(
         });
     }
 
-    page.append(&setting_row("theme", "choose the workspace light or dark palette", &theme_dropdown));
-    page.append(&setting_row("terminal font size", "shell text scale", &terminal_font));
-    page.append(&setting_row("app font size", "window and interface scale", &app_font));
-    page.append(&setting_row("cursor style", "terminal cursor shape", &cursor_dropdown));
-    page.append(&setting_row("cursor blink", "blink active cursor", &blink_switch));
+    page.append(&setting_row(
+        "theme",
+        "choose the workspace light or dark palette",
+        &theme_dropdown,
+    ));
+    page.append(&setting_row(
+        "terminal font size",
+        "shell text scale",
+        &terminal_font,
+    ));
+    page.append(&setting_row(
+        "app font size",
+        "window and interface scale",
+        &app_font,
+    ));
+    page.append(&setting_row(
+        "cursor style",
+        "terminal cursor shape",
+        &cursor_dropdown,
+    ));
+    page.append(&setting_row(
+        "cursor blink",
+        "blink active cursor",
+        &blink_switch,
+    ));
     page
 }
 

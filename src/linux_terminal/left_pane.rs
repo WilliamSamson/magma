@@ -1,8 +1,8 @@
 use std::{cell::Cell, rc::Rc};
 
 use gtk::{
-    prelude::*, Align, Box as GtkBox, Button, Image, Orientation, Overflow, PolicyType, Revealer,
-    RevealerTransitionType, ScrolledWindow,
+    Align, Box as GtkBox, Button, Image, Orientation, Overflow, PolicyType, Revealer,
+    RevealerTransitionType, ScrolledWindow, prelude::*,
 };
 
 use super::{folder, folder::OnFileClick, view::CwdProvider};

@@ -1,12 +1,4 @@
-use std::{
-    env,
-    fs,
-    fs::OpenOptions,
-    io::Write,
-    path::PathBuf,
-    sync::Mutex,
-    time::SystemTime,
-};
+use std::{env, fs, fs::OpenOptions, io::Write, path::PathBuf, sync::Mutex, time::SystemTime};
 
 use serde_json::json;
 
@@ -27,7 +19,10 @@ pub(crate) fn init() {
         };
         *guard = Some(file);
     }
-    info("magma started", &[("log_path", path.to_string_lossy().as_ref())]);
+    info(
+        "magma started",
+        &[("log_path", path.to_string_lossy().as_ref())],
+    );
 }
 
 pub(crate) fn info(message: &str, fields: &[(&str, &str)]) {

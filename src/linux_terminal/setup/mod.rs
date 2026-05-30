@@ -7,8 +7,7 @@ use std::{
 };
 
 use gtk::{
-    prelude::*,
-    Align, Box as GtkBox, Button, Label, Orientation, Stack, StackTransitionType,
+    Align, Box as GtkBox, Button, Label, Orientation, Stack, StackTransitionType, prelude::*,
 };
 
 use super::settings::Settings;
@@ -26,6 +25,7 @@ pub(super) fn clear_checkpoint() {
 pub(in crate::linux_terminal) fn build_setup_page(
     initial_settings: &Settings,
     initial_step: u32,
+    on_preview: impl Fn(&Settings) + 'static,
     on_continue: impl Fn(Settings) + 'static,
 ) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 0);
@@ -51,6 +51,7 @@ pub(in crate::linux_terminal) fn build_setup_page(
     shell.add_css_class("magma-setup-shell");
     shell.set_halign(Align::Center);
     shell.set_valign(Align::Center);
+    let on_preview: Rc<dyn Fn(&Settings)> = Rc::new(on_preview);
 
     shell.append(&controls::build_topbar());
 
@@ -59,7 +60,7 @@ pub(in crate::linux_terminal) fn build_setup_page(
 
     let hero = controls::build_hero();
     let (progress, step_markers) = controls::build_progress();
-    let page_stack = build_page_stack(&draft, &persist_checkpoint);
+    let page_stack = build_page_stack(&draft, &persist_checkpoint, &on_preview);
     let footer = GtkBox::new(Orientation::Horizontal, 10);
     footer.add_css_class("magma-setup-footer");
 
@@ -69,12 +70,8 @@ pub(in crate::linux_terminal) fn build_setup_page(
         true,
         "magma-setup-secondary",
     );
-    let (next_button, next_button_label) = controls::build_nav_button(
-        "next",
-        "go-next-symbolic",
-        false,
-        "magma-setup-action",
-    );
+    let (next_button, next_button_label) =
+        controls::build_nav_button("next", "go-next-symbolic", false, "magma-setup-action");
     let footer_spacer = GtkBox::new(Orientation::Horizontal, 0);
     footer_spacer.set_hexpand(true);
 
@@ -113,18 +110,25 @@ struct NavigationWidgets {
     next_button_label: Label,
 }
 
-fn build_page_stack(draft: &Rc<RefCell<Settings>>, on_checkpoint: &Rc<dyn Fn()>) -> Stack {
+fn build_page_stack(
+    draft: &Rc<RefCell<Settings>>,
+    on_checkpoint: &Rc<dyn Fn()>,
+    on_preview: &Rc<dyn Fn(&Settings)>,
+) -> Stack {
     let page_stack = Stack::new();
     page_stack.add_css_class("magma-setup-pages");
     page_stack.set_transition_type(StackTransitionType::SlideLeftRight);
     page_stack.set_transition_duration(180);
-    page_stack.add_named(&controls::build_runtime_step(draft, on_checkpoint), Some("runtime"));
+    page_stack.add_named(
+        &controls::build_runtime_step(draft, on_checkpoint),
+        Some("runtime"),
+    );
     page_stack.add_named(
         &controls::build_workspace_step(draft, on_checkpoint),
         Some("workspace"),
     );
     page_stack.add_named(
-        &controls::build_appearance_step(draft, on_checkpoint),
+        &controls::build_appearance_step(draft, on_checkpoint, on_preview),
         Some("appearance"),
     );
     page_stack.set_visible_child_name("runtime");

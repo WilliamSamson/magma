@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
 use gtk::{
-    pango, prelude::*, Box as GtkBox, Button, Entry, Label, ListBox, Orientation, PolicyType,
-    Revealer, RevealerTransitionType, ScrolledWindow, SelectionMode,
+    Box as GtkBox, Button, Entry, Label, ListBox, Orientation, PolicyType, Revealer,
+    RevealerTransitionType, ScrolledWindow, SelectionMode, pango, prelude::*,
 };
 
 use super::{
+    GitPaneView,
     diff::build_diff_widget,
     ops::{self, StashEntry},
-    GitPaneView,
 };
 
 pub(super) fn build_stash_view(view: &Rc<GitPaneView>) -> GtkBox {
@@ -37,7 +37,11 @@ pub(super) fn build_stash_view(view: &Rc<GitPaneView>) -> GtkBox {
             let root = view_ref.repo_root.borrow().clone();
             if let Some(root) = root {
                 let msg = entry_ref.text().to_string();
-                let msg_opt = if msg.is_empty() { None } else { Some(msg.as_str()) };
+                let msg_opt = if msg.is_empty() {
+                    None
+                } else {
+                    Some(msg.as_str())
+                };
                 match ops::git_stash_push(&root, msg_opt) {
                     Ok(_) => {
                         entry_ref.set_text("");
@@ -66,9 +70,7 @@ pub(super) fn build_stash_view(view: &Rc<GitPaneView>) -> GtkBox {
     root.append(&push_row);
     root.append(&scroller);
 
-    *view.stash_widgets.borrow_mut() = Some(StashWidgets {
-        list: list.clone(),
-    });
+    *view.stash_widgets.borrow_mut() = Some(StashWidgets { list: list.clone() });
 
     root
 }

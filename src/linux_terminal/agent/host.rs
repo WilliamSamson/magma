@@ -1,9 +1,12 @@
 use std::{cell::Cell, cell::RefCell, collections::VecDeque, rc::Rc};
 
-use gtk::{prelude::*, Box as GtkBox, Orientation, Overflow};
+use gtk::{Box as GtkBox, Orientation, Overflow, prelude::*};
 
 use super::build_agent_pane;
-use crate::linux_terminal::{settings::Settings, terminal::{self, ProfileId}};
+use crate::linux_terminal::{
+    settings::Settings,
+    terminal::{self, ProfileId},
+};
 
 #[derive(Clone)]
 pub(in crate::linux_terminal) struct AgentPaneHost {

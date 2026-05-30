@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use gtk::{gdk, glib, prelude::*, Button, EventControllerKey};
+use gtk::{Button, EventControllerKey, gdk, glib, prelude::*};
 use webkit6::prelude::*;
 
-use super::{browser, tabs, WebPaneState};
+use super::{WebPaneState, browser, tabs};
 
 #[derive(Clone)]
 pub(super) struct NavigationButtons {
@@ -16,27 +16,25 @@ pub(super) struct NavigationButtons {
     pub(super) find_close: Button,
 }
 
-pub(super) fn bind_navigation(
-    state: &Rc<WebPaneState>,
-    buttons: NavigationButtons,
-) {
+pub(super) fn bind_navigation(state: &Rc<WebPaneState>, buttons: NavigationButtons) {
     bind_address(state, &buttons.go_button);
     bind_home(state, &buttons.home_button);
     bind_reload_stop(state);
     bind_zoom(state, &buttons.zoom_out_button, &buttons.zoom_reset_button);
-    bind_find_bar(state, &buttons.find_prev, &buttons.find_next, &buttons.find_close);
+    bind_find_bar(
+        state,
+        &buttons.find_prev,
+        &buttons.find_next,
+        &buttons.find_close,
+    );
     bind_keyboard(state);
     bind_add_tab(state);
 
     let state_ref = state.clone();
     glib::idle_add_local_once(move || {
         if let Some(wv) = tabs::active_web_view(&state_ref) {
-            state_ref
-                .back_button
-                .set_sensitive(wv.can_go_back());
-            state_ref
-                .forward_button
-                .set_sensitive(wv.can_go_forward());
+            state_ref.back_button.set_sensitive(wv.can_go_back());
+            state_ref.forward_button.set_sensitive(wv.can_go_forward());
         }
     });
 }

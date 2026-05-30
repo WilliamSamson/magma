@@ -1,14 +1,8 @@
-use gtk::{
-    gdk,
-    pango::FontDescription,
-};
-use vte4::{prelude::*, CursorBlinkMode, CursorShape, Terminal};
+use gtk::{gdk, pango::FontDescription};
+use vte4::{CursorBlinkMode, CursorShape, Terminal, prelude::*};
 
-use super::profile::{profile, ProfileId};
-use super::super::{
-    settings::Settings,
-    theme,
-};
+use super::super::{settings::Settings, theme};
+use super::profile::{ProfileId, profile};
 
 pub(crate) fn build_terminal(profile_id: ProfileId, settings: &Settings) -> Terminal {
     let terminal = Terminal::builder()
@@ -28,7 +22,11 @@ pub(crate) fn build_terminal(profile_id: ProfileId, settings: &Settings) -> Term
     terminal
 }
 
-pub(crate) fn apply_terminal_settings(terminal: &Terminal, profile_id: ProfileId, settings: &Settings) {
+pub(crate) fn apply_terminal_settings(
+    terminal: &Terminal,
+    profile_id: ProfileId,
+    settings: &Settings,
+) {
     let blink = if settings.cursor_blink {
         CursorBlinkMode::On
     } else {
@@ -74,10 +72,7 @@ fn color_rgba(color: u32) -> gdk::RGBA {
 }
 
 pub(crate) fn terminal_font_description(settings: &Settings) -> FontDescription {
-    FontDescription::from_string(&format!(
-        "{} {}",
-        settings.font_family, settings.font_size
-    ))
+    FontDescription::from_string(&format!("{} {}", settings.font_family, settings.font_size))
 }
 
 pub(crate) fn scaled_spacing(base: i32, settings: &Settings) -> i32 {

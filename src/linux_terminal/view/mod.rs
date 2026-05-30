@@ -6,28 +6,27 @@ mod host;
 mod preview;
 mod ui;
 
-use std::{
-    cell::RefCell,
-    path::PathBuf,
-    rc::Rc,
-    time::Duration,
-};
+use std::{cell::RefCell, path::PathBuf, rc::Rc, time::Duration};
 
-use files::{category_label, category_order, scan_directory, FileCategory, ViewerFile};
+use files::{FileCategory, ViewerFile, category_label, category_order, scan_directory};
 use gtk::{
-    glib, prelude::*, Box as GtkBox, Button, Label, ListBox, Orientation, Overflow, PolicyType,
-    ScrolledWindow, SelectionMode,
+    Box as GtkBox, Button, Label, ListBox, Orientation, Overflow, PolicyType, ScrolledWindow,
+    SelectionMode, glib, prelude::*,
 };
-use preview::{bind_open_external, build_preview, select_file, set_empty_preview, PreviewWidgets};
+use preview::{PreviewWidgets, bind_open_external, build_preview, select_file, set_empty_preview};
 use ui::{build_header, clear_list, file_row, icon_button};
 use webkit6::WebContext;
 
-pub(super) use host::ViewPaneHost;
 use host::OpenFileSlot;
+pub(super) use host::ViewPaneHost;
 
 pub(super) type CwdProvider = Rc<dyn Fn() -> Option<String>>;
 
-fn build_view_pane(cwd_provider: CwdProvider, context: WebContext, open_file_slot: OpenFileSlot) -> GtkBox {
+fn build_view_pane(
+    cwd_provider: CwdProvider,
+    context: WebContext,
+    open_file_slot: OpenFileSlot,
+) -> GtkBox {
     let root = GtkBox::new(Orientation::Vertical, 8);
     root.add_css_class("magma-view-root");
     root.set_vexpand(true);
@@ -167,18 +166,18 @@ fn refresh_from_terminal(state: &Rc<ViewState>, force: bool) {
         return;
     };
 
-    if !force && state.model.borrow().current_dir.as_ref() == Some(&dir) {
-        return;
-    }
-
     let files = scan_directory(&dir);
+    if !force {
+        let model = state.model.borrow();
+        if model.current_dir.as_ref() == Some(&dir) && model.files == files {
+            return;
+        }
+    }
     update_model(state, dir, files);
 }
 
 fn current_directory(state: &ViewState) -> Option<PathBuf> {
-    state
-        .cwd_provider
-        .as_ref()()
+    state.cwd_provider.as_ref()()
         .map(PathBuf::from)
         .or_else(|| std::env::current_dir().ok())
 }
@@ -190,9 +189,7 @@ fn update_model(state: &Rc<ViewState>, dir: PathBuf, files: Vec<ViewerFile>) {
         model.files = files;
         // Reset category if old category has no files in new directory.
         let active = model.active_category;
-        if active != FileCategory::All
-            && !model.files.iter().any(|f| f.category == active)
-        {
+        if active != FileCategory::All && !model.files.iter().any(|f| f.category == active) {
             model.active_category = FileCategory::All;
         }
         model.selected_file = model
@@ -219,10 +216,16 @@ fn update_model(state: &Rc<ViewState>, dir: PathBuf, files: Vec<ViewerFile>) {
     }
 
     let count = visible_files(state).len();
-    state.widgets.count_label.set_text(&format_file_count(count));
+    state
+        .widgets
+        .count_label
+        .set_text(&format_file_count(count));
 
     if count == 0 {
-        set_empty_preview(&state.widgets.preview, "no supported files in this directory");
+        set_empty_preview(
+            &state.widgets.preview,
+            "no supported files in this directory",
+        );
         return;
     }
 

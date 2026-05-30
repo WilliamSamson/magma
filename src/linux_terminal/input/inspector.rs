@@ -1,15 +1,16 @@
 use std::os::fd::AsRawFd;
 
-use gtk::{
-    glib, prelude::*, Box as GtkBox, Label, Orientation,
-};
-use vte4::{prelude::*, Terminal};
+use gtk::{Box as GtkBox, Label, Orientation, glib, prelude::*};
+use vte4::{Terminal, prelude::*};
 
 use crate::linux_terminal::settings::Settings;
 
 /// Builds a snapshot of the terminal inspector panel.
 /// Each call returns a fresh widget tree with the current terminal state.
-pub(in crate::linux_terminal) fn build_inspector_panel(terminal: &Terminal, settings: &Settings) -> GtkBox {
+pub(in crate::linux_terminal) fn build_inspector_panel(
+    terminal: &Terminal,
+    settings: &Settings,
+) -> GtkBox {
     let content = GtkBox::new(Orientation::Vertical, 10);
     content.add_css_class("magma-inspector-panel");
 
@@ -18,7 +19,11 @@ pub(in crate::linux_terminal) fn build_inspector_panel(terminal: &Terminal, sett
     title.set_xalign(0.0);
     content.append(&title);
 
-    inspector_row_with_value(&content, "cwd", &display_uri(terminal.current_directory_uri()));
+    inspector_row_with_value(
+        &content,
+        "cwd",
+        &display_uri(terminal.current_directory_uri()),
+    );
     inspector_row_with_value(&content, "file", &display_uri(terminal.current_file_uri()));
     inspector_row_with_value(
         &content,
@@ -32,24 +37,40 @@ pub(in crate::linux_terminal) fn build_inspector_panel(terminal: &Terminal, sett
     inspector_row_with_value(
         &content,
         "grid",
-        &format!("{} cols \u{00d7} {} rows", terminal.column_count(), terminal.row_count()),
+        &format!(
+            "{} cols \u{00d7} {} rows",
+            terminal.column_count(),
+            terminal.row_count()
+        ),
     );
     inspector_row_with_value(&content, "font", &display_font(terminal));
     inspector_row_with_value(&content, "pty", &display_pty(terminal));
     inspector_row_with_value(
         &content,
         "selection",
-        if terminal.has_selection() { "active" } else { "none" },
+        if terminal.has_selection() {
+            "active"
+        } else {
+            "none"
+        },
     );
     inspector_row_with_value(
         &content,
         "image rendering",
-        if settings.image_rendering { "enabled" } else { "disabled" },
+        if settings.image_rendering {
+            "enabled"
+        } else {
+            "disabled"
+        },
     );
     inspector_row_with_value(
         &content,
         "ligatures",
-        if settings.ligatures { "enabled" } else { "disabled" },
+        if settings.ligatures {
+            "enabled"
+        } else {
+            "disabled"
+        },
     );
 
     content

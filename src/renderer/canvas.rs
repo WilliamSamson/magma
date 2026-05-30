@@ -51,8 +51,20 @@ impl<'a> Canvas<'a> {
             return;
         }
 
-        self.draw_rect(x + radius, y, w.saturating_sub((radius as u32) * 2), h, color);
-        self.draw_rect(x, y + radius, radius as u32, h.saturating_sub((radius as u32) * 2), color);
+        self.draw_rect(
+            x + radius,
+            y,
+            w.saturating_sub((radius as u32) * 2),
+            h,
+            color,
+        );
+        self.draw_rect(
+            x,
+            y + radius,
+            radius as u32,
+            h.saturating_sub((radius as u32) * 2),
+            color,
+        );
         self.draw_rect(
             x + w as i32 - radius,
             y + radius,
@@ -72,7 +84,11 @@ impl<'a> Canvas<'a> {
                 self.set_pixel(x + dx, y + dy, color);
                 self.set_pixel(x + w as i32 - radius + dx, y + dy, color);
                 self.set_pixel(x + dx, y + h as i32 - radius + dy, color);
-                self.set_pixel(x + w as i32 - radius + dx, y + h as i32 - radius + dy, color);
+                self.set_pixel(
+                    x + w as i32 - radius + dx,
+                    y + h as i32 - radius + dy,
+                    color,
+                );
             }
         }
     }

@@ -17,6 +17,20 @@ CARGO_TOML="$ROOT_DIR/Cargo.toml"
 DESKTOP_ID="io.magma.terminal"
 ICON_SIZES=(48 64 128 256 512)
 
+verify_deb() {
+  local artifact="$1"
+
+  if [[ ! -f "$artifact" ]]; then
+    echo "Error: .deb was not created at $artifact" >&2
+    exit 1
+  fi
+
+  if ! dpkg-deb --info "$artifact" >/dev/null 2>&1; then
+    echo "Error: expected a Debian package, but $artifact is not a valid .deb archive" >&2
+    exit 1
+  fi
+}
+
 # ---------------------------------------------------------------------------
 # Read metadata from Cargo.toml
 # ---------------------------------------------------------------------------
@@ -119,12 +133,14 @@ chmod 755 "$DEB_ROOT/DEBIAN/postrm"
 # Build the .deb
 # ---------------------------------------------------------------------------
 mkdir -p "$DIST_DIR"
-dpkg-deb --build --root-owner-group "$DEB_ROOT" "$DIST_DIR/${DEB_NAME}.deb"
+OUTPUT_DEB="$DIST_DIR/${DEB_NAME}.deb"
+dpkg-deb --build --root-owner-group "$DEB_ROOT" "$OUTPUT_DEB"
+verify_deb "$OUTPUT_DEB"
 
 echo ""
 echo ".deb package created:"
-echo "  $DIST_DIR/${DEB_NAME}.deb"
+echo "  $OUTPUT_DEB"
 echo ""
 echo "Install with:"
-echo "  sudo dpkg -i $DIST_DIR/${DEB_NAME}.deb"
+echo "  sudo dpkg -i $OUTPUT_DEB"
 echo "  sudo apt-get install -f   # if dependencies are missing"

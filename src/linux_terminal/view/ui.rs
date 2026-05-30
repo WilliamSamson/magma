@@ -1,43 +1,34 @@
-use gtk::{
-    prelude::*, Box as GtkBox, Button, Image, Label, ListBox, ListBoxRow, Orientation,
-};
+use gtk::{Box as GtkBox, Button, Image, Label, ListBox, ListBoxRow, Orientation, prelude::*};
 
-use super::files::{format_size, kind_label, FileKind, ViewerFile};
+use super::files::{FileKind, ViewerFile, format_size, kind_label};
 
 pub(super) fn build_header(refresh_button: &Button, count_label: &Label) -> GtkBox {
     let header = GtkBox::new(Orientation::Horizontal, 6);
     header.add_css_class("magma-view-header");
 
-    let title_block = GtkBox::new(Orientation::Vertical, 2);
-    title_block.add_css_class("magma-view-heading");
-    title_block.set_hexpand(true);
-
-    let title = Label::new(Some("view"));
+    let title = Label::new(Some("VIEW"));
     title.add_css_class("magma-view-title");
     title.set_xalign(0.0);
-    count_label.set_xalign(0.0);
+    header.append(&title);
 
-    title_block.append(&title);
-    title_block.append(count_label);
-    header.append(&title_block);
+    count_label.set_xalign(1.0);
+    count_label.set_hexpand(true);
+    header.append(count_label);
 
-    let spacer = GtkBox::new(Orientation::Horizontal, 0);
-    spacer.set_hexpand(true);
-    header.append(&spacer);
     refresh_button.add_css_class("magma-view-header-action");
     header.append(refresh_button);
     header
 }
 
 pub(super) fn build_empty_state(icon_name: &str, text: &str) -> GtkBox {
-    let root = GtkBox::new(Orientation::Vertical, 12);
+    let root = GtkBox::new(Orientation::Vertical, 6);
     root.add_css_class("magma-view-empty-state");
     root.set_vexpand(true);
     root.set_valign(gtk::Align::Center);
 
     let icon = Image::builder()
         .icon_name(icon_name)
-        .pixel_size(48)
+        .pixel_size(24)
         .css_classes(["magma-view-empty-icon"])
         .build();
 
@@ -54,7 +45,7 @@ pub(super) fn build_empty_state(icon_name: &str, text: &str) -> GtkBox {
 pub(super) fn file_row(file: &ViewerFile) -> ListBoxRow {
     let row = ListBoxRow::new();
     row.add_css_class("magma-view-file-row");
-    let content = GtkBox::new(Orientation::Horizontal, 8);
+    let content = GtkBox::new(Orientation::Horizontal, 6);
     content.add_css_class("magma-view-file-card");
     let icon = Image::from_icon_name(file_icon(file.kind));
     icon.add_css_class("magma-view-file-icon");
@@ -62,19 +53,17 @@ pub(super) fn file_row(file: &ViewerFile) -> ListBoxRow {
     title.add_css_class("magma-view-file-name");
     title.set_xalign(0.0);
     title.set_ellipsize(gtk::pango::EllipsizeMode::Middle);
+    title.set_hexpand(true);
     let meta = Label::new(Some(&format!(
         "{} · {}",
         kind_label(file.kind),
         format_size(file.size_bytes)
     )));
     meta.add_css_class("magma-view-file-meta");
-    meta.set_xalign(0.0);
-    let text = GtkBox::new(Orientation::Vertical, 1);
-    text.set_hexpand(true);
-    text.append(&title);
-    text.append(&meta);
+    meta.set_xalign(1.0);
     content.append(&icon);
-    content.append(&text);
+    content.append(&title);
+    content.append(&meta);
     row.set_child(Some(&content));
     row
 }

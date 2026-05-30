@@ -1,17 +1,14 @@
-use std::{
-    cell::{Cell, RefCell},
-    env, fs,
-    io,
-    path::{Path, PathBuf},
-    rc::Rc,
-};
+use std::fs::OpenOptions;
 #[cfg(unix)]
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 use std::{
-    fs::OpenOptions,
+    cell::{Cell, RefCell},
+    env, fs, io,
+    path::{Path, PathBuf},
+    rc::Rc,
 };
 
-use gtk::{prelude::*, Box as GtkBox, Orientation, Overflow};
+use gtk::{Box as GtkBox, Orientation, Overflow, prelude::*};
 use webkit6::{CookiePersistentStorage, NetworkSession, WebContext};
 
 use crate::linux_terminal::settings::Settings;
@@ -149,7 +146,10 @@ fn clear_browser_storage() {
 
 fn ensure_private_dir(path: &Path) {
     if let Err(error) = fs::create_dir_all(path) {
-        eprintln!("web profile directory create failed for {}: {error}", path.display());
+        eprintln!(
+            "web profile directory create failed for {}: {error}",
+            path.display()
+        );
         return;
     }
 
@@ -168,7 +168,10 @@ fn ensure_private_file(path: &Path) {
     }
 
     if let Err(error) = create_private_file(path) {
-        eprintln!("web profile file prepare failed for {}: {error}", path.display());
+        eprintln!(
+            "web profile file prepare failed for {}: {error}",
+            path.display()
+        );
     }
 }
 

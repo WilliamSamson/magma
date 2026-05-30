@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 use std::path::{Path, PathBuf};
 
-use gtk::{gio, pango, prelude::*, Box as GtkBox, Label, Orientation};
-use vte4::{prelude::*, Terminal};
+use gtk::{Box as GtkBox, Label, Orientation, gio, pango, prelude::*};
+use vte4::{Terminal, prelude::*};
 
 pub(super) fn build_prompt_box(terminal: &Terminal) -> GtkBox {
     let prompt_container = GtkBox::new(Orientation::Horizontal, 6);

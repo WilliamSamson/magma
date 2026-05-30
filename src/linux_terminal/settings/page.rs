@@ -1,15 +1,18 @@
 use std::{cell::RefCell, rc::Rc};
 
-use gtk::{
-    prelude::*,
-    Box as GtkBox, Button, Label, Orientation, Stack, StackTransitionType,
-};
+use gtk::{Box as GtkBox, Orientation, Stack, StackTransitionType, prelude::*};
 
-use super::{about::build_about_page, sections::build_main_page, Settings};
+use super::{Settings, about::build_about_page, sections::build_main_page};
+
+type TitleSetter = Rc<dyn Fn(&str)>;
+type CloseAction = Rc<dyn Fn()>;
+type CloseActionSetter = Rc<dyn Fn(CloseAction)>;
 
 pub(in crate::linux_terminal) fn build_settings_page(
     settings: Rc<RefCell<Settings>>,
     on_back: impl Fn() + 'static,
+    on_title_change: impl Fn(&str) + 'static,
+    on_close_action_change: impl Fn(CloseAction) + 'static,
     on_apply: impl Fn(&Settings) + 'static,
     on_clear_browser_data: impl Fn() + 'static,
 ) -> GtkBox {
@@ -24,9 +27,12 @@ pub(in crate::linux_terminal) fn build_settings_page(
     page_stack.set_transition_type(StackTransitionType::Crossfade);
     page_stack.set_transition_duration(160);
 
-    let title = Label::new(Some("settings"));
-    let header = build_header(&page_stack, &title, Rc::new(on_back));
-    bind_title_sync(&page_stack, &title);
+    bind_header_state(
+        &page_stack,
+        Rc::new(on_back),
+        Rc::new(on_title_change),
+        Rc::new(on_close_action_change),
+    );
 
     let on_apply: Rc<dyn Fn(&Settings)> = Rc::new(on_apply);
     let on_clear_browser_data: Rc<dyn Fn()> = Rc::new(on_clear_browser_data);
@@ -37,47 +43,43 @@ pub(in crate::linux_terminal) fn build_settings_page(
     page_stack.add_named(&about_page, Some("about"));
     page_stack.set_visible_child_name("main");
 
-    root.append(&header);
     root.append(&page_stack);
     root
 }
 
-fn build_header(page_stack: &Stack, title: &Label, on_back: Rc<dyn Fn()>) -> GtkBox {
-    let header = GtkBox::new(Orientation::Horizontal, 8);
-    header.add_css_class("magma-settings-header");
-
-    let back_button = Button::builder()
-        .icon_name("go-previous-symbolic")
-        .css_classes(["magma-settings-back"])
-        .tooltip_text("Back")
-        .build();
-
-    let stack_ref = page_stack.clone();
-    back_button.connect_clicked(move |_| {
-        if stack_ref.visible_child_name().as_deref() == Some("about") {
-            stack_ref.set_visible_child_name("main");
-            return;
-        }
-        on_back();
+fn bind_header_state(
+    page_stack: &Stack,
+    on_back: Rc<dyn Fn()>,
+    set_title: TitleSetter,
+    set_close_action: CloseActionSetter,
+) {
+    sync_header_state(page_stack, &on_back, &set_title, &set_close_action);
+    let on_back_ref = on_back.clone();
+    let title_ref = set_title.clone();
+    let close_ref = set_close_action.clone();
+    page_stack.connect_visible_child_name_notify(move |stack| {
+        sync_header_state(stack, &on_back_ref, &title_ref, &close_ref);
     });
-
-    title.add_css_class("magma-settings-title");
-    title.set_xalign(0.0);
-    title.set_hexpand(true);
-
-    header.append(&back_button);
-    header.append(title);
-    header
 }
 
-fn bind_title_sync(page_stack: &Stack, title: &Label) {
-    let title_ref = title.clone();
-    page_stack.connect_visible_child_name_notify(move |stack| {
-        let next = if stack.visible_child_name().as_deref() == Some("about") {
-            "about"
-        } else {
-            "settings"
-        };
-        title_ref.set_text(next);
-    });
+fn sync_header_state(
+    page_stack: &Stack,
+    on_back: &Rc<dyn Fn()>,
+    set_title: &TitleSetter,
+    set_close_action: &CloseActionSetter,
+) {
+    if page_stack.visible_child_name().as_deref() == Some("about") {
+        set_title("About");
+        let stack_ref = page_stack.clone();
+        set_close_action(Rc::new(move || {
+            stack_ref.set_visible_child_name("main");
+        }));
+        return;
+    }
+
+    set_title("Settings");
+    let on_back = on_back.clone();
+    set_close_action(Rc::new(move || {
+        on_back();
+    }));
 }
